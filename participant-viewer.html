@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HPL Participant Viewer</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --ink: #0f172a;
+    --ink-soft: #334155;
+    --ink-muted: #64748b;
+    --accent: #0071e3;
+    --accent-soft: #f0f7ff;
+    --rule: #e5e7eb;
+    --rule-soft: #f1f5f9;
+    --user-bubble: #0071e3;
+    --user-bubble-text: #ffffff;
+    --assistant-bubble: #f1f5f9;
+    --assistant-bubble-text: #0f172a;
+    --condition-private: #0369a1;
+    --condition-visible: #b45309;
+    --condition-baseline: #475569;
+    --good: #15803d;
+    --bad: #b91c1c;
+    --warn: #b45309;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; margin: 0; }
+  .topbar .file-label {
+    background: var(--accent);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .topbar .file-label:hover { background: #0077ed; }
+  .topbar input[type="file"] { display: none; }
+  .topbar .spacer { flex: 1; }
+  .topbar .meta { font-size: 13px; color: var(--ink-muted); }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 28px 24px 80px; }
+  .empty {
+    text-align: center;
+    color: var(--ink-muted);
+    padding: 80px 20px;
+  }
+  .empty .icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty p { margin: 6px 0; font-size: 15px; }
+  .empty .hint { margin-top: 22px; font-size: 13px; color: var(--ink-muted); }
+  .empty code {
+    background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+    font-family: ui-monospace, monospace; font-size: 12px;
+  }
+
+  /* Header card */
+  .header-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 24px;
+  }
+  .header-card h2 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.01em; }
+  .header-card .subtitle {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+  .header-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .stat-value { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .stat-value.condition-private { color: var(--condition-private); }
+  .stat-value.condition-visible { color: var(--condition-visible); }
+  .stat-value.condition-baseline { color: var(--condition-baseline); }
+
+  /* Section navigation */
+  .section-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+  }
+  .section-nav a {
+    font-size: 12px;
+    color: var(--ink-soft);
+    background: var(--rule-soft);
+    padding: 5px 10px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .section-nav a:hover { background: var(--accent-soft); color: var(--accent); }
+
+  /* Sections */
+  .section {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 22px;
+  }
+  .section h3 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section h3 .chev {
+    font-size: 12px;
+    color: var(--ink-muted);
+    transition: transform 0.15s;
+  }
+  .section.collapsed h3 .chev { transform: rotate(-90deg); }
+  .section .section-sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 18px;
+    margin-top: 2px;
+  }
+  .section.collapsed .section-body { display: none; }
+  .section.collapsed { padding-bottom: 18px; }
+
+  /* Consent block */
+  .consent-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14px;
+  }
+  .consent-row:last-child { border-bottom: none; }
+  .consent-row .k { color: var(--ink-muted); font-weight: 500; }
+  .consent-row .v { color: var(--ink); font-weight: 500; text-align: right; }
+  .consent-decision-yes { color: var(--good); font-weight: 700; }
+  .consent-decision-no { color: var(--bad); font-weight: 700; }
+
+  /* Learning items */
+  .learning-section { margin-bottom: 28px; }
+  .learning-section:last-child { margin-bottom: 0; }
+  .learning-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    margin: 0 0 12px;
+  }
+  .learning-item {
+    background: var(--rule-soft);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .learning-item:last-child { margin-bottom: 0; }
+  .learning-prompt {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.45;
+  }
+  .learning-answer {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .learning-answer.empty { color: var(--ink-muted); font-style: italic; }
+  .learning-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .learning-meta .met-min { color: var(--good); font-weight: 600; }
+  .learning-meta .met-min.below { color: var(--bad); }
+
+  /* Likert table */
+  .likert-scale-note {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .likert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .likert-table th, .likert-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .likert-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    background: var(--rule-soft);
+  }
+  .likert-table td.rating {
+    font-weight: 700;
+    width: 60px;
+    text-align: center;
+  }
+  .likert-table td.anchor {
+    color: var(--ink-muted);
+    font-size: 13px;
+    width: 160px;
+  }
+  .likert-table td.position {
+    color: var(--ink-muted);
+    font-size: 13px;
+    width: 60px;
+    text-align: center;
+  }
+  .likert-table tr.reverse td.rating::after {
+    content: "ᴿ";
+    font-size: 10px;
+    color: var(--warn);
+    margin-left: 4px;
+    vertical-align: super;
+  }
+
+  /* CRT table */
+  .crt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .crt-table th, .crt-table td {
+    text-align: left;
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  .crt-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    background: var(--rule-soft);
+  }
+  .crt-problem { max-width: 380px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .crt-answer-cell { font-weight: 600; text-align: center; }
+  .crt-correct { color: var(--good); }
+  .crt-intuitive { color: var(--bad); }
+  .crt-other { color: var(--ink-muted); }
+  .crt-badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+  .crt-badge.good { background: #dcfce7; color: var(--good); }
+  .crt-badge.bad { background: #fee2e2; color: var(--bad); }
+  .crt-badge.other { background: var(--rule-soft); color: var(--ink-muted); }
+
+  /* Demographics */
+  .demo-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14px;
+    gap: 16px;
+  }
+  .demo-row:last-child { border-bottom: none; }
+  .demo-row .k {
+    color: var(--ink-soft);
+    font-weight: 500;
+    flex: 1;
+  }
+  .demo-row .v {
+    color: var(--ink);
+    font-weight: 600;
+    text-align: right;
+    max-width: 50%;
+  }
+
+  /* Manipulation check */
+  .manip-prompt {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .manip-chip {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin: 3px 4px 3px 0;
+  }
+  .manip-none {
+    color: var(--ink-muted);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* Chat */
+  .msg-row { display: flex; margin: 12px 0; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.assistant { justify-content: flex-start; }
+  .msg-bubble {
+    max-width: 70%;
+    padding: 11px 15px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .msg-row.user .msg-bubble {
+    background: var(--user-bubble);
+    color: var(--user-bubble-text);
+    border-bottom-right-radius: 6px;
+  }
+  .msg-row.assistant .msg-bubble {
+    background: var(--assistant-bubble);
+    color: var(--assistant-bubble-text);
+    border-bottom-left-radius: 6px;
+  }
+  .msg-meta {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    padding: 0 8px;
+  }
+  .msg-row.user .msg-meta { text-align: right; }
+  .empty-conversation {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--ink-muted);
+    background: var(--rule-soft);
+    border: 1px dashed var(--rule);
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  /* Page timings */
+  .timings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .timings-table th, .timings-table td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: ui-monospace, monospace;
+  }
+  .timings-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    background: var(--rule-soft);
+    font-family: var(--sans);
+  }
+  .timings-table .col-screen { font-weight: 600; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>HPL Participant Viewer</h1>
+  <label class="file-label" for="json-file">Open participant JSON</label>
+  <input type="file" id="json-file" accept=".json" onchange="loadFile(event)" />
+  <div class="spacer"></div>
+  <div class="meta" id="file-meta"></div>
+</div>
+
+<div class="container" id="container">
+  <div class="empty" id="empty-state">
+    <div class="icon">📋</div>
+    <p><strong>Drop a participant JSON file to view their full session.</strong></p>
+    <p>Click <b>Open participant JSON</b> above, or drag a file anywhere into this window.</p>
+    <p class="hint">
+      Use this for full per-participant review (consent, learning answers, Likerts, CRT, demographics,
+      chatbot transcript, timings). For chat-only quick view, see <code>chat-viewer.html</code>.
+    </p>
+  </div>
+</div>
+
+<script>
+  function loadFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    readFile(file);
+  }
+  function readFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        render(data, file.name);
+      } catch (err) {
+        alert('Could not parse JSON: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+  document.addEventListener('dragover', e => { e.preventDefault(); });
+  document.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.json')) readFile(file);
+  });
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function toggleSection(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  function fmtTimingMs(ms) {
+    if (ms == null) return '—';
+    if (ms < 1000) return ms + ' ms';
+    if (ms < 60000) return (ms / 1000).toFixed(1) + ' s';
+    return (ms / 60000).toFixed(1) + ' min';
+  }
+
+  const PASTE_FIELD_LABELS = {
+    learning_answer: 'Learning answer',
+    crt_answer: 'CRT answer',
+    chat_input: 'Chatbot input',
+    participant_email: 'Participant email',
+    demographics_self_describe: 'Demographics self-describe',
+    study_input: 'Study input'
+  };
+
+  function pasteFieldLabel(p) {
+    const label = PASTE_FIELD_LABELS[p.field_type] || p.field_type || p.field_id || 'Study input';
+    return p.field_id && p.field_id !== p.field_type ? `${label} (${p.field_id})` : label;
+  }
+
+  function renderPasteItemCell(p) {
+    if (!p.item_id && !p.item_prompt && !p.item_subscale) return '—';
+    const parts = [];
+    if (p.item_id) parts.push(`<div style="font-weight:700; color:var(--ink);">${escapeHtml(p.item_id)}</div>`);
+    if (p.item_subscale) parts.push(`<div style="font-size:12px; color:var(--ink-muted);">${escapeHtml(p.item_subscale)}</div>`);
+    if (p.item_prompt) parts.push(`<div style="font-size:12px; color:var(--ink-soft); line-height:1.35; margin-top:3px;">${escapeHtml(p.item_prompt)}</div>`);
+    return parts.join('');
+  }
+
+  function render(data, filename) {
+    document.getElementById('file-meta').textContent = filename;
+    const sess = data.session || {};
+    const consent = data.consent || {};
+    const lm = data.learning_measure || {};
+    const app = data.appraisal || {};
+    const tf = data.tf_perceptions || {};
+    const crt = data.crt || {};
+    const manip = data.manipulation_check || {};
+    const demo = data.demographics || {};
+    const chat = data.chatbot_conversation || { messages: [] };
+    const engagement = data.engagement_signals || {};
+    const condition = sess.condition || 'unknown';
+
+    const container = document.getElementById('container');
+    container.innerHTML = `
+      <!-- Header card -->
+      <div class="header-card">
+        <h2>${escapeHtml(sess.participant_id || data.participantId || 'Unknown participant')}</h2>
+        <div class="subtitle">From ${escapeHtml(filename)} · Schema ${escapeHtml(data.schema_version || '?')}</div>
+        <div class="header-grid">
+          <div>
+            <div class="stat-label">Condition</div>
+            <div class="stat-value condition-${condition}">${escapeHtml(condition)}</div>
+          </div>
+          <div>
+            <div class="stat-label">Started</div>
+            <div class="stat-value">${escapeHtml(sess.started_at_eastern || '—')}</div>
+          </div>
+          <div>
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">${escapeHtml(sess.completed_at_eastern || '—')}</div>
+          </div>
+          <div>
+            <div class="stat-label">Duration</div>
+            <div class="stat-value">${sess.duration_minutes != null ? sess.duration_minutes + ' min' : '—'}</div>
+          </div>
+          <div>
+            <div class="stat-label">User turns</div>
+            <div class="stat-value">${chat.total_user_turns || 0}</div>
+          </div>
+          <div>
+            <div class="stat-label">Bot turns</div>
+            <div class="stat-value">${chat.total_assistant_turns || 0}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick navigation -->
+      <div class="section-nav">
+        <a href="#sec-consent">Consent</a>
+        <a href="#sec-learning">Learning</a>
+        <a href="#sec-appraisal">Appraisal</a>
+        <a href="#sec-tf">TF perceptions</a>
+        <a href="#sec-crt">CRT</a>
+        <a href="#sec-manip">Manipulation check</a>
+        <a href="#sec-demo">Demographics</a>
+        <a href="#sec-chat">Chatbot conversation</a>
+        <a href="#sec-engagement">Engagement signals</a>
+        <a href="#sec-timings">Page timings</a>
+      </div>
+
+      ${renderConsent(consent)}
+      ${renderLearning(lm)}
+      ${renderAppraisal(app)}
+      ${renderTF(tf)}
+      ${renderCRT(crt)}
+      ${renderManip(manip)}
+      ${renderDemographics(demo)}
+      ${renderChat(chat, condition)}
+      ${renderEngagement(engagement)}
+      ${renderTimings(data.page_timings_ms || {})}
+    `;
+  }
+
+  function renderEngagement(eng) {
+    const tabHidden = eng.tab_hidden_count || 0;
+    const tabHiddenMs = eng.tab_hidden_total_ms || 0;
+    const tabHiddenSec = (tabHiddenMs / 1000).toFixed(1);
+    const blurCount = eng.window_blur_count || 0;
+    const pasteCount = eng.paste_count || 0;
+    const pasteEvents = eng.paste_events || [];
+    const attnEvents = eng.attention_events || [];
+
+    // Flag heuristics — surface anything suspicious at the top.
+    const flags = [];
+    if (pasteCount > 0) flags.push(`<b>${pasteCount}</b> paste${pasteCount === 1 ? '' : 's'} into study fields`);
+    if (tabHidden >= 3 || tabHiddenMs > 60000) flags.push(`tab hidden <b>${tabHidden}</b>×, total <b>${tabHiddenSec}s</b>`);
+    if (blurCount >= 3) flags.push(`window blurred <b>${blurCount}</b>×`);
+    const flagBanner = flags.length === 0
+      ? `<div class="consent-row"><span class="k" style="color:#15803d;">No suspicious engagement signals</span></div>`
+      : `<div class="consent-row" style="background:#fef2f2; border:1px solid #fecaca; padding:10px 14px; border-radius:8px;"><span class="k" style="color:#b91c1c;">⚠ Possible attention / lookup flags:</span><span class="v" style="color:#7f1d1d;">${flags.join(' · ')}</span></div>`;
+
+    const pasteRows = pasteEvents.length === 0
+      ? '<tr><td colspan="6" style="text-align:center; color: var(--ink-muted); padding: 16px;">No paste events recorded.</td></tr>'
+      : pasteEvents.map(p => `
+        <tr>
+          <td>${escapeHtml(p.timestamp_eastern || p.timestamp_iso || '—')}</td>
+          <td>${escapeHtml(p.screen || '—')}</td>
+          <td>${escapeHtml(pasteFieldLabel(p))}</td>
+          <td style="min-width: 180px;">${renderPasteItemCell(p)}</td>
+          <td>${p.pasted_length != null ? p.pasted_length : '—'}</td>
+          <td style="white-space: pre-wrap; word-break: break-word; max-width: 480px;">${escapeHtml(p.pasted_preview || '')}</td>
+        </tr>`).join('');
+
+    const attnRows = attnEvents.length === 0
+      ? '<tr><td colspan="3" style="text-align:center; color: var(--ink-muted); padding: 16px;">No attention events recorded.</td></tr>'
+      : attnEvents.map(a => `
+        <tr>
+          <td>${escapeHtml(a.timestamp_eastern || a.timestamp_iso || '—')}</td>
+          <td>${escapeHtml(a.type || '—')}</td>
+          <td>${escapeHtml(a.screen || '—')}</td>
+        </tr>`).join('');
+
+    return `
+      <section class="section" id="sec-engagement">
+        <h3 onclick="toggleSection('sec-engagement')"><span class="chev">▼</span>Engagement signals</h3>
+        <div class="section-body">
+          ${flagBanner}
+          <div class="consent-row"><span class="k">Tab hidden count</span><span class="v">${tabHidden}</span></div>
+          <div class="consent-row"><span class="k">Total time on other tab</span><span class="v">${tabHiddenSec} seconds</span></div>
+          <div class="consent-row"><span class="k">Window blur count</span><span class="v">${blurCount}</span></div>
+          <div class="consent-row"><span class="k">Paste events</span><span class="v">${pasteCount}</span></div>
+
+          <h4 style="margin: 22px 0 8px;">Paste events</h4>
+          <table>
+            <thead><tr><th>When</th><th>Screen</th><th>Where</th><th>Item</th><th>Length</th><th>Preview (first 500 chars)</th></tr></thead>
+            <tbody>${pasteRows}</tbody>
+          </table>
+
+          <h4 style="margin: 22px 0 8px;">Attention timeline</h4>
+          <table>
+            <thead><tr><th>When</th><th>Event</th><th>Screen</th></tr></thead>
+            <tbody>${attnRows}</tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+
+  function renderConsent(consent) {
+    const yes = consent.decision === 'yes';
+    return `
+      <section class="section" id="sec-consent">
+        <h3 onclick="toggleSection('sec-consent')"><span class="chev">▼</span>Consent</h3>
+        <div class="section-body">
+          <div class="consent-row"><span class="k">Decision</span>
+            <span class="v ${yes ? 'consent-decision-yes' : 'consent-decision-no'}">${escapeHtml(consent.decision_text || consent.decision || '—')}</span>
+          </div>
+          <div class="consent-row"><span class="k">Timestamp</span><span class="v">${escapeHtml(consent.decision_timestamp_eastern || '—')}</span></div>
+          <div class="consent-row"><span class="k">Form version</span><span class="v">${escapeHtml(consent.consent_form_version || '—')}</span></div>
+          <div class="consent-row"><span class="k">Method</span><span class="v">${escapeHtml(consent.method || '—')}</span></div>
+          <div class="consent-row"><span class="k">Consent PDF file</span><span class="v">${escapeHtml(consent.consent_pdf_filename || '—')}</span></div>
+        </div>
+      </section>`;
+  }
+
+  function renderLearning(lm) {
+    const subsections = [
+      ['open_response', 'Open Response'],
+      ['multiple_choice', 'Multiple Choice'],
+      ['consistency_monitoring', 'Consistency Monitoring'],
+      // Legacy sections (pre-restructure data) — kept so older files still render.
+      ['factual_understanding', 'Factual Understanding'],
+      ['causal_understanding', 'Causal Understanding'],
+      ['transfer', 'Transfer']
+    ];
+    let html = `
+      <section class="section" id="sec-learning">
+        <h3 onclick="toggleSection('sec-learning')"><span class="chev">▼</span>Learning Measure</h3>
+        <div class="section-body">`;
+    for (const [key, label] of subsections) {
+      const sec = lm[key];
+      if (!sec) continue;
+      html += `
+        <div class="learning-section">
+          <p class="learning-section-title">${escapeHtml(label)} · ${escapeHtml(sec.section_label || '')} · Min words: ${sec.min_words_required || '—'}</p>`;
+      (sec.items || []).forEach(it => {
+        const ans = it.participant_answer;
+        const isEmpty = ans == null || String(ans).trim() === '';
+        const met = it.word_count >= (sec.min_words_required || 0);
+        html += `
+          <div class="learning-item">
+            <div class="learning-prompt">${escapeHtml(it.id)}: ${escapeHtml(it.prompt)}</div>
+            <div class="learning-answer ${isEmpty ? 'empty' : ''}">${isEmpty ? '(no answer)' : escapeHtml(ans)}</div>
+            <div class="learning-meta">
+              ${it.word_count != null
+                ? `<span class="met-min ${met ? '' : 'below'}">${it.word_count} words${sec.min_words_required ? ' / ' + sec.min_words_required + ' required' : ''}</span><span>·</span>`
+                : (it.question_type === 'multiple_choice' ? `<span>Multiple choice</span><span>·</span>` : '')}
+              <span>Time: ${fmtTimingMs(it.time_on_question_ms)}</span>
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div></section>`;
+    return html;
+  }
+
+  function renderLikertTable(items) {
+    if (!items || items.length === 0) return '<p style="color:var(--ink-muted);font-size:13px;">No items.</p>';
+    return `
+      <table class="likert-table">
+        <thead>
+          <tr>
+            <th>Statement</th>
+            <th>Rating</th>
+            <th>Anchor</th>
+            <th>Shown @</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(it => `
+            <tr class="${it.reverse_coded ? 'reverse' : ''}">
+              <td>${escapeHtml(it.statement)}</td>
+              <td class="rating">${it.participant_rating != null ? it.participant_rating : '—'}</td>
+              <td class="anchor">${escapeHtml(it.anchor_label || '—')}</td>
+              <td class="position">${it.position_shown || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function renderAppraisal(app) {
+    const lesson = app.lesson_experience_likert || {};
+    const chat = app.chatbot_experience_likert || {};
+    return `
+      <section class="section" id="sec-appraisal">
+        <h3 onclick="toggleSection('sec-appraisal')"><span class="chev">▼</span>Appraisal — Lesson & Chatbot</h3>
+        <div class="section-body">
+          <p class="learning-section-title" style="margin-top:4px;">Lesson Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
+          ${renderLikertTable(lesson.items)}
+          <p class="learning-section-title" style="margin-top:24px;">Chatbot Experience</p>
+          ${(chat.items && chat.items.length) ? renderLikertTable(chat.items) : '<p style="color:var(--ink-muted);font-size:13px;">No chatbot Likert (likely baseline condition).</p>'}
+        </div>
+      </section>`;
+  }
+
+  function renderTF(tf) {
+    return `
+      <section class="section" id="sec-tf">
+        <h3 onclick="toggleSection('sec-tf')"><span class="chev">▼</span>TF Perceptions</h3>
+        <div class="section-body">
+          <p class="likert-scale-note">Scale 1–7. <span style="color:var(--warn);"><sup>ᴿ</sup></span> denotes a reverse-coded item.</p>
+          ${renderLikertTable(tf.items)}
+        </div>
+      </section>`;
+  }
+
+  function renderCRT(crt) {
+    const items = crt.items || [];
+    if (items.length === 0) {
+      return `
+        <section class="section" id="sec-crt">
+          <h3 onclick="toggleSection('sec-crt')"><span class="chev">▼</span>CRT</h3>
+          <div class="section-body"><p style="color:var(--ink-muted);font-size:13px;">No CRT items.</p></div>
+        </section>`;
+    }
+    const correct = items.filter(it => it.scored_correct).length;
+    const intuitive = items.filter(it => it.gave_intuitive_wrong).length;
+    return `
+      <section class="section" id="sec-crt">
+        <h3 onclick="toggleSection('sec-crt')"><span class="chev">▼</span>CRT</h3>
+        <div class="section-body">
+          <p class="learning-section-title">
+            ${correct} / ${items.length} correct ·
+            ${intuitive} intuitive-wrong ·
+            ${items.length - correct - intuitive} other
+          </p>
+          <table class="crt-table">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Unit</th>
+                <th>Participant</th>
+                <th>Correct</th>
+                <th>Intuitive</th>
+                <th>Score</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(it => {
+                let badge = '<span class="crt-badge other">other</span>';
+                if (it.scored_correct) badge = '<span class="crt-badge good">correct</span>';
+                else if (it.gave_intuitive_wrong) badge = '<span class="crt-badge bad">intuitive</span>';
+                return `
+                  <tr>
+                    <td class="crt-problem">${escapeHtml(it.problem)}</td>
+                    <td>${escapeHtml(it.answer_unit || '—')}</td>
+                    <td class="crt-answer-cell">${it.participant_answer != null ? it.participant_answer : '—'}</td>
+                    <td class="crt-answer-cell crt-correct">${it.correct_answer != null ? it.correct_answer : '—'}</td>
+                    <td class="crt-answer-cell crt-intuitive">${it.intuitive_wrong_answer != null ? it.intuitive_wrong_answer : '—'}</td>
+                    <td>${badge}</td>
+                    <td style="font-size:12px; color:var(--ink-muted);">${fmtTimingMs(it.time_on_question_ms)}</td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+
+  function renderManip(manip) {
+    const selected = manip.selected_options || [];
+    return `
+      <section class="section" id="sec-manip">
+        <h3 onclick="toggleSection('sec-manip')"><span class="chev">▼</span>Manipulation Check</h3>
+        <div class="section-body">
+          <p class="manip-prompt">${escapeHtml(manip.prompt || '—')}</p>
+          ${selected.length === 0
+            ? '<p class="manip-none">No options selected.</p>'
+            : selected.map(o => `<span class="manip-chip">${escapeHtml(o)}</span>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  function renderDemographics(demo) {
+    const items = demo.items || [];
+    return `
+      <section class="section" id="sec-demo">
+        <h3 onclick="toggleSection('sec-demo')"><span class="chev">▼</span>Demographics</h3>
+        <div class="section-body">
+          ${items.length === 0 ? '<p style="color:var(--ink-muted);font-size:13px;">No demographic data.</p>' :
+            items.map(it => {
+              const ans = it.participant_answer;
+              let dispAns;
+              if (Array.isArray(ans)) dispAns = ans.join(', ');
+              else if (ans == null) dispAns = '—';
+              else dispAns = ans;
+              return `
+                <div class="demo-row">
+                  <span class="k">${escapeHtml(it.question)}</span>
+                  <span class="v">${escapeHtml(dispAns)}</span>
+                </div>`;
+            }).join('')}
+        </div>
+      </section>`;
+  }
+
+  function renderChat(chat, condition) {
+    const msgs = chat.messages || [];
+    return `
+      <section class="section" id="sec-chat">
+        <h3 onclick="toggleSection('sec-chat')"><span class="chev">▼</span>Chatbot Conversation
+          <span style="font-size:13px; color:var(--ink-muted); font-weight:500;">— ${chat.total_user_turns || 0} user · ${chat.total_assistant_turns || 0} bot</span>
+        </h3>
+        <div class="section-body">
+          ${msgs.length === 0
+            ? `<div class="empty-conversation">No chatbot conversation${condition === 'baseline' ? ' (baseline condition — chatbot was not available).' : '.'}</div>`
+            : msgs.map(m => `
+              <div class="msg-row ${m.role}">
+                <div>
+                  <div class="msg-bubble">${escapeHtml(m.content)}</div>
+                  <div class="msg-meta">${escapeHtml(m.timestamp_eastern || m.timestamp_iso || '')}</div>
+                </div>
+              </div>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  function renderTimings(pt) {
+    const rows = Object.entries(pt).map(([screen, t]) => {
+      const entered = t.enteredAt ? new Date(t.enteredAt) : null;
+      const exited  = t.exitedAt ? new Date(t.exitedAt) : null;
+      const dur = (entered && exited) ? (exited - entered) : null;
+      return `
+        <tr>
+          <td class="col-screen">${escapeHtml(screen)}</td>
+          <td>${entered ? entered.toLocaleString('en-US', { timeZone: 'America/New_York' }) : '—'}</td>
+          <td>${exited ? exited.toLocaleString('en-US', { timeZone: 'America/New_York' }) : '—'}</td>
+          <td>${fmtTimingMs(dur)}</td>
+        </tr>`;
+    }).join('');
+    return `
+      <section class="section collapsed" id="sec-timings">
+        <h3 onclick="toggleSection('sec-timings')"><span class="chev">▼</span>Page Timings</h3>
+        <div class="section-body">
+          <table class="timings-table">
+            <thead>
+              <tr>
+                <th>Screen</th>
+                <th>Entered (ET)</th>
+                <th>Exited (ET)</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+</script>
+
+</body>
+</html>

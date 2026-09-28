@@ -1,0 +1,17 @@
+.DS_Store
+.vercel
+node_modules
+
+.env
+.env.*
+!.env.example
+
+*.key
+*.pem
+secrets.json
+credentials.json
+service-account*.json
+
+# Research materials (protocol, consent form, lesson) live here locally but
+# must never be committed — anything tracked is deployed and served publicly.
+*.pdf

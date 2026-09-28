@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HPL Chat Viewer</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --ink: #0f172a;
+    --ink-soft: #334155;
+    --ink-muted: #64748b;
+    --accent: #0071e3;
+    --accent-soft: #f0f7ff;
+    --rule: #e5e7eb;
+    --user-bubble: #0071e3;
+    --user-bubble-text: #ffffff;
+    --assistant-bubble: #f1f5f9;
+    --assistant-bubble-text: #0f172a;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; margin: 0; }
+  .topbar .file-label {
+    background: var(--accent);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .topbar .file-label:hover { background: #0077ed; }
+  .topbar input[type="file"] { display: none; }
+  .topbar .spacer { flex: 1; }
+  .topbar .meta { font-size: 13px; color: var(--ink-muted); }
+
+  .container { max-width: 880px; margin: 0 auto; padding: 28px 24px 80px; }
+  .empty {
+    text-align: center;
+    color: var(--ink-muted);
+    padding: 80px 20px;
+  }
+  .empty .icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty p { margin: 6px 0; font-size: 15px; }
+  .empty .hint {
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .empty code {
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+  }
+
+  .header-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 28px;
+  }
+  .header-card h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+  .header-card .subtitle {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+  .header-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .header-grid .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .header-grid .stat-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .header-grid .stat-value.condition-private { color: #0369a1; }
+  .header-grid .stat-value.condition-visible { color: #b45309; }
+  .header-grid .stat-value.condition-baseline { color: #475569; }
+
+  .chat-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .msg-row { display: flex; margin: 14px 0; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.assistant { justify-content: flex-start; }
+  .msg-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .msg-row.user .msg-bubble {
+    background: var(--user-bubble);
+    color: var(--user-bubble-text);
+    border-bottom-right-radius: 6px;
+  }
+  .msg-row.assistant .msg-bubble {
+    background: var(--assistant-bubble);
+    color: var(--assistant-bubble-text);
+    border-bottom-left-radius: 6px;
+  }
+  .msg-meta {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    padding: 0 8px;
+  }
+  .msg-row.user .msg-meta { text-align: right; }
+  .empty-conversation {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-muted);
+    background: var(--bg-card);
+    border: 1px dashed var(--rule);
+    border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>HPL Chat Viewer</h1>
+  <label class="file-label" for="json-file">Open participant JSON</label>
+  <input type="file" id="json-file" accept=".json" onchange="loadFile(event)" />
+  <div class="spacer"></div>
+  <div class="meta" id="file-meta"></div>
+</div>
+
+<div class="container" id="container">
+  <div class="empty" id="empty-state">
+    <div class="icon">💬</div>
+    <p><strong>Drop a participant JSON file to view their chat.</strong></p>
+    <p>Click <b>Open participant JSON</b> above, or drag a file anywhere into this window.</p>
+    <p class="hint">
+      File format: any <code>P*.json</code> file from the Dataverse <b>raw-data</b> component.
+    </p>
+  </div>
+</div>
+
+<script>
+  function loadFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    readFile(file);
+  }
+
+  function readFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        render(data, file.name);
+      } catch (err) {
+        alert('Could not parse JSON: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Drag-and-drop
+  document.addEventListener('dragover', e => { e.preventDefault(); });
+  document.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.json')) readFile(file);
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function render(data, filename) {
+    document.getElementById('file-meta').textContent = filename;
+    const sess = data.session || {};
+    const chat = data.chatbot_conversation || { messages: [] };
+    const condition = sess.condition || 'unknown';
+
+    const container = document.getElementById('container');
+    container.innerHTML = `
+      <div class="header-card">
+        <h2>${escapeHtml(sess.participant_id || 'Unknown participant')}</h2>
+        <div class="subtitle">Session details from ${escapeHtml(filename)}</div>
+        <div class="header-grid">
+          <div>
+            <div class="stat-label">Condition</div>
+            <div class="stat-value condition-${condition}">${escapeHtml(condition)}</div>
+          </div>
+          <div>
+            <div class="stat-label">Started</div>
+            <div class="stat-value">${escapeHtml(sess.started_at_eastern || '—')}</div>
+          </div>
+          <div>
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">${escapeHtml(sess.completed_at_eastern || '—')}</div>
+          </div>
+          <div>
+            <div class="stat-label">Duration</div>
+            <div class="stat-value">${sess.duration_minutes != null ? sess.duration_minutes + ' min' : '—'}</div>
+          </div>
+          <div>
+            <div class="stat-label">User turns</div>
+            <div class="stat-value">${chat.total_user_turns || 0}</div>
+          </div>
+          <div>
+            <div class="stat-label">Bot turns</div>
+            <div class="stat-value">${chat.total_assistant_turns || 0}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-section">
+        <h3>Chatbot Conversation</h3>
+        <div id="chat-feed"></div>
+      </div>
+    `;
+
+    const feed = document.getElementById('chat-feed');
+    const msgs = chat.messages || [];
+
+    if (msgs.length === 0) {
+      feed.innerHTML = `
+        <div class="empty-conversation">
+          This participant did not interact with the chatbot.
+          ${condition === 'baseline' ? '<br><small>(Baseline condition — no chatbot was available.)</small>' : ''}
+        </div>`;
+      return;
+    }
+
+    feed.innerHTML = msgs.map((m, i) => {
+      const turn = (m.turn != null) ? m.turn : (i + 1);
+      const stamp = m.timestamp_eastern || m.timestamp_iso || '';
+      const metaParts = [`Turn ${turn}`];
+      if (stamp) metaParts.push(stamp);
+      return `
+      <div class="msg-row ${m.role}">
+        <div>
+          <div class="msg-bubble">${escapeHtml(m.content)}</div>
+          <div class="msg-meta">${escapeHtml(metaParts.join(' · '))}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>
