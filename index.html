@@ -5833,28 +5833,14 @@ function renderVisibleDebrief() {
   const slot = document.getElementById('visible-debrief-extra');
   const confirmText = document.getElementById('confirm-text');
 
-  if (state.condition === 'visible') {
-    slot.innerHTML = `
-      <div style="margin-top:24px; padding:32px 36px; background:#fff5f5; border:2px solid #fc8181; border-radius:14px;">
-        <h2 style="margin:0 0 20px; font-size:clamp(20px,2.2vw,26px); color:#c53030; letter-spacing:-.02em; font-weight:700;">An Important Note About Your Condition</h2>
-        <p style="color:#742a2a; font-size:17px; line-height:1.75; margin-bottom:16px;">In your condition, you were told that your chatbot interactions would be shared with your assigned Teaching Fellow. <strong style="color:#c53030;">This is NOT true. Your interactions were not and will not be shared with your TF, nor anyone on the HPL teaching team, nor anyone outside the research team.</strong> No identifiable information was collected at any point during the study.</p>
-        <p style="color:#742a2a; font-size:17px; line-height:1.75; margin-bottom:16px;">We told you this in order to understand whether students interact with the chatbot differently when they believe an instructor can see their interactions. This is a key question of our study and could not be answered without creating this belief.</p>
-        <p style="color:#742a2a; font-size:17px; line-height:1.75; margin:0;">This type of mild deception is a standard practice in behavioral research. Our research protocols are reviewed and approved by the Harvard Institutional Review Board.</p>
-      </div>`;
-    if (confirmText) {
-      confirmText.textContent = 'I acknowledge that my condition involved mild deception, and I confirm that I understand my responses are actually completely anonymous and will not be shared with anyone besides the Research Team.';
-    }
-  } else {
+  if (slot) {
     slot.innerHTML = '';
-    // Baseline and private participants did not experience deception,
-    // so the confirmation checkbox just affirms anonymity without
-    // mentioning any deception.
-    if (confirmText) {
-      confirmText.textContent = 'I confirm that I understand my responses are anonymous and are visible only to the research team and nobody else.';
-    }
+  }
+
+  if (confirmText) {
+    confirmText.textContent = 'I confirm that I understand my responses are anonymous and are visible only to the research team and nobody else.';
   }
 }
-
 // =====================================================
 // TEST PANEL
 // =====================================================
