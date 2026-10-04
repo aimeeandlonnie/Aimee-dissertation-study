@@ -991,7 +991,7 @@
   .vis-notice.private .vis-notice-body,
   .vis-notice.visible .vis-notice-body { color: #334155; }
 
-  /* Body-only banner: removed the "Your TF will/will not see this" headline
+  /* Body-only banner: removed the "Your  will/will not see this" headline
      and made the prose itself the primary message. Larger font, full
      opacity, top + bottom padding so the body reads as the whole notice
      rather than a subtitle under nothing. */
@@ -2157,7 +2157,7 @@
     <div class="option-list" style="margin:24px 0 8px;">
       <label id="debrief-confirm-label" style="background:#f0f7ff; border-color:#bfdbfe;">
         <input type="checkbox" id="debrief-confirm" onchange="updateDebriefConfirm()" />
-        <span style="font-weight:500; color:var(--ink);" id="confirm-text">I confirm that I understand my responses are anonymous. My answers will not be shared with my Teaching Fellow, course instructor, or anyone outside the research team.</span>
+        <span style="font-weight:500; color:var(--ink);" id="confirm-text">I confirm that I understand my responses are anonymous. My answers will not be shared with anyone outside the research team.</span>
       </label>
     </div>
 
@@ -5320,7 +5320,7 @@ function renderVisibilityBanner() {
     slot.innerHTML = `
       <div class="vis-notice visible vis-notice-bodyonly">
         <div class="vis-notice-body">
-          All of your interactions with the chatbot, including the questions you ask, will be <strong>non-anonymous and visible not only to the research team but also to your Teaching Fellow (TF)</strong>. The research team and your Teaching Fellow (TF) will be able to read your conversations with the chatbot, and <strong>will be able to tell which participant any conversation belongs to</strong>. This way, they can review any parts of this lesson that you find confusing. <strong>They will not, however, see your answers on the final study questions.</strong>
+          All of your interactions with the chatbot, including the questions you ask, will be <strong>anonymous and visible only to the research team, and to no one else</strong>. The research team, and only the research team, will be able to read your conversations with the chatbot, but <strong>they will not be able to tell which participant any conversation belongs to</strong>. This way, you can review any parts of this lesson that you find confusing.
         </div>
       </div>`;
   }
