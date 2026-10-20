@@ -11,6 +11,19 @@ const CRT_ANSWER_KEY = {
   shoes:     { correct: 81, intuitive: 80 }
 };
 
+// LLM-knowledge scoring key — points per option (3 = completely right,
+// 2 = mostly right, 1 = kind of right, 0 = wrong). Server-side for the same
+// reason as the CRT key.
+const LLM_KNOWLEDGE_KEY = {
+  llmk_1: { A: 0, B: 1, C: 2, D: 3 },
+  llmk_2: { A: 2, B: 3, C: 1, D: 0 },
+  llmk_3: { A: 0, B: 3, C: 1, D: 2 },
+  llmk_4: { A: 2, B: 0, C: 3, D: 1 },
+  llmk_5: { A: 3, B: 1, C: 0, D: 2 },
+  llmk_6: { A: 3, B: 2, C: 1, D: 0 },
+  llmk_7: { A: 0, B: 3, C: 1, D: 2 }
+};
+
 export default async function handler(req, res) {
   if (!applyCors(req, res)) return;
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
@@ -33,5 +46,15 @@ export default async function handler(req, res) {
       gave_intuitive_wrong: participant != null && participant === key.intuitive
     };
   }
-  res.status(200).json({ scored });
+  const llmAnswers = (body && body.llm_knowledge) || {};
+  const llm_knowledge_scored = {};
+  for (const id of Object.keys(LLM_KNOWLEDGE_KEY)) {
+    const key = LLM_KNOWLEDGE_KEY[id];
+    const selected = Object.prototype.hasOwnProperty.call(key, llmAnswers[id]) ? llmAnswers[id] : null;
+    llm_knowledge_scored[id] = {
+      points: selected != null ? key[selected] : null,
+      points_by_option: key
+    };
+  }
+  res.status(200).json({ scored, llm_knowledge_scored });
 }

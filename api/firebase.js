@@ -1,7 +1,7 @@
 import { applyCors, authAndRateLimit, readJson } from '../lib/auth.js';
 import { getFirebaseDatabase, withTimeout } from '../lib/firebase-admin.js';
 
-const CONDITION_ROTATION = ['baseline', 'private', 'visible'];
+const CONDITION_ROTATION = ['baseline', 'framing-reasoning', 'framing-scripted'];
 const MAX_STRING = 32 * 1024;
 
 function nowIso() {

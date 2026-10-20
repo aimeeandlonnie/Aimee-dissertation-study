@@ -19,8 +19,8 @@
     --user-bubble-text: #ffffff;
     --assistant-bubble: #f1f5f9;
     --assistant-bubble-text: #0f172a;
-    --condition-private: #0369a1;
-    --condition-visible: #b45309;
+    --condition-framing-reasoning: #0369a1;
+    --condition-framing-scripted: #b45309;
     --condition-baseline: #475569;
     --good: #15803d;
     --bad: #b91c1c;
@@ -105,8 +105,8 @@
     margin-bottom: 4px;
   }
   .stat-value { font-size: 15px; font-weight: 600; color: var(--ink); }
-  .stat-value.condition-private { color: var(--condition-private); }
-  .stat-value.condition-visible { color: var(--condition-visible); }
+  .stat-value.condition-framing-reasoning { color: var(--condition-framing-reasoning); }
+  .stat-value.condition-framing-scripted { color: var(--condition-framing-scripted); }
   .stat-value.condition-baseline { color: var(--condition-baseline); }
 
   /* Section navigation */
@@ -510,7 +510,8 @@
     const consent = data.consent || {};
     const lm = data.learning_measure || {};
     const app = data.appraisal || {};
-    const tf = data.tf_perceptions || {};
+    const llmK = data.llm_knowledge || {};
+    const llmB = data.llm_beliefs || {};
     const crt = data.crt || {};
     const manip = data.manipulation_check || {};
     const demo = data.demographics || {};
@@ -557,7 +558,8 @@
         <a href="#sec-consent">Consent</a>
         <a href="#sec-learning">Learning</a>
         <a href="#sec-appraisal">Appraisal</a>
-        <a href="#sec-tf">TF perceptions</a>
+        <a href="#sec-llm-knowledge">LLM-knowledge</a>
+        <a href="#sec-llm-beliefs">LLM-beliefs</a>
         <a href="#sec-crt">CRT</a>
         <a href="#sec-manip">Manipulation check</a>
         <a href="#sec-demo">Demographics</a>
@@ -569,7 +571,8 @@
       ${renderConsent(consent)}
       ${renderLearning(lm)}
       ${renderAppraisal(app)}
-      ${renderTF(tf)}
+      ${renderLlmKnowledge(llmK)}
+      ${renderLlmBeliefs(llmB)}
       ${renderCRT(crt)}
       ${renderManip(manip)}
       ${renderDemographics(demo)}
@@ -737,18 +740,56 @@
           <p class="learning-section-title" style="margin-top:4px;">Lesson Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
           ${renderLikertTable(lesson.items)}
           <p class="learning-section-title" style="margin-top:24px;">Chatbot Experience</p>
-          ${(chat.items && chat.items.length) ? renderLikertTable(chat.items) : '<p style="color:var(--ink-muted);font-size:13px;">No chatbot Likert (likely baseline condition).</p>'}
+          ${(chat.items && chat.items.length) ? renderLikertTable(chat.items) : '<p style="color:var(--ink-muted);font-size:13px;">No chatbot Likert ratings recorded.</p>'}
         </div>
       </section>`;
   }
 
-  function renderTF(tf) {
+  function renderLlmKnowledge(sec) {
+    const items = sec.items || [];
+    // Files from before the switch to multiple choice hold Likert ratings.
+    const isLikert = items.some(it => 'participant_rating' in it);
+    const body = isLikert
+      ? `<p class="likert-scale-note">Scale 1–7. <span style="color:var(--warn);"><sup>ᴿ</sup></span> denotes a reverse-coded item (a false statement, so disagreeing is the accurate answer).</p>
+          ${renderLikertTable(items)}`
+      : `<p class="likert-scale-note">Multiple choice, scored 0–3 per item (${escapeHtml(sec.scoring || '')}). Total: <b>${sec.total_points != null ? sec.total_points : '—'}</b> / ${sec.max_total_points != null ? sec.max_total_points : '—'}</p>
+          ${items.length === 0 ? '<p style="color:var(--ink-muted);font-size:13px;">No items.</p>' : `
+          <table class="likert-table">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Points</th>
+                <th>Shown @</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(it => `
+                <tr>
+                  <td>${escapeHtml(it.prompt || '')}</td>
+                  <td>${escapeHtml(it.participant_answer || '—')}</td>
+                  <td class="rating">${it.points != null ? it.points : '—'}</td>
+                  <td class="position">${it.position_shown || '—'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`}`;
     return `
-      <section class="section" id="sec-tf">
-        <h3 onclick="toggleSection('sec-tf')"><span class="chev">▼</span>TF Perceptions</h3>
+      <section class="section" id="sec-llm-knowledge">
+        <h3 onclick="toggleSection('sec-llm-knowledge')"><span class="chev">▼</span>LLM-knowledge</h3>
         <div class="section-body">
-          <p class="likert-scale-note">Scale 1–7. <span style="color:var(--warn);"><sup>ᴿ</sup></span> denotes a reverse-coded item.</p>
-          ${renderLikertTable(tf.items)}
+          ${body}
+        </div>
+      </section>`;
+  }
+
+  function renderLlmBeliefs(sec) {
+    return `
+      <section class="section" id="sec-llm-beliefs">
+        <h3 onclick="toggleSection('sec-llm-beliefs')"><span class="chev">▼</span>LLM-beliefs</h3>
+        <div class="section-body">
+          <p class="likert-scale-note">Scale 1–7 (1 = Strongly Disagree, 7 = Strongly Agree).</p>
+          ${renderLikertTable(sec.items)}
         </div>
       </section>`;
   }
@@ -853,7 +894,7 @@
         </h3>
         <div class="section-body">
           ${msgs.length === 0
-            ? `<div class="empty-conversation">No chatbot conversation${condition === 'baseline' ? ' (baseline condition — chatbot was not available).' : '.'}</div>`
+            ? `<div class="empty-conversation">No chatbot conversation.</div>`
             : msgs.map(m => `
               <div class="msg-row ${m.role}">
                 <div>

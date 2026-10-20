@@ -112,8 +112,8 @@
     font-weight: 600;
     color: var(--ink);
   }
-  .header-grid .stat-value.condition-private { color: #0369a1; }
-  .header-grid .stat-value.condition-visible { color: #b45309; }
+  .header-grid .stat-value.condition-framing-reasoning { color: #0369a1; }
+  .header-grid .stat-value.condition-framing-scripted { color: #b45309; }
   .header-grid .stat-value.condition-baseline { color: #475569; }
 
   .chat-section h3 {
@@ -271,7 +271,6 @@
       feed.innerHTML = `
         <div class="empty-conversation">
           This participant did not interact with the chatbot.
-          ${condition === 'baseline' ? '<br><small>(Baseline condition — no chatbot was available.)</small>' : ''}
         </div>`;
       return;
     }

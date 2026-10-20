@@ -64,7 +64,7 @@ DEFAULT RULE. When in doubt, REUSE. The cost of incorrectly reusing is small (a 
 REUSE RULES. Reuse (CURATED or CACHE) when the participant's question is asking for the SAME core information as an existing entry, even if:
 - it is paraphrased ("what is X" vs "explain X" vs "describe X" vs "tell me about X")
 - it is a shortened form ("X?" or just "X" right after a fuller question about X is in the catalog or context)
-- it contains typos ("redistribrition", "naive theroy", "thot xperment")
+- it contains typos ("alignmnet", "reckonning", "weiging")
 - it is reordered ("is X different from Y" vs "is Y different from X")
 - it repeats a question the participant already asked moments earlier (in any form, including one-word repeats)
 - it has filler or softening words ("so what does X mean?", "wait, X?", "can you tell me X again")
@@ -82,10 +82,10 @@ DISAMBIGUATION.
 - When the question could plausibly be REUSE or GENERATE, REUSE wins. Tie-breaker is consistency.
 
 WORKED EXAMPLES.
-- Prior: (none). Now: "what is consistency monitoring" -> CURATED: consistency_monitoring_def
-- Prior: Q "what is consistency monitoring" -> A. Now: "consistency monitoring?" -> CURATED: consistency_monitoring_def (shortened repeat)
-- Prior: Q "what does internally inconsistent mean" -> A. Now: "internally inconsistent?" -> CURATED: internally_inconsistent (shortened repeat of same concept)
-- Prior: (none). Now: "redistrribution? :)" -> CURATED: belief_weight_def (typo, same concept)
+- Prior: (none). Now: "what is truing" -> CURATED: truing_def
+- Prior: Q "what is truing" -> A. Now: "truing?" -> CURATED: truing_def (shortened repeat)
+- Prior: Q "what does incompatible mean" -> A. Now: "incompatible?" -> CURATED: incompatible_claims_def (shortened repeat of same concept)
+- Prior: (none). Now: "alignmnet? :)" -> CURATED: alignment_def (typo, same concept)
 - Prior: Q "what is X" -> A. Now: "give me an example of X" -> GENERATE (asking for new info: example)
 - Prior: Q "what is X" -> A. Now: "how is it different from Y" -> CURATED if an X-vs-Y entry exists, else GENERATE
 - Prior: (none). Now: "what will i be asked later" -> CURATED: future_questions

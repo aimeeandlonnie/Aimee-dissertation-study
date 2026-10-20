@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>HPL Study — Thought Experiments and Children's Belief Revision</title>
+<title>HPL Study — The Houses of Velora</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -660,6 +660,8 @@
     font-weight: 600;
     color: #1d1d1f;
   }
+  .lesson-text p.lesson-framing { font-style: italic; color: #555; }
+  .lesson-text .lesson-section-title { margin-top: 44px; }
 
   .lesson-divider {
     height: 1px;
@@ -868,6 +870,7 @@
   }
   .chatbot-lesson .lesson-section { margin-bottom: 28px; max-width: 100%; }
   .chatbot-lesson .lesson-section-title { font-size: 18px; margin-bottom: 12px; font-weight: 700; color: #333; }
+  .chatbot-lesson .lesson-text .lesson-section-title { margin-top: 32px; }
   .chatbot-lesson .lesson-section-num { font-size: 10px; margin-bottom: 8px; }
   .chatbot-lesson .lesson-divider { margin: 32px auto; background: #ddd; }
   .chatbot-lesson .lesson-callout {
@@ -977,19 +980,15 @@
     line-height: 1.65;
     opacity: .85;
   }
-  /* Unified neutral palette across all conditions so color does not
-     subtly cue "safe" or "warning" — the wording carries the message. */
-  .vis-notice.private,
-  .vis-notice.visible {
+  /* Neutral palette for the chatbot-type reminder; the same styling in both
+     framing conditions so only the wording differs. */
+  .vis-notice {
     background: #f8fafc;
     border: 2px solid #64748b;
   }
-  .vis-notice.private .vis-notice-icon,
-  .vis-notice.visible .vis-notice-icon { background: #e2e8f0; }
-  .vis-notice.private .vis-notice-headline,
-  .vis-notice.visible .vis-notice-headline { color: #0f172a; }
-  .vis-notice.private .vis-notice-body,
-  .vis-notice.visible .vis-notice-body { color: #334155; }
+  .vis-notice .vis-notice-icon { background: #e2e8f0; }
+  .vis-notice .vis-notice-headline { color: #0f172a; }
+  .vis-notice .vis-notice-body { color: #334155; }
 
   /* Body-only banner: removed the "Your  will/will not see this" headline
      and made the prose itself the primary message. Larger font, full
@@ -1020,6 +1019,32 @@
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
+  /* Chatbot-type identity (framing conditions only): header at the top of
+     the chat window and the cue on the chatbot rating page. */
+  .chat-type-header,
+  .chat-type-cue {
+    align-items: center;
+    gap: 12px;
+  }
+  .chat-type-header {
+    flex-shrink: 0;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e5e5e7;
+  }
+  .chat-type-header img { width: 44px; height: 44px; flex-shrink: 0; }
+  .chat-type-cue {
+    gap: 16px;
+    padding: 16px 20px;
+    margin: 0 0 24px;
+    border: 1px solid #e5e5e7;
+    border-radius: 14px;
+    background: #fff; /* white so the icons' white corners blend in */
+  }
+  .chat-type-cue img { width: 64px; height: 64px; flex-shrink: 0; }
+  .chat-type-name { font-weight: 600; font-size: 16px; color: var(--ink); line-height: 1.3; }
+  .chat-type-sub { font-size: 13px; color: var(--ink-muted); }
+
   .chat-messages {
     flex: 1 1 0;
     overflow-y: auto;
@@ -1350,6 +1375,8 @@
     margin-bottom: 20px;
   }
   .info-text p:last-child { margin-bottom: 0; }
+  .info-text .framing-figure { margin: 28px auto 0; max-width: 560px; }
+  .info-text .framing-figure img { display: block; width: 100%; height: auto; border-radius: 12px; }
 
   /* === Critical framing info — inline emphasis (bold + slightly larger) === */
   .info-text .hl-key {
@@ -1555,13 +1582,13 @@
       <p class="lead" style="margin-bottom:40px;">Thank you for your interest in the study.</p>
 
       <h3>What's involved</h3>
-      <p>In this ~30-minute online study (which you can complete on your own, at a time of your choosing), you will learn about an interesting topic related to how people learn, complete a brief activity, and/or answer a few questions about your understanding of the material and the experience in the study.</p>
+      <p>In this ~30-minute online study (which you can complete on your own, at a time of your choosing), you will learn about a fictional ancient civilization with the assistance of an AI chatbot. After completing the lesson, you will be asked to answer a few questions about your understanding of the material and the experience in the study.</p>
 
       <h3>Who can participate</h3>
-      <p>Anyone 18 years of age or older.</p>
+      <p>Anyone 18 years of age or older and is proficient in English.</p>
 
       <h3>Note</h3>
-      <p>This study is best completed on a computer in a quiet setting where you can focus without interruptions. Participation in this study is completely voluntary and will have no impact on your course standing or grades.</p>
+      <p>This study is best completed on a computer in a quiet setting where you can focus without interruptions.</p>
 
       <div style="margin-top:36px; padding-top:28px; border-top:1px solid var(--rule-soft); display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
         <p style="margin:0; font-size:16px; color:var(--ink-soft); line-height:1.6; max-width:520px;">If this all sounds good and you would like to start taking part in the study, press <b>Next</b> to continue.<span style="position:relative; display:inline-block; vertical-align:middle; margin-left:8px;"><button type="button"
@@ -1618,7 +1645,7 @@
       <h1 style="margin-bottom:24px;">Informed Consent</h1>
       <div class="consent-doc">
         <div class="consent-titlebox">
-          <p><strong>Study Title:</strong> Online studies of causal cognition</p>
+          <p><strong>Study Title:</strong> Online studies of chatbot-assisted learning</p>
           <p><strong>Researcher:</strong> Aimee Timms</p>
         </div>
 
@@ -1626,7 +1653,7 @@
         <p>The following is a short summary of this study to help you decide whether or not to be a part of this study. More detailed information is listed later on in this form.</p>
 
         <h3>Why am I being invited to take part in a research study?</h3>
-        <p>We invite you to take part in a research study because you are among the eligible participants for this study, which includes adults age 18 or older.</p>
+        <p>We invite you to take part in a research study because you are among the eligible participants for this study, which includes adults age 18 or older and who are proficient in English.</p>
 
         <h3>What should I know about a research study?</h3>
         <ul>
@@ -1641,7 +1668,7 @@
         </ul>
 
         <h3>Why is this research being done?</h3>
-        <p>The purpose of this research is to understand how people are able to learn from their interactions with objects, events, and other people. We are currently studying individuals' learning and development in multiple domains, including causal, visual, language and memory.</p>
+        <p>The purpose of this research is to understand how chatbots help people learn new information. We are piloting different educational chatbots and are investigating their effectiveness in helping people learn.</p>
 
         <h3>How long will the research last and what will I need to do?</h3>
         <p>This session will take approximately 30 minutes (including filling out this consent form).</p>
@@ -1651,7 +1678,7 @@
         <p>We don't believe there are any risks from participating in this research.</p>
 
         <h3>Will being in this study help me in any way?</h3>
-        <p>There are no benefits to you from your taking part in this research. We cannot promise any benefits to others from your taking part in this research. However, possible benefits to others include furthering the field's understanding of cognitive development.</p>
+        <p>There are no benefits to you from your taking part in this research. We cannot promise any benefits to others from your taking part in this research.</p>
 
         <h2>Detailed Information</h2>
         <p>The following is more detailed information about this study in addition to the information listed above.</p>
@@ -1951,7 +1978,7 @@
     <div style="max-width:1600px; margin:0 auto;">
       <span class="tag">Ask the chatbot</span>
       <h1>Ask any questions you have about the lesson</h1>
-      <div id="visibility-banner-slot"></div>
+      <div id="chatbot-type-banner-slot"></div>
       <div style="display:flex; gap:20px; align-items:stretch; margin-bottom:28px; flex-wrap:wrap;">
         <p style="margin:0; flex:1 1 380px; max-width:780px;">The lesson is on your left for reference. You may ask the chatbot on the right as many questions as you would like. When you are finished, click the button at the bottom to continue.</p>
         <div style="flex:1 1 380px; max-width:540px; padding: 12px 16px; background: #fff7ed; border-left: 3px solid #f59e0b; border-radius: 8px; color: #7c2d12; font-size: 14px; line-height: 1.6;">
@@ -1966,22 +1993,52 @@
       <div class="chatbot-lesson">
         <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--rule);">
           <p style="font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); margin:0 0 6px;">Lesson · For reference</p>
-          <p style="font-weight:600; font-size:14px; color:var(--ink); margin:0; line-height:1.3;">Thought Experiments and Children's Belief Revision</p>
+          <p style="font-weight:600; font-size:14px; color:var(--ink); margin:0; line-height:1.3;">The Houses of Velora</p>
         </div>
 
         <div class="lesson-text">
-          <p>An important goal of education is to help learners recognize when their beliefs are inaccurate or incomplete and revise them accordingly. One tool that may support <em class="term">belief revision</em> is the use of <em class="term">thought experiments</em>. Thought experiments ask learners to <em class="term">imagine a possible situation</em> and reason through what should follow if their current explanation were true. This can make hidden inconsistencies in an explanation easier to notice, because the learner has to think about what the explanation actually predicts. In this way, thought experiments are useful not because they add new information, but because they help the learner see whether their own ideas hold together.</p>
-          <p><em class="term">Coherent beliefs</em> are especially impactful in childhood. By the time children enter school, they are not blank slates. They already have intuitive explanations, referred to as <em class="term">naïve theories</em>, that shape how they predict outcomes and make sense of what causes what in the world. However, these naïve theories are often incomplete, inaccurate, or <em class="term">internally inconsistent</em>, and they may persist even when children encounter evidence that directly refutes what those theories predict. Incorrect naïve theories can make learning especially challenging. Some kinds of learning simply involve <em class="term">enrichment</em> (adding new information to what is already known). However, when belief revision involves radically updating these intuitive theories, it is referred to as <em class="term">conceptual change</em>.</p>
-          <p>Children rarely commit to a single explanation outright. Instead, a child often holds <em class="term">several competing explanations</em> at the same time, believing each one to a different degree. On this view, revising a belief means <em class="term">adjusting those degrees of belief</em> in each explanation as new evidence comes in: the child shifts how much "belief weight" they give to each explanation they already hold. When evidence favors one explanation, the child becomes more confident in it, while still keeping the others.</p>
-          <p>Revising a belief <em class="term">replaces</em> one explanation with another (referred to as <em class="term">conceptual replacement</em>). When the child revises their beliefs, the explanation that best fits the evidence <em class="term">overwrites the weaker explanation</em>, so that the weaker explanation is no longer available to the child. What changes in conceptual replacement is to which explanation the child has access.</p>
-          <p>A clear case of competing explanations can be seen in children's reasoning about motion. A child may hold one explanation consistent with <em class="term">Newtonian mechanics</em>, according to which a moving object continues moving at the same speed unless an outside force acts on it, and at the same time an <em class="term">impetus-based explanation</em>, according to which a moving object carries an inner push that gradually fades, so the object slows down on its own. Consider a ball rolling through empty space with nothing touching it. The impetus explanation predicts the ball will slow and stop; the Newtonian explanation predicts it will keep moving. The child can hold both beliefs and move between them depending on the situation, without noticing that the two predictions disagree.</p>
-          <p>This is where thought experiments can help — they may support <em class="term">consistency monitoring</em>. Asking the child to simulate the ball and trace what each explanation predicts brings both predictions into view at once and forces the contradiction into the open.</p>
+          <p>Velora is an invented ancient civilization. This lesson describes how Velorans were bound to <em class="term">civic Houses</em>, how they understood those bonds, and how their <em class="term">Stone-keepers</em> settled disagreements about them.</p>
+
+          <h3>Houses and Marks</h3>
+
+          <p>Velorans organized public life around <em class="term">Houses</em>, civic groups whose members shared duties. <em class="term">Tor</em> kept the lanterns: its members carried them at the Festival of First Rain and repaired the lantern hall. <em class="term">Seli</em> kept the table: its members prepared the festival meal and maintained the ceremonial kitchen. A person's tie to a House was recorded as a <em class="term">House Mark</em>, carved beside their name on the great record stone in the city square and tended by officials called <em class="term">Stone-keepers</em>. A Mark recorded an obligation. It was not a family name or a place of residence, and working in a House's building or helping with its tasks did not by itself grant its Mark. Every Veloran received a first Mark in childhood; apprenticeship, marriage, or public service could later bind them to another House.</p>
+
+          <h3>Alignment and the Turning of the Stone</h3>
+
+          <p>A Veloran could hold several Marks at once, but not every obligation was equally strong. <em class="term">Alignment</em> describes the strength of a person's obligation to a House. When two Houses required incompatible actions at the same time, the House with the stronger alignment came first. Stone-keepers called this the <em class="term">law of alignment</em>, and under it, receiving a Mark first did not by itself give that Mark greater priority.</p>
+
+          <p>A person changed their alignment through a ceremony called <em class="term">the Turning of the Stone</em>. The Turning strengthened alignment toward a new House and weakened alignment toward an earlier one. It changed which obligation came first without canceling the earlier Mark. A weaker obligation stayed active whenever fulfilling it did not interfere with a stronger one: someone with stronger Seli alignment would prepare the meal if both Houses needed help at once, but on a day when Seli had nothing for them, they would still owe help to Tor. Lower priority meant a weaker obligation, not no obligation.</p>
+
+          <p>The <em class="term">Turning of the Stone</em> also changed the record stone itself. During the ceremony, a Stone-keeper chiseled away the person's earlier Mark and carved the new Mark in its place. Once the earlier Mark was gone from the stone, every obligation it had recorded ended with it. After the Turning, only the new Mark was active, and the person owed nothing to their former House, even on days when their new House had no task for them.</p>
+
+          <h3>The cradle rule</h3>
+
+          <p>Velorans did not first learn about Marks from the Stone-keepers. Rather, each formed a <em class="term">reckoning</em> long before they interacted with the Stone-keepers: a working explanation of which Houses a person must serve, and whose duty comes first when two Houses need them at once. Children's reckonings grew from what they saw around them, and because most children watched adults serve the House of their childhood, many grew up holding <em class="term">the cradle rule</em>: a person must always put first the House whose Mark they received first.</p>
+
+          <p>Learning the law of alignment did not make the cradle rule disappear. Adults often kept both, reaching for the cradle rule in some situations and for the law of alignment in others, without ever setting the two side by side. Some could recite the law of alignment perfectly yet fall back on the cradle rule when they met an unfamiliar case.</p>
+
+          <h3>Adding and recutting: Changing a reckoning</h3>
+
+          <p>There are two ways a <em class="term">reckoning</em> could change: <em class="term">Adding</em> meant taking in new information that fit a reckoning already held, such as learning one more duty that Tor members performed. <em class="term">Recutting</em> meant changing the rule a reckoning used to decide which Houses a person must serve or whose duty comes first. A Veloran who stopped deciding priority by which Mark came first, and began deciding it by alignment, had recut their reckoning. Stone-keepers trusted that a recut had taken hold only when the person applied the new rule to someone they had never considered before.</p>
+
+          <h3>Nera and the two requests</h3>
+
+          <p>Nera received a Tor Mark as a child. Years later, she apprenticed with Seli and completed the Turning of the Stone, and her alignment toward Seli became stronger than her alignment toward Tor. At the next Festival of First Rain, both Houses needed her at the same hour, and Nera prepared the meal with Seli.</p>
+
+          <p>A week later, a storm damaged Tor's lantern hall, and Tor asked Nera to help with repairs. Seli had no work for her that day, and the repairs would not interfere with any Seli duty. Whether Nera had to help Tor that day depended on what the Turning had done to her Tor Mark, not on which task she had chosen at the festival.</p>
+
+          <h3>The Weighing</h3>
+
+          <p>When Velorans disagreed about which duty someone had to perform, Stone-keepers held a <em class="term">Weighing</em>. They imagined one particular person at one particular moment, traced what each claim required of that person, and compared the results. Person, time and circumstances had to stay fixed, because weighing one rule at the festival and another on a different day could hide a disagreement. Weighing the cradle rule against the law of alignment at the festival, for example, shows at once that the first sends Nera to Tor's lanterns and the second sends her to Seli's kitchen.</p>
+
+          <p>A Weighing added no new custom, and on its own it did not settle which claim was right. Its value lay in making visible what claims already held would require. Stone-keepers called the habit of checking whether all of one's claims could hold together <em class="term">truing</em>. Two claims could each sound familiar yet demand incompatible answers in the same imagined case, and finding such a disagreement was a reason to reexamine the claims or ask for clarification.</p>
         </div>
       </div>
 
       <!-- RIGHT: Chatbot, sticky -->
       <div class="chatbot-side">
         <div class="chat-window">
+          <div class="chat-type-header" id="chat-type-header" style="display:none;"></div>
           <div class="chat-messages" id="chat-messages">
             <div class="chat-empty">Ask a question about the lesson to begin.</div>
           </div>
@@ -2007,7 +2064,7 @@
 
     <div class="learning-intro-body">
       <p>We are going to ask you <b>16 questions</b> about the lesson you just read.</p>
-      <p><strong>Please answer each question in your own words.</strong></p>
+      <p><strong>For each short response, answer in your own words using no more than 60 words. For each multiple choice question, select one answer. Use the Velora lesson as your source.</strong></p>
       <p>We do not expect you to remember everything, but please do your best and answer as fully as you can.</p>
     </div>
 
@@ -2060,6 +2117,7 @@
     <span class="tag">Your experience with the chatbot</span>
     <h1>How was the chatbot?</h1>
     <p>The following questions are about your experience with the chatbot.</p>
+    <div class="chat-type-cue" id="exp-chatbot-type-cue" style="display:none;"></div>
     <div class="card">
       <div id="likert-exp-chatbot"></div>
     </div>
@@ -2073,7 +2131,7 @@
   <section class="screen" id="screen-manipulation-check">
     <span class="tag">Check</span>
     <h1>One more question about the chatbot</h1>
-    <p>Based on what you were told at the start of the study, who will be able to see the conversations you had with the chatbot? (Select all that apply.)</p>
+    <p>Based on what you were told at the start of the study, how did the chatbot you used construct its responses?</p>
     <div class="option-list" id="manipcheck-options"></div>
     <div class="actions">
       <div class="spacer"></div>
@@ -2119,17 +2177,29 @@
     </div>
   </section>
 
-  <!-- ============ TF QUESTIONS ============ -->
-  <section class="screen" id="screen-tf-questions">
-    <span class="tag">Your Teaching Fellow</span>
-    <h1>About your TF in How People Learn</h1>
-    <p>The following statements are about your Teaching Fellow (TF). There are no right or wrong answers. Your responses are confidential and will not be shared with your TF or anyone on the course teaching team.</p>
+  <!-- ============ LLM-KNOWLEDGE ============ -->
+  <section class="screen" id="screen-llm-knowledge">
+    <span class="tag">Large language models</span>
+    <h1>How large language models work</h1>
+    <p>The following questions are about large language models (LLMs), the technology behind AI chatbots. For each question, please select the answer that best matches what you currently know. It is fine to be unsure.</p>
+    <div id="llm-knowledge-container"></div>
+    <div class="actions">
+      <div class="spacer"></div>
+      <button class="btn primary" onclick="submitLlmKnowledge()">Continue</button>
+    </div>
+  </section>
+
+  <!-- ============ LLM-BELIEFS ============ -->
+  <section class="screen" id="screen-llm-beliefs">
+    <span class="tag">Large language models</span>
+    <h1>Your views on large language models</h1>
+    <p>The following statements are about how large language models (LLMs) work and what they might be capable of. For each statement, please rate how much you agree or disagree, from 1 (Strongly Disagree) to 7 (Strongly Agree). There are no right or wrong answers; we are interested in your own views.</p>
     <div class="card">
-      <div id="likert-tf"></div>
+      <div id="likert-llm-beliefs"></div>
     </div>
     <div class="actions">
       <div class="spacer"></div>
-      <button class="btn primary" onclick="submitLikert('tf', 'demographics')">Continue</button>
+      <button class="btn primary" onclick="submitLikert('llm_beliefs', 'demographics')">Continue</button>
     </div>
   </section>
 
@@ -2172,7 +2242,8 @@
     <h1>Thank you</h1>
     <div class="card">
       <p>Thank you for completing this study. In this study, we are interested in whether having access to a chatbot helps students learn challenging academic material better and whether the context in which students use that chatbot changes how they interact with it.</p>
-      <p>To test this, we randomly assigned participants to one of three conditions: (1) learning the lesson material and answering questions on their own, (2) having access to a chatbot before answering questions, or (3) having access to a chatbot before answering questions but being told that their conversations would be shared with their instructor.</p>
+      <!-- TODO (researcher): describe the three conditions (baseline, framing-reasoning,
+           framing-scripted) here, and disclose that the chatbot was identical in all of them. -->
       <p>While the study is related to the How People Learn course, <strong style="font-size:18px;">your participation has no effect on your grades, course standing, or relationship with the HPL teaching team</strong>. <strong style="font-size:18px;">No one involved in the course will know whether you participated, which condition you were assigned to, or how you performed</strong>.</p>
       <p>The research team, and only the research team, will be able to read conversations with the chatbot, but they will not be able to tell which participant any conversation belongs to.</p>
     </div>
@@ -2245,8 +2316,8 @@
     <select id="force-condition" onchange="applyForcedCondition(this.value)">
       <option value="random">Random (default rotation)</option>
       <option value="baseline">Baseline</option>
-      <option value="private">Private chatbot</option>
-      <option value="visible">Visible chatbot</option>
+      <option value="framing-reasoning">Framing: reasoning (reflective chatbot)</option>
+      <option value="framing-scripted">Framing: scripted (templatic chatbot)</option>
     </select>
 
     <label class="panel-label" for="jump-to">Go to screen</label>
@@ -2276,9 +2347,9 @@ const EMAIL_HASHES_DIRECT_URL = FIREBASE_DATABASE_URL + '/email_hashes';
 // STATE
 // =====================================================
 const state = {
-  // Temporary working ID. A sequential P00X is only claimed at the
-  // moment the response JSON is successfully uploaded to Dataverse, so the
-  // P-series stays gap-free (every P00X = one completed participant).
+  // Temporary working ID. A sequential P00X is only claimed when the
+  // participant reaches the complete screen, just before the response JSON
+  // is uploaded to Dataverse, so dropouts never consume a P-number.
   participantId: 'temp-' + Math.random().toString(36).slice(2, 10).toUpperCase(),
   participantEmail: null,
   condition: localStorage.getItem('hpl_condition') || null,
@@ -2287,7 +2358,7 @@ const state = {
   responses: {
     open_response: {}, multiple_choice: {}, consistency: {},
     exp_lesson: {}, exp_chatbot: {}, manipulation_check: [],
-    crt: {}, tf: {}, demographics: {},
+    crt: {}, llm_knowledge: {}, llm_beliefs: {}, demographics: {},
     chatbot_messages: [],
     // Engagement signals: when the tab loses/regains focus, when
     // the browser window loses/regains focus, and when text is
@@ -2309,17 +2380,33 @@ const SCREENS = [
   'learning-intro','learning-items',
   'exp-lesson','exp-chatbot','manipulation-check',
   'crt-intro','crt-items',
-  'tf-questions','demographics',
+  'llm-knowledge','llm-beliefs','demographics',
   'lesson-debrief','study-debrief','complete','already-completed'
 ];
 
 // =====================================================
 // FRAMING TEXT
 // =====================================================
+// The paragraphs every condition sees are defined once, so the shared text
+// is guaranteed identical across conditions. The two framing conditions add
+// only a final paragraph describing how their chatbot supposedly works; the
+// chatbot itself is the same in all three conditions.
+const FRAMING_SHARED = `<p>Thank you for agreeing to participate in our study. In this study, you will first learn about <b>the customs of Velora, a fictional ancient civilization</b>: what is the main social system that dictates people’s civic duties, how those obligations change, and how Velorans decide which duties take priority. </p><p class="hl-key">Once you are done with the lesson, you will be asked to answer a few questions about the material to see what you have learned from the lesson.</p><p>We do not expect you to learn everything, but <b>we expect you to do your best, so please make sure you pay attention to the lesson.</b></p><p class="hl-key">Before answering the study questions, you will have the opportunity to interact with an AI chatbot and ask any questions you have about the lesson.</p><p>You may ask as many questions as you would like. The chatbot you'll interact with here is built specifically for this study. It is a different tool from any AI tools you may have encountered.</p>`;
+
+// Diagram shown under the chatbot paragraph in the two framing conditions.
+const FRAMING_FIGURES = {
+  reflective: { src: 'images/chatbot-reflective.jpg', w: 726, h: 1074, alt: 'Diagram of the reflective chatbot. A user asks "What is the Dijkstra algorithm?". Before answering, the chatbot reflects on what information is needed, why the user is asking, the user\'s prior interactions, and how the response should be structured, then gives a beginner-friendly answer.' },
+  templatic:  { src: 'images/chatbot-templatic.jpg',  w: 716, h: 1080, alt: 'Diagram of the templatic chatbot. A user asks "What is the Dijkstra algorithm?". The chatbot extracts keywords from the question, looks them up in a database of pre-established answers, and assembles the matching snippets into a response.' }
+};
+function FRAMING_FIGURE(kind) {
+  const f = FRAMING_FIGURES[kind];
+  return `<figure class="framing-figure"><img src="${f.src}" alt="${f.alt}" width="${f.w}" height="${f.h}" /></figure>`;
+}
+
 const FRAMING = {
-  baseline: `<p>Thank you for agreeing to participate in our study. In this study, you will first learn about <b>children's misconceptions</b>: why they are so resistant to change, and what research in cognitive science tells us about how they can revise them. </p><p class="hl-key">Once you are done with the lesson, you will be asked to answer a few questions about the material to see what you have learned from the lesson.</p><p>We do not expect you to learn everything, but <b>we expect you to do your best, so please make sure you pay attention to the lesson.</b></p>`,
-  private: `<p>Thank you for agreeing to participate in our study. In this study, you will first learn about <b>children's misconceptions</b>: why they are so resistant to change, and what research in cognitive science tells us about how they can revise them. </p><p class="hl-key">Once you are done with the lesson, you will be asked to answer a few questions about the material to see what you have learned from the lesson.</p><p>We do not expect you to learn everything, but <b>we expect you to do your best, so please make sure you pay attention to the lesson.</b></p><p class="hl-key">Before answering the study questions, you will have the opportunity to interact with an AI chatbot and ask any questions you have about the lesson.</p><p>You may ask as many questions as you would like. The chatbot you'll interact with here is built specifically for this study. It is a different tool from any AI tools you may have encountered.</p><p class="hl-key">All of your interactions with the chatbot, including the questions you ask, will be anonymous and visible only to the research team, and to no one else. The research team, and only the research team, will be able to read your conversations with the chatbot, but they will not be able to tell which participant any conversation belongs to.</p><p>This way, you can review any parts of this lesson that you find confusing.</p>`,
-  visible: `<p>Thank you for agreeing to participate in our study. In this study, you will first learn about <b>children's misconceptions</b>: why they are so resistant to change, and what research in cognitive science tells us about how they can revise them. </p><p class="hl-key">Once you are done with the lesson, you will be asked to answer a few questions about the material to see what you have learned from the lesson.</p><p>We do not expect you to learn everything, but <b>we expect you to do your best, so please make sure you pay attention to the lesson.</b></p><p class="hl-key">However, before answering the study questions, you will have the opportunity to interact with an AI chatbot and ask any questions you have about the lesson.</p><p>You may ask as many questions as you would like. The chatbot you'll interact with here is built specifically for this study. It is a different tool from any AI tools you may have encountered.</p><p class="hl-key">All of your interactions with the chatbot, including the questions you ask, will be anonymous and visible only to the research team, and to no one else. The research team, and only the research team, will be able to read your conversations with the chatbot, but they will not be able to tell which participant any conversation belongs to.</p><p>This way, they can review any parts of this lesson that you find confusing.</p>`
+  'baseline': FRAMING_SHARED,
+  'framing-reasoning': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response. For this lesson, you will be interacting with a <b>reflective chatbot</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p>${FRAMING_FIGURE('reflective')}`,
+  'framing-scripted': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response. For this lesson, you will be interacting with a <b>templatic chatbot</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p>${FRAMING_FIGURE('templatic')}`
 };
 
 // =====================================================
@@ -2344,14 +2431,65 @@ const EXP_CHATBOT_ITEMS = [
   { id: 'willing_future', text: 'I would be willing to use a chatbot like this to learn new material in the future.' }
 ];
 
-const TF_ITEMS = [
-  { id: 'tf_1', text: 'I feel comfortable asking my TF questions when I do not understand something.' },
-  { id: 'tf_2', text: 'I would feel comfortable showing my TF an answer or idea that might be wrong during office hours.' },
-  { id: 'tf_3', text: 'I would feel comfortable letting my TF know when I am struggling to understand a concept.' },
-  { id: 'tf_4', text: 'I expect my TF would respond supportively if I asked a basic or unfinished question.' },
-  { id: 'tf_5', text: 'My TF creates an environment where students can ask questions freely.' },
-  { id: 'tf_6', text: 'I would worry that my TF might think less of me if they saw the kinds of questions I ask when I am confused.', reverse: true },
-  { id: 'tf_7', text: 'I would be hesitant to ask my TF a question if it might reveal that I misunderstood something.', reverse: true }
+// LLM-knowledge: technical knowledge of large language models, asked as
+// multiple choice. Each option is scored 0–3 (wrong / kind of right /
+// mostly right / completely right). The scoring key lives server-side
+// (api/score.js) so participants cannot read it from the client.
+const LLM_KNOWLEDGE_ITEMS = [
+  { id: 'llmk_1', prompt: 'How do large language models learn to generate language?', options: [
+    { key: 'A', text: 'They are programmed with grammatical rules that tell them how to construct sentences.' },
+    { key: 'B', text: 'They learn words and phrases by analysing large amounts of text.' },
+    { key: 'C', text: 'They learn statistical regularities in language that help them generate coherent text.' },
+    { key: 'D', text: 'They learn statistical patterns and relationships in language from large amounts of training data, which they use to predict and generate text.' }
+  ] },
+  { id: 'llmk_2', prompt: 'What process do large language models use to produce a response to a prompt?', options: [
+    { key: 'A', text: 'They predict likely next tokens based on the text they have already generated, using these predictions to construct a response one piece at a time.' },
+    { key: 'B', text: 'They generate text by predicting likely next tokens based on the context available to them.' },
+    { key: 'C', text: "They analyse the user's prompt to identify relevant words and select suitable responses based on patterns they have encountered before." },
+    { key: 'D', text: "They retrieve complete, pre-written answers from a large database of stored sentences, selecting the response that most closely matches the user's question." }
+  ] },
+  { id: 'llmk_3', prompt: 'What influences the responses generated by large language models?', options: [
+    { key: 'A', text: 'Their responses are determined by fixed rules programmed by developers, alongside the specific instructions included in each prompt.' },
+    { key: 'B', text: 'Their responses are influenced by patterns and relationships learned during training, as well as the context provided in a prompt.' },
+    { key: 'C', text: 'Their responses are based mainly on the most frequently used words in their training data, which they combine to form familiar sentences.' },
+    { key: 'D', text: 'Their responses reflect linguistic patterns and relationships acquired from exposure to large amounts of text.' }
+  ] },
+  { id: 'llmk_4', prompt: 'How reliable is the information generated by large language models?', options: [
+    { key: 'A', text: 'They can produce convincing answers by combining familiar language patterns, although these answers may not always accurately reflect real-world facts.' },
+    { key: 'B', text: 'They generate answers by checking information against reliable sources, meaning factual errors are uncommon when a response sounds confident.' },
+    { key: 'C', text: 'They can generate plausible-sounding answers even when those answers are factually incorrect.' },
+    { key: 'D', text: 'They sometimes make factual errors when information is missing from their training data but usually produce accurate answers when they have encountered similar questions before.' }
+  ] },
+  { id: 'llmk_5', prompt: 'Do large language models automatically verify the truth of every statement they generate before responding?', options: [
+    { key: 'A', text: 'No, they do not automatically verify every statement against reliable sources before responding.' },
+    { key: 'B', text: 'They can identify some errors in their responses, particularly when prompted to review their answers.' },
+    { key: 'C', text: 'Yes, they check every statement against reliable sources before including it in a response.' },
+    { key: 'D', text: 'They usually check whether their responses are consistent with information they have learned, but this does not guarantee accuracy.' }
+  ] },
+  { id: 'llmk_6', prompt: 'Can large language models produce a response without retrieving a pre-written answer that exactly matches the question?', options: [
+    { key: 'A', text: 'Yes, they can generate new responses by combining learned language patterns in ways that may not have appeared in their training data.' },
+    { key: 'B', text: 'They generate responses by adapting sentences and phrases found in their training data, rather than creating entirely new combinations.' },
+    { key: 'C', text: 'They can produce different responses to the same question by selecting and rearranging relevant information learned from previous examples.' },
+    { key: 'D', text: 'No, they need to find a pre-written answer that closely matches the question before they can generate a response.' }
+  ] },
+  { id: 'llmk_7', prompt: 'Does a large language model’s ability to generate fluent text mean that it has a complete and accurate understanding of the topic?', options: [
+    { key: 'A', text: 'Yes, fluent and well-structured responses indicate that the model understands the topic and can explain it accurately.' },
+    { key: 'B', text: 'Not necessarily; an LLM can produce fluent text using learned language patterns, even when its response contains inaccuracies or gaps in understanding.' },
+    { key: 'C', text: 'Usually, although an LLM may occasionally make mistakes when discussing unfamiliar or complex topics.' },
+    { key: 'D', text: 'Fluency shows that an LLM has learned how to communicate effectively but does not necessarily mean it can distinguish accurate information from inaccurate information.' }
+  ] }
+];
+
+// LLM-beliefs: beliefs about how LLMs work and whether they are conscious.
+const LLM_BELIEFS_ITEMS = [
+  { id: 'llmb_1', text: 'LLMs do more than simply retrieve information stored in their training data.' },
+  { id: 'llmb_2', text: 'LLMs can engage in a form of thinking when generating a response.' },
+  { id: 'llmb_3', text: 'An LLM can genuinely understand the meaning of a question it is asked.' },
+  { id: 'llmb_4', text: 'An LLM can reason about a problem rather than simply reproduce learned patterns.' },
+  { id: 'llmb_5', text: 'An LLM can have thoughts that are meaningful to it, rather than just generate text.' },
+  { id: 'llmb_6', text: 'An LLM could have subjective experiences, such as experiencing something from its own perspective.' },
+  { id: 'llmb_7', text: 'An LLM can genuinely feel emotions such as compassion or empathy towards another person.' },
+  { id: 'llmb_8', text: 'An LLM might have an internal experience of understanding something, rather than merely producing a response that appears to show understanding.' }
 ];
 
 // =====================================================
@@ -2366,20 +2504,19 @@ const CRT_ITEMS = [
 ];
 
 const MANIP_OPTIONS = [
-  'The research team',
-  'My Teaching Fellow',
-  'Other students in the course',
-  'No one',
-  'I am not sure'
+  'It reflected on what information was needed to answer my question, why I might be asking it, and how best to structure its response.',
+  'It matched keywords from my question to a database of pre-established answers and stitched together a response.',
+  'I was not told how the chatbot constructed its responses.',
+  'I am not sure.'
 ];
 
-const MANIP_PROMPT = 'Based on what you were told at the start of the study, who will be able to see the conversations you had with the chatbot? (Select all that apply.)';
+const MANIP_PROMPT = 'Based on what you were told at the start of the study, how did the chatbot you used construct its responses?';
 
 // CRT scoring key moved server-side (api/score.js) so the answers are not
 // readable in the client (participants could otherwise look them up in the
 // console). The client posts raw CRT answers to /api/score at completion and
 // stores the returned annotations in state.responses.crt_scored — see
-// scoreCrtFromBackend().
+// scoreResponsesFromBackend(). The LLM-knowledge key is handled the same way.
 
 const DEMO_QUESTIONS = [
   { id: 'age', label: 'What is your age range?', options: ['18–24', '25–34', '35–44', '45–54', '55 or older', 'Prefer not to say'] },
@@ -2393,36 +2530,22 @@ const DEMO_QUESTIONS = [
   ] }
 ];
 
-// =====================================================
-// CHATBOT ANSWER CACHE (loaded from Firebase, editable without code changes)
-// =====================================================
 // ============================================================
-// CURATED REPOSITORY ROUTER (embedding + GPT-routed semantic match)
+// CURATED REPOSITORY EMBEDDINGS (scope anchor only)
 // ------------------------------------------------------------
-// The in-code CHATBOT_FAQ below is the source of truth: 55 researcher
-// vetted Q&A pairs. At chatbot-screen open we pre-compute one embedding
-// per trigger phrase (one network call, batched). For every participant
-// question we:
-//   1. Embed the question (one call).
-//   2. Cosine-rank against every trigger embedding.
-//   3. If the top match's cosine >= MATCH_FLOOR we send the question
-//      AND the candidate's curated question to a deterministic GPT
-//      router (gpt-5.4-mini, temperature 0) which answers REUSE / NEW.
-//   4. REUSE  -> return the curated answer verbatim (identical text
-//                for every participant who asks any paraphrase).
-//      NEW    -> call the main model with a scope anchor that pins the
-//                fresh answer to the realm of the curated answers.
-// Why this works "flawlessly": the embedding step catches typos and
-// rewordings the old Jaccard score missed (e.g. "experient"/"different"
-// vs "experiment"/"differ"), and the GPT verifier guards against
-// near-misses where two questions share words but mean different
-// things (definition vs. comparison vs. example).
+// The in-code CHATBOT_FAQ below holds the researcher-vetted Q&A pairs.
+// At chatbot-screen open we pre-compute one embedding per trigger
+// phrase (batched). These embeddings do NOT decide which answer is
+// returned; that is the unified GPT router's job (see UNIFIED GPT
+// ROUTER below). They are used only by buildScopeAnchor(), which
+// picks the 3 curated answers nearest a question to guide the
+// length, depth, and tone of a freshly generated answer.
 // ============================================================
 let curatedRepoEmbeddings = null; // [{ id, triggerText, embedding, answer }]
 let curatedRepoLoading = null;
 
 // The embed endpoint caps a batch at 256 inputs (api/embed.js MAX_BATCH).
-// The curated repo flattens to ~330 trigger phrases, so split into chunks
+// The curated repo flattens to ~320 trigger phrases, so split into chunks
 // well under that cap and stitch the results back together in order. Each
 // OpenAI embedding carries its own `index`, so we sort by it to be safe.
 const EMBED_BATCH_SIZE = 128;
@@ -2465,60 +2588,66 @@ async function precomputeCuratedRepoEmbeddings() {
 }
 
 // Curated Q&A repository. Researcher-vetted answers that the chatbot
-// returns instantly when a participant asks something similar to a
-// listed trigger, bypassing OpenAI. Each entry has triggers (phrases
-// participants might use) and an answer (verbatim canonical text).
+// returns verbatim when the GPT router judges a participant's question
+// to match an entry. Each entry has an id, triggers (phrases participants
+// might use) and an answer (verbatim canonical text). The router sees
+// only the id, the first trigger, and the first 250 characters of the
+// answer; all triggers are embedded for the scope anchor.
 const CHATBOT_FAQ = [
+  // Each entry mirrors one entry of the original thought-experiment FAQ,
+  // in the same order; the trailing "was:" comment names the original id.
+  // Entries whose originals relied on outside research and have no
+  // reasonable Velora question (ages, timescales, feelings, etc.) were
+  // dropped; the system prompt handles those questions instead.
+
   // === Concept definitions ===
   {
-    id: 'thought_experiment_def',
-    triggers: ['thought experiment','what is a thought experiment','define thought experiment','explain thought experiment','what are thought experiments','thought experiment definition'],
-    answer: "A thought experiment asks the child to picture a specific situation in their mind and then carefully reason through what their own explanation says should happen in it. The important thing is that no new facts arrive from the outside world; the child is only unfolding what they already believe. Its value comes from a kind of self-checking. By forcing the child to spell out what their explanation actually predicts, it can expose a contradiction that was sitting there unnoticed. So a thought experiment does not teach the child something new about the world so much as it helps the child see whether the ideas they already hold actually fit together. Do you have another question about the lesson?"
+    id: 'weighing_def', // was: thought_experiment_def
+    triggers: ['weighing','what is a weighing','define weighing','explain the weighing','what are weighings','weighing definition','what does the weighing mean'],
+    answer: "A Weighing is what the Stone-keepers did when Velorans disagreed about which duty someone had to perform. They imagined one particular person at one particular moment, traced what each claim required of that person, and compared the results. The important thing is that a Weighing adds no new custom; it only spells out what claims people already hold would require. Its value comes from a kind of self-checking: by putting each claim's demands side by side, it can expose a disagreement that had gone unnoticed. Do you have another question about the lesson?"
   },
   {
-    id: 'naive_theory_def',
-    triggers: ['naive theory','naïve theory','what is a naive theory','define naive theory','explain naive theory','intuitive theory','folk theory','what are naive theories'],
-    answer: "A naïve theory is an everyday, intuitive explanation that a child already has before anyone formally teaches them. The lesson stresses that children are not blank slates when they get to school; they show up already having their own working ideas about how the world behaves, and they use those ideas to predict what will happen and to make sense of causes. The tricky part is that these homemade ideas are often incomplete, inaccurate, or even self-contradicting. They are also surprisingly stubborn, which is the part people find confusing, because a child can run into clear evidence that an idea is wrong and still keep believing it anyway. Do you have another question about the lesson?"
+    id: 'reckoning_def', // was: naive_theory_def
+    triggers: ['reckoning','what is a reckoning','define reckoning','explain reckoning','what are reckonings','reckoning definition','working explanation','what does reckoning mean'],
+    answer: "A reckoning is a Veloran's own working explanation of which Houses a person must serve, and whose duty comes first when two Houses need them at once. The lesson stresses that Velorans did not first learn about Marks from the Stone-keepers; each formed a reckoning long before meeting them, built from what they saw around them as children. Because of that, a reckoning need not match the Stone-keepers' law. A common example is the cradle rule, which many Velorans kept using even after they had learned the law of alignment. Do you have another question about the lesson?"
   },
   {
-    id: 'conceptual_change_def',
-    triggers: ['conceptual change','what is conceptual change','define conceptual change','explain conceptual change','conceptual change definition'],
-    answer: "Conceptual change is the term cognitive scientists use for the hard kind of learning, where instead of simply adding new facts to what a child already knows, the child has to reorganize the whole intuitive framework they were using to understand something. As the field describes it, this kind of development involves not just elaboration of existing knowledge but its considerable reorganization or restructuring. It is \"radical\" because the old way of thinking and the correct one are organized so differently that the new ideas cannot simply be folded neatly into the old structure. Do you have another question about the lesson?"
+    id: 'recutting_def', // was: conceptual_change_def
+    triggers: ['recutting','what is recutting','define recutting','explain recutting','recut','what does recut mean','recutting a reckoning'],
+    answer: "Recutting is the harder kind of change to a reckoning: instead of taking in one more fact, the Veloran changes the rule the reckoning uses to decide which Houses a person must serve or whose duty comes first. The lesson's example is a Veloran who stops deciding priority by which Mark came first and starts deciding it by alignment. Because the deciding rule itself changes, the new rule cannot simply be added on top of the old way of reasoning. The Stone-keepers trusted that a recut had taken hold only when the person applied the new rule to someone they had never considered before. Do you have another question about the lesson?"
   },
   {
-    id: 'enrichment_def',
-    triggers: ['enrichment','what is enrichment','define enrichment','explain enrichment','enrichment definition','what does enrichment mean','enrichment learning'],
-    answer: "Enrichment is a kind of learning where you add new information on top of what you already understand, without having to overhaul your existing explanation. The new facts fit into the framework you already have, so your underlying way of thinking about the topic stays intact and simply becomes more detailed. In short, your knowledge expands rather than getting rebuilt. Do you have another question about the lesson?"
+    id: 'adding_def', // was: enrichment_def
+    triggers: ['adding','what is adding','define adding','explain adding','adding definition','what does adding mean','adding to a reckoning'],
+    answer: "Adding is a kind of change where a Veloran takes in new information that fits a reckoning they already hold, without changing the rule the reckoning uses. The lesson's example is learning one more duty that Tor members perform. The reckoning becomes more detailed, but the way it decides who must serve and whose duty comes first stays the same. Do you have another question about the lesson?"
   },
   {
-    id: 'belief_weight_def',
-    triggers: ['belief weight','degrees of belief','what is belief weight','what are degrees of belief','explain belief weight','adjusting degrees of belief'],
-    answer: "This is the lesson's idea about what actually happens when a child changes their mind, and on its own it says this: a child usually does not commit to a single explanation. Instead the child holds several competing explanations at the same time and trusts each one to a different degree, as if giving each idea its own amount of confidence. On this view, revising a belief does not mean getting rid of any explanation. It means adjusting how much confidence the child gives to each one as new evidence arrives, so the explanation that fits the evidence becomes more trusted while the others lose some trust but are still kept around. The thing to take away is that, on this account, the old explanation never disappears; it just becomes less believed. Do you have another question about the lesson?"
+    id: 'alignment_def', // was: belief_weight_def
+    triggers: ['alignment','what is alignment','degrees of alignment','what are degrees of alignment','explain alignment','strength of obligation','weaker obligation','stronger alignment'],
+    answer: "Alignment describes how strong a person's obligation to a House is. A Veloran can hold several Marks at once, and the lesson says these obligations are not all equally strong, so each House has its own degree of alignment. In one of the lesson's descriptions of the Turning of the Stone, the ceremony strengthens alignment toward a new House and weakens it toward an earlier one without canceling the earlier Mark, so the weaker obligation still applies whenever it does not interfere with a stronger one. The thing to take away is that, on this account, the earlier Mark never disappears; its obligation just becomes weaker. Do you have another question about the lesson?"
   },
   {
-    id: 'conceptual_replacement_def',
-    triggers: ['conceptual replacement','what is conceptual replacement','define conceptual replacement','explain conceptual replacement','replacement explanation','overwrite','overwrites','overwriting','what does overwrite mean','what does it mean to overwrite','overwrite explanation','overwrites the weaker explanation','overwrites the explanation','evidence overwrites','evidence overwrites the weaker explanation','overwrite weaker explanation'],
-    answer: "This is another idea about what happens when a child revises beliefs: the explanation that best fits the evidence completely overwrites the weaker one, so that the weaker explanation is no longer available to the child at all. The simplest way to hold onto this is that conceptual replacement treats the losing explanation as erased and gone, rather than just trusted less. Do you have another question about the lesson?"
+    id: 'carving_def', // was: conceptual_replacement_def
+    triggers: ['chiseled away','carving the stone','chiseling the mark','what does chiseled away mean','earlier mark removed','mark carved away','new mark carved in its place','owed nothing to former house','chisel'],
+    answer: "This is the lesson's other description of what the Turning of the Stone does: during the ceremony, a Stone-keeper chisels the person's earlier Mark off the record stone and carves the new Mark in its place. Once the earlier Mark is gone, every obligation it recorded ends with it, so the person owes nothing to their former House, even on days when the new House has no task for them. The simplest way to hold onto this is that, on this account, the earlier Mark is erased and its obligations are gone, rather than just made weaker. Do you have another question about the lesson?"
   },
   {
-    id: 'internally_inconsistent',
+    id: 'incompatible_claims_def', // was: internally_inconsistent
     triggers: [
-      'internally inconsistent',
-      'what does internally inconsistent mean',
-      'what is internal inconsistency',
-      'explain internal inconsistency',
-      'internal inconsistency',
-      'contradictory beliefs in a child',
-      'inconsistent beliefs',
-      'two beliefs that conflict',
-      'beliefs that contradict each other',
-      'what makes a belief internally inconsistent',
-      'what does it mean for beliefs to be internally inconsistent'
+      'incompatible',
+      'what does incompatible mean',
+      'incompatible actions',
+      'claims that cannot both hold',
+      'conflicting rules',
+      'two rules that conflict',
+      'rules that contradict each other',
+      'what makes two claims incompatible',
+      'incompatible demands'
     ],
-    answer: "Internally inconsistent means two of the child's own beliefs cannot both be true at once because they make conflicting predictions about the same situation. The lesson's clean case is the rolling ball: an impetus belief says the ball will slow and stop, while a Newtonian belief says it will keep moving, and a single ball cannot both stop and keep going. The inconsistency is \"internal\" because it is a clash between the child's own ideas, not a clash between an idea and an outside observation. Do you have another question about the lesson?"
+    answer: "Two claims are incompatible when they require different actions of the same person at the same moment, so both cannot be satisfied. The lesson's clean case is the festival: the cradle rule sends Nera to carry Tor's lanterns, while the law of alignment sends her to prepare Seli's meal, and she cannot do both at the same hour. The conflict is between claims a Veloran already holds, not between a claim and something new they observed. Do you have another question about the lesson?"
   },
   {
-    id: 'future_questions',
+    id: 'future_questions', // was: future_questions
     triggers: [
       'what am i going to be asked later',
       'what are the questions later',
@@ -2536,277 +2665,244 @@ const CHATBOT_FAQ = [
       'how will i be graded',
       'what are the next steps'
     ],
-    answer: "I don't have information about what you'll be asked later in the study. I can help you prepare by reviewing the key ideas from the lesson, for example what thought experiments are, how they support consistency monitoring, what conceptual change is, or how redistribution differs from conceptual replacement. Do you have another question about the lesson?"
+    answer: "I don't have information about what you'll be asked later in the study. I can help you review key ideas from the lesson, like reckonings, the cradle rule, the law of alignment, the Turning of the Stone, the Weighing, or truing. Do you have another question about the lesson?"
   },
   {
-    id: 'consistency_monitoring_def',
-    triggers: ['consistency monitoring','what is consistency monitoring','define consistency monitoring','explain consistency monitoring','consistency monitoring definition','notice inconsistencies'],
-    answer: "Consistency monitoring is noticing that two beliefs you hold cannot both be true because they lead to contradictory predictions about the same situation. In the research it is studied as the ability to explicitly notice inconsistencies among one's own beliefs, and it is treated as a form of self-checking that can drive learning even when no new outside evidence is provided. Studies have linked this ability to deeper understanding, finding that noticing such inconsistencies is associated with more mature understanding. Do you have another question about the lesson?"
+    id: 'how_chatbot_works', // new: no counterpart in the original FAQ
+    triggers: ['how do you work','how do you generate your answers','are you a reflective chatbot','are you a templatic chatbot','do you match keywords','do you use pre-written answers','do you use a database of answers','do you reason before answering','do you remember my previous questions','what ai model are you'],
+    answer: "That's a good question, but I'm not able to go into how I work behind the scenes. I'm here to help you with the lesson, so let's focus on that. Do you have another question about the lesson?"
+  },
+  {
+    id: 'truing_def', // was: consistency_monitoring_def
+    triggers: ['truing','what is truing','define truing','explain truing','truing definition','checking claims hold together','what does truing mean'],
+    answer: "Truing is the Stone-keepers' name for the habit of checking whether all of one's claims can hold together. It is a form of self-checking: it looks for places where two claims a person already holds would demand incompatible answers in the same case. The lesson notes that two claims can each sound familiar yet still clash, and that finding such a disagreement was a reason to reexamine the claims or ask for clarification. Do you have another question about the lesson?"
   },
 
   // === Critical: the deliberate contradiction in the lesson ===
   {
-    id: 'redistribute_vs_replace',
-    triggers: ['both redistribute and replace','redistribute and replace','how do those fit','can both happen','degrees of belief vs replacement','two views of revision','contradiction in lesson','keep and erase','kept and erased'],
-    answer: "Good question, because the two ideas do not really fit together: redistributing means the child keeps the weaker explanation but trusts it less, while replacing means the weaker explanation is wiped out completely. You cannot both keep something and delete it at the same time. What most researchers think is that the old idea usually is not erased at all. Instead, the new scientific idea tends to coexist with the old one rather than replace it. This fits the fact that old beliefs are stubborn: childhood misconceptions stick around for life and have to be held back rather than erased, which is why even smart adults sometimes slip back into them. That said, this debate is not fully settled, because some research does describe genuine cases where children show abrupt conceptual transitions, replacing intuitive knowledge with scientific theories. So the clearest answer is that redistributing is probably what happens. Do you have another question about the lesson?"
+    id: 'turning_keep_vs_remove', // was: redistribute_vs_replace
+    triggers: ['does the turning keep or remove the mark','keep and remove','both weaken and remove','what happens to the earlier mark','does the earlier mark stay','contradiction in lesson','two descriptions of the turning','kept and chiseled','weakened or erased'],
+    answer: "Good question, because the lesson's two descriptions of the Turning of the Stone do not fit together. One says the Turning weakens alignment toward the earlier House while keeping its Mark, so a weaker obligation remains; the other says a Stone-keeper chisels the earlier Mark away, so all of its obligations end. A Mark cannot both stay active and be gone at the same time. The two come apart after the storm: on the first account, Nera still owes Tor help with the repairs, and on the second, she owes Tor nothing. The lesson presents both and does not say which is correct, so this is a point where it would be reasonable to ask for clarification. Do you have another question about the lesson?"
   },
 
-  // === Thought experiments ===
+  // === The Weighing ===
   {
-    id: 'thought_exp_vs_real_exp',
-    triggers: ['thought experiment vs real experiment','difference between thought experiment and real','how thought experiment differ from real','thought experiment versus real','real experiment vs thought'],
-    answer: "A thought experiment asks you to imagine a situation and reason through what your own explanation predicts, whereas a real experiment gathers fresh data by acting on the actual world. Do you have another question about the lesson?"
+    id: 'weighing_vs_watching', // was: thought_exp_vs_real_exp
+    triggers: ['weighing vs watching what happens','difference between a weighing and watching','weighing versus a real case','weighing vs actual event','real case vs weighing'],
+    answer: "The lesson does not compare a Weighing with watching real events. What it says is that a Weighing imagines one particular person at one particular moment, traces what each claim requires of that person, and compares the results, so it is about what each claim demands rather than about what someone actually did. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_vs_imagining',
-    triggers: ['thought experiment vs imagining','difference between thought experiment and imagining','thought experiment versus simply imagining','just imagining'],
-    answer: "Plain imagining is free and open-ended, while a thought experiment is disciplined: you hold a premise fixed and follow out what your explanation must predict if it were true. That structure is what surfaces a hidden contradiction, which idle daydreaming would not. In the research, thought experiments are treated as a form of inferential reasoning rather than mere fantasy. Do you have another question about the lesson?"
+    id: 'weighing_vs_imagining', // was: thought_exp_vs_imagining
+    triggers: ['weighing vs imagining','difference between a weighing and imagining','weighing versus simply imagining','just imagining'],
+    answer: "Plain imagining is free and open-ended, while a Weighing is disciplined: the person, the time, and the circumstances are held fixed, and each claim is followed out to what it requires in that exact case. That structure is what brings a hidden disagreement into view, which idle daydreaming would not. The lesson explains why the fixing matters: weighing one rule at the festival and another on a different day could hide a disagreement. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_vs_visualization',
-    triggers: ['thought experiment similar to visualization','thought experiment vs visualization','are thought experiments visualizations','visualization vs thought experiment'],
-    answer: "They overlap, because both use mental imagery, but they are not the same. A visualization mainly pictures something, whereas a thought experiment uses an imagined simulation to test an idea and draw a conclusion from it. Researchers describe this as imagistic simulation doing reasoning work, so the picturing is in service of inference, not the goal itself. Do you have another question about the lesson?"
+    id: 'weighing_vs_picturing', // was: thought_exp_vs_visualization
+    triggers: ['weighing similar to picturing a scene','weighing vs visualization','is a weighing just picturing','picturing vs weighing'],
+    answer: "They overlap, because a Weighing starts by picturing one particular person at one particular moment, but they are not the same. Picturing a scene mainly imagines it, whereas a Weighing uses the imagined scene to trace what each claim requires and then compare the results. The picturing is in service of that comparison, not the goal itself. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_stories_or_handson',
-    triggers: ['thought experiments through stories','hands on activities','thought experiment story','thought experiment hands on','do they involve hands on'],
-    answer: "Strictly speaking, neither is required, because the defining feature is mental simulation rather than physical materials or narrative. In practice researchers often present a concrete scenario for the child to simulate in their head, like picturing a single grain of rice landing on a card balanced on a fulcrum, without the child ever touching it. So a story-like setup can help frame it, but the actual work happens in the child's mind. Do you have another question about the lesson?"
+    id: 'weighing_needs_real_scene', // was: thought_exp_stories_or_handson
+    triggers: ['does a weighing need the real person present','weighing with a real case','weighing as a story','do they act it out','weighing hands on'],
+    answer: "No, the lesson describes a Weighing as something done in imagination: the Stone-keepers imagined one particular person at one particular moment rather than staging the scene. A concrete, story-like case helps, like Nera at the Festival of First Rain, because it gives the claims a specific situation to be traced through. But the actual work is in tracing and comparing what each claim requires, not in acting anything out. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_process',
-    triggers: ['process of a thought experiment','child describing thinking','back and forth questioning','how thought experiment works process','who does the reasoning'],
-    answer: "It is usually guided back-and-forth, where an adult poses the situation and asks the child to trace what would happen, but the reasoning has to come from the child. In the lesson's terms, the adult sets up the rolling ball and asks the child to simulate it and say what each explanation predicts. The dialogue provides the scaffolding, while the child supplies the actual prediction and notices the clash. Do you have another question about the lesson?"
+    id: 'weighing_process', // was: thought_exp_process
+    triggers: ['process of a weighing','who holds a weighing','how does a weighing work step by step','steps of a weighing','who does the reasoning in a weighing'],
+    answer: "In the lesson, Stone-keepers held a Weighing when Velorans disagreed about which duty someone had to perform. The steps are to fix one person at one moment in fixed circumstances, trace what each claim requires of that person, and compare the results. The lesson does not describe the conversation itself, but the comparison is what lets the people holding the claims see whether those claims agree. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_example',
-    triggers: ['example of a thought experiment','example child imagining','can you give an example','give an example','example of imagining'],
-    answer: "A nice research example involves weight: many young children insist a single grain of rice weighs nothing at all, so a child is asked to imagine that grain placed on a card resting on a fulcrum and to predict what happens. Reasoning through it, the child sees that if the grain truly had zero weight the card could never tip, which conflicts with their sense that it might. In the study, children at the start took weight to be an accidental property and claimed small pieces weigh \"nothing at all,\" a misconception the simulation was designed to challenge. Do you have another question about the lesson?"
+    id: 'weighing_example', // was: thought_exp_example
+    triggers: ['example of a weighing','can you give an example','give an example','example of tracing claims','weighing example'],
+    answer: "Imagine a Veloran whose first Mark is Seli but whose alignment toward Tor is now stronger, at an hour when Seli needs help in the kitchen and Tor needs its lanterns carried. Holding that person, that hour, and those needs fixed, the cradle rule sends them to Seli because Seli was their first House, while the law of alignment sends them to Tor because that alignment is stronger. Comparing the two shows at once that the rules demand incompatible actions of the same person at the same moment, which is exactly what a Weighing is meant to reveal. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_why_help_revision',
-    triggers: ['why thought experiments help revise beliefs','why thought experiments help','how thought experiments help revision','why help belief revision','why thought experiments work'],
-    answer: "Because they make you confront what your own ideas actually predict, which can expose an error you were carrying without realizing it. Research frames them as a tool that can reveal errors and trigger belief revision in the service of error correction. They work less by teaching you something new and more by showing you that two of your beliefs cannot both be right. Do you have another question about the lesson?"
+    id: 'weighing_why_helps', // was: thought_exp_why_help_revision
+    triggers: ['why weighings help change a reckoning','why weighings help','how weighings help recutting','why does a weighing work','why weighings work'],
+    answer: "Because a Weighing makes a person confront what their own claims actually require, which can expose a disagreement they were carrying without realizing it. The lesson says its value lay in making visible what claims already held would require. It works less by teaching a new custom and more by showing that two claims cannot both be satisfied, which is a reason to reexamine them. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_vs_direct_evidence',
-    triggers: ['why thought experiment reveal contradictions direct evidence does not','direct evidence does not','thought experiment vs direct evidence','why not direct evidence','reveal contradictions evidence does not'],
-    answer: "Because the conflict it exposes is between your own beliefs, so you cannot dismiss it the way you might dismiss a surprising observation as a fluke or special case. Researchers point out that the relevant clash is often between an implicit assumption and an explicit belief, and the thought experiment's job is to make the implicit one explicit so the two can finally be compared side by side. Direct evidence can be explained away, but a contradiction in your own commitments is harder to ignore, which is exactly why naïve theories can survive refuting evidence yet crack under a thought experiment. Do you have another question about the lesson?"
+    id: 'weighing_vs_outside_evidence', // was: thought_exp_vs_direct_evidence
+    triggers: ['why weighing reveals disagreements that watching others does not','watching adults does not','weighing vs outside evidence','why not just observe','reveal disagreements observation does not'],
+    answer: "The lesson does not compare Weighings with ordinary observation. What it does say is that children's reckonings grew from what they saw around them, which is how many came to hold the cradle rule, and that a Weighing's value lay in making visible what claims already held would require. A Weighing works with the person's own claims, placing them in one fixed case so they can be compared side by side. Do you have another question about the lesson?"
   },
   {
-    id: 'thought_exp_can_backfire',
-    triggers: ['control a thought experiment','poorly run thought experiment','backfire','reinforce incorrect belief','can thought experiment go wrong','poorly designed'],
-    answer: "You control it by choosing a scenario that forces the two competing predictions into direct contact and by guiding the child to actually trace the consequences rather than just restating their hunch. And yes, a poorly designed one can backfire: if the imagined setup quietly fits the naïve theory, or the child resolves the tension by explaining it away, the wrong belief can be strengthened instead of challenged. This is why the framing matters so much, since the same tool that detects an error can entrench one if it never brings the real contradiction into view. Do you have another question about the lesson?"
+    id: 'weighing_can_mislead', // was: thought_exp_can_backfire
+    triggers: ['control a weighing','poorly run weighing','backfire','hide a disagreement','can a weighing go wrong','poorly designed weighing'],
+    answer: "You control it by holding the person, the time, and the circumstances fixed, so that every claim is traced through the same case. The lesson names the main way it can go wrong: weighing one rule at the festival and another on a different day could hide a disagreement, because the two claims are never compared in the same situation. Do you have another question about the lesson?"
   },
   {
-    id: 'new_perspective_as_info',
-    triggers: ['new perspective count as new information','reveal inconsistencies not add information','new perspective as information','add new information','perspective new info'],
-    answer: "It depends on what you mean by \"information,\" and the research treats this as genuinely open rather than settled. The lesson is using \"information\" to mean facts arriving from outside, so in that narrow sense a new perspective is not new information; it is a new way of organizing facts you already had. Do you have another question about the lesson?"
+    id: 'weighing_new_information', // was: new_perspective_as_info
+    triggers: ['does a weighing count as new information','reveal disagreements not add information','new perspective as information','add new information','does a weighing teach something new'],
+    answer: "It depends on what you mean by \"information.\" The lesson says a Weighing added no new custom, meaning nothing new arrives about the Houses or their duties; it only lays out what claims already held would require. In that narrow sense, a Weighing is not new information but a new way of looking at what the person already believed. Do you have another question about the lesson?"
   },
   {
-    id: 'info_vs_insight',
-    triggers: ['not adding new information mean no new insight','information vs insight','value comes from checking consistency','no new insight generated','insight or information'],
-    answer: "The lesson leans toward the second reading: the value is in checking whether your existing beliefs hold together. This matches the \"conceptual confusion\" account, where a thought experiment provides the information that your current knowledge leads to contradictions and identifies areas of understanding that require conceptual change. But notice that even \"you contradict yourself\" is arguably a new insight, so the honest answer is that the lesson is highlighting consistency-checking without claiming literally nothing new is ever produced. Do you have another question about the lesson?"
-  },
-
-  // === Naïve theories ===
-  {
-    id: 'naive_theories_dev',
-    triggers: ['how do naive theories develop','what are naive theories how do they develop','where do naive theories come from','naive theory development','how naive theories form'],
-    answer: "Naïve theories are the intuitive, homemade explanations children build before any formal instruction, which they use to predict events and figure out what causes what. The research describes them as developing from a mix of sources: they are built by children from a combination of inputs, including innate biases, firsthand experience, and cultural teachings, and they play the same role as scientific theories in helping us explain, predict, and intervene on events. So they grow out of everyday interaction with the world rather than being taught. Do you have another question about the lesson?"
-  },
-  {
-    id: 'parents_main_source',
-    triggers: ['biggest contributor to forming naive theories','parents main source','parents and caregivers naive theories','who shapes naive theories','where naive theories come from most'],
-    answer: "Caregivers matter, but they are only one of three contributors, and usually not the dominant one for physical concepts. Naïve theories come from innate biases, firsthand experience, and cultural teachings together, and for something like motion, a child's own repeated handling of objects tends to do more of the work than anything a parent says. Culture and caregivers matter more in domains like biology or social behavior, where direct experience is thinner. Do you have another question about the lesson?"
-  },
-  {
-    id: 'impetus_explanation',
-    triggers: ['what is an impetus based explanation','impetus','impetus theory','inner push','impetus explanation','what is impetus'],
-    answer: "It is the intuitive idea that a moving object carries an inner push or \"force\" inside it that gradually runs out, so the object slows and stops on its own. The research notes this closely resembles pre-Newtonian physics, since intuitive judgments about motion resemble the medieval impetus theories proposed by thinkers such as Buridan. In the lesson, this is the naïve rival to the Newtonian view, and for the rolling ball it predicts the ball will stop by itself. Do you have another question about the lesson?"
-  },
-  {
-    id: 'why_naive_theories_persist',
-    triggers: ['why do naive theories persist','why internally inconsistent persist','persist when meet evidence','naive theories stubborn','why hard to change naive theories','evidence does not refute'],
-    answer: "Because a naïve theory shapes how a child interprets evidence in the first place, so a contradicting observation often gets explained away or simply not noticed as relevant. Some misconceptions are also propped up by perception itself; researchers argue children keep the straight-down belief partly because they cannot easily learn it is wrong from experience, since the moving object really does look like it falls straight down relative to the carrier. So the very evidence that should refute the theory can appear to confirm it. Do you have another question about the lesson?"
-  },
-  {
-    id: 'internally_inconsistent',
-    triggers: ['what does internally inconsistent mean','internally inconsistent','define internally inconsistent','what is internal inconsistency'],
-    answer: "It means two of the child's own beliefs cannot both be true at once because they imply different things about the same situation. The lesson's rolling ball is the clean case: the impetus belief says it stops while the Newtonian belief says it keeps going, and a single object cannot both stop and keep going. The inconsistency is internal because the clash is between the child's own ideas, not between an idea and the outside world. Do you have another question about the lesson?"
-  },
-  {
-    id: 'naive_theories_learning_challenge',
-    triggers: ['incorrect naive theories make learning challenging','make learning hard','why naive theories block learning','how incorrect theories affect learning','learning challenge naive theories'],
-    answer: "They make learning harder because new instruction does not land on a blank slate; it has to compete with a confident existing explanation that the child keeps using. When the correct idea conflicts with the naïve one, the child often distorts or ignores the new material to fit what they already believe, so learning requires dismantling the old structure rather than just adding to it. Do you have another question about the lesson?"
-  },
-  {
-    id: 'consequences_inaccurate_beliefs',
-    triggers: ['consequences if children keep inaccurate beliefs','what happens if hold incorrect beliefs','consequences inaccurate beliefs','wrong beliefs consequences','keeping wrong beliefs'],
-    answer: "The main consequence is that the misconception quietly persists underneath later instruction and resurfaces in new or pressured situations, even after a child can recite the correct answer. The literature shows this vividly: students who \"know\" all objects fall at the same rate will revert to the gut-level belief that heavier objects fall faster when asked about an unfamiliar situation they have not rehearsed. So an unaddressed naïve theory does not disappear; it becomes a latent error that undermines reasoning later on. Do you have another question about the lesson?"
-  },
-  {
-    id: 'naive_theories_strength',
-    triggers: ['naive theories as strength','naive theories strength','strength rather than barrier','naive theory good','helpful naive theory','viewed positively'],
-    answer: "Yes, in an important sense they are a strength, because they show the child is already an active theory-builder trying to explain the world, which is the same engine that drives real scientific reasoning. For that potential to pay off, a thought experiment would need to use the child's existing theory as raw material, drawing out its own predictions until the child notices the tension themselves, rather than just declaring the theory wrong. Used that way, the naïve theory becomes the starting point for genuine reasoning and revision, not merely an obstacle to clear away. Do you have another question about the lesson?"
-  },
-  {
-    id: 'adults_naive_theories',
-    triggers: ['adults hold naive theories','do adults have naive theories','adult naive theories','adults vs children naive','differ from children'],
-    answer: "Yes, adults hold them too, and often the very same ones. Research finds that even childhood misconceptions persist across the lifespan and must be inhibited when reasoning, which is why educated adults can still slip into impetus-style answers. The main difference is not that adults lose the naïve theory but that they layer a correct scientific theory on top and learn to suppress the intuitive one, so the old belief tends to reappear under time pressure or in unfamiliar framings rather than being gone. Do you have another question about the lesson?"
+    id: 'weighing_insight', // was: info_vs_insight
+    triggers: ['not adding a new custom mean nothing is learned','information vs insight','value comes from making visible','no new insight from a weighing','insight or information'],
+    answer: "The lesson leans toward the second reading: a Weighing's value lies in making visible what claims already held would require, not in adding new customs. But notice that discovering \"these two claims of mine cannot both hold\" is arguably something new learned, so the fair reading is that the lesson highlights checking claims against each other without saying nothing new ever comes out of it. The lesson also adds that a Weighing on its own does not settle which claim is right. Do you have another question about the lesson?"
   },
 
-  // === Coherent beliefs and metacognition ===
+  // === Reckonings ===
   {
-    id: 'coherent_beliefs_def',
-    triggers: ['what are coherent beliefs','coherent beliefs','define coherent beliefs','explain coherent beliefs'],
-    answer: "Coherent beliefs are ideas that fit together without contradicting each other, so the predictions they generate line up rather than clash. In the lesson, coherence is the goal that thought experiments work toward, since the whole point is to help a learner see whether their own ideas hold together. A set of beliefs is incoherent when two of them, followed out, predict opposite things about the same situation. Do you have another question about the lesson?"
+    id: 'reckoning_origins', // was: naive_theories_dev
+    triggers: ['how do reckonings develop','where do reckonings come from','how are reckonings formed','reckoning development','how reckonings form'],
+    answer: "Reckonings are the working explanations Velorans build long before they deal with the Stone-keepers, and they use them to decide which Houses a person must serve and whose duty comes first. The lesson says children's reckonings grew from what they saw around them. So they come out of everyday life rather than formal teaching. Do you have another question about the lesson?"
   },
   {
-    id: 'coherent_vs_naive',
-    triggers: ['difference between coherent beliefs and naive theories','coherent beliefs vs naive theories','same as naive theories','coherent vs naive'],
-    answer: "They are different kinds of things: \"coherent\" describes a quality beliefs can have (fitting together), while a naïve theory is a specific intuitive explanation a child holds. The lesson does not treat them as the same; in fact its point is almost the opposite, since naïve theories are often internally inconsistent, which is to say not coherent. So a naïve theory is the content, and coherence is a property that content may or may not have. Do you have another question about the lesson?"
+    id: 'adults_shape_reckonings', // was: parents_main_source
+    triggers: ['biggest influence on forming a reckoning','do adults shape reckonings','parents and reckonings','who shapes reckonings','where reckonings come from most'],
+    answer: "The lesson says children's reckonings grew from what they saw around them, and that because most children watched adults serve the House of their childhood, many grew up holding the cradle rule. It does not list other sources or say how much each one matters. Do you have another question about the lesson?"
   },
   {
-    id: 'metacognition',
-    triggers: ['metacognition','recognize inaccurate beliefs reflect metacognition','monitoring control calibration','meta cognition','thinking about thinking'],
-    answer: "Yes, it reflects metacognition, because the learner is thinking about their own thinking rather than just about the world. The aspect it draws on most directly is metacognitive monitoring, since the key move is noticing that your own beliefs conflict, which the lesson calls consistency monitoring. Control and calibration come into play afterward, when the learner decides what to do about the conflict and how confident to be, but the thought experiment's core job is to trigger the monitoring step. Do you have another question about the lesson?"
+    id: 'cradle_rule_def', // was: impetus_explanation
+    triggers: ['what is the cradle rule','cradle rule','cradle rule definition','first house comes first','first mark comes first','explain the cradle rule'],
+    answer: "The cradle rule is the belief that a person must always put first the House whose Mark they received first. Many Velorans grew up holding it because, as children, they watched adults serve the House of their childhood. It conflicts with the Stone-keepers' law of alignment, under which receiving a Mark first does not by itself give it greater priority. At the festival, for example, the cradle rule would send Nera to Tor's lanterns. Do you have another question about the lesson?"
+  },
+  {
+    id: 'why_cradle_rule_persists', // was: why_naive_theories_persist
+    triggers: ['why does the cradle rule persist','why keep the cradle rule','persist after learning the law','cradle rule stubborn','why hard to give up the cradle rule','learning the law did not remove it'],
+    answer: "The lesson says learning the law of alignment did not make the cradle rule disappear. Adults often kept both, reaching for the cradle rule in some situations and the law in others, without ever setting the two side by side, so the conflict between them never came into view. Everyday experience can also seem to support it, since most children watched adults serve the House of their childhood. That is why someone can recite the law perfectly and still fall back on the cradle rule in an unfamiliar case. Do you have another question about the lesson?"
+  },
+  {
+    id: 'reckoning_contradicts_itself', // was: internally_inconsistent (second copy)
+    triggers: ['can a reckoning contradict itself','reckoning that does not hold together','define inconsistent reckoning','what is an inconsistent reckoning'],
+    answer: "Yes. A Veloran who holds both the cradle rule and the law of alignment has a reckoning whose rules imply different things about the same situation. At the festival, one rule sends Nera to Tor and the other sends her to Seli, and she cannot be in both places at the same hour. The contradiction is inside the reckoning itself, between the person's own rules, not between a rule and something they observed. Do you have another question about the lesson?"
+  },
+  {
+    id: 'reckoning_learning_challenge', // was: naive_theories_learning_challenge
+    triggers: ['an existing reckoning make learning the law harder','make learning hard','why reckonings block learning','how a mistaken reckoning affects learning','learning challenge reckoning'],
+    answer: "A reckoning makes learning harder because the law of alignment does not land on an empty mind; it has to compete with a rule the Veloran already uses, like the cradle rule. Since the law changes how priority is decided, taking it in is not a matter of adding one more fact but of recutting the reckoning. Until that recut takes hold, the old rule can keep winning, especially in unfamiliar cases. Do you have another question about the lesson?"
+  },
+  {
+    id: 'consequences_keeping_cradle_rule', // was: consequences_inaccurate_beliefs
+    triggers: ['consequences if velorans keep the cradle rule','what happens if they keep the wrong rule','consequences of a mistaken reckoning','wrong rule consequences','keeping the cradle rule'],
+    answer: "The main consequence is that the cradle rule stays in the background and resurfaces when it matters, even after the person can recite the law of alignment. The lesson notes that some Velorans could recite the law perfectly yet fall back on the cradle rule when they met an unfamiliar case. In practice, that means sending someone to their first House when two Houses need them at once, even though the law says the House with stronger alignment comes first. Do you have another question about the lesson?"
+  },
+  {
+    id: 'adults_cradle_rule', // was: adults_naive_theories
+    triggers: ['do adults hold the cradle rule','adults and the cradle rule','adult reckonings','adults vs children cradle rule','differ from children'],
+    answer: "Yes, and the lesson says so directly: adults often kept both the cradle rule and the law of alignment. The difference is not that adults lose the cradle rule but that they also hold the law, reaching for one in some situations and the other in others. The old rule tends to come back in unfamiliar cases, which is why some adults could recite the law perfectly yet still fall back on the cradle rule. Do you have another question about the lesson?"
+  },
+
+  // === Claims holding together and truing ===
+  {
+    id: 'claims_hold_together_def', // was: coherent_beliefs_def
+    triggers: ['what does it mean for claims to hold together','claims hold together','coherent claims','define holding together','consistent claims'],
+    answer: "Claims hold together when they do not demand incompatible answers in the same case, so following them out leads to the same requirement rather than a clash. In the lesson, this is what truing checks for, since truing is the habit of checking whether all of one's claims could hold together. A set of claims fails to hold together when two of them, traced through the same imagined case, require different actions of the same person at the same moment. Do you have another question about the lesson?"
+  },
+  {
+    id: 'holding_together_vs_reckoning', // was: coherent_vs_naive
+    triggers: ['difference between claims holding together and a reckoning','holding together vs reckoning','is a reckoning always consistent','coherent vs reckoning'],
+    answer: "They are different kinds of things: holding together is a quality a set of claims can have, while a reckoning is a specific working explanation a Veloran holds. The lesson does not treat them as the same; in fact, a reckoning that contains both the cradle rule and the law of alignment does not hold together. So the reckoning is the content, and holding together is a property that content may or may not have. Do you have another question about the lesson?"
+  },
+  {
+    id: 'truing_metacognition', // was: metacognition
+    triggers: ['metacognition','is truing metacognition','monitoring control calibration','meta cognition','thinking about thinking'],
+    answer: "The lesson does not use the word metacognition, so I can only tell you what it says about truing: it is the Stone-keepers' name for the habit of checking whether all of one's claims could hold together. Its focus is a person's own claims, and finding a disagreement among them was a reason to reexamine them or ask for clarification. Do you have another question about the lesson?"
   },
 
   // === Philosophy / epistemology ===
   {
-    id: 'beliefs_subjective',
-    triggers: ['beliefs subjective','single correct explanation','revise toward truth','framework assume correct','are beliefs subjective'],
-    answer: "For its physics example, yes, the framework assumes a correct target, treating the Newtonian explanation as right and the impetus one as the error. That works because physics has a normatively correct answer, which is what lets the lesson call a naïve theory \"inaccurate.\" In domains without an agreed right answer, like morality or taste, you could still detect internal inconsistency, but you could not say which belief should lose out, so the \"revise toward the truth\" part would weaken even though the consistency-checking part would survive. Do you have another question about the lesson?"
+    id: 'one_right_rule', // was: beliefs_subjective
+    triggers: ['is there one correct rule','single correct answer','revise toward the right rule','does the lesson assume a correct rule','are reckonings subjective'],
+    answer: "On the question of priority, the lesson presents the law of alignment as the Stone-keepers' rule, under which receiving a Mark first does not by itself give it greater priority, which puts it at odds with the cradle rule. The lesson also says that a Weighing on its own does not settle which claim is right; it only makes visible what each claim requires. Do you have another question about the lesson?"
   },
   {
-    id: 'blank_slate_view',
-    triggers: ['blank slate','children as blank slates','cultures blank slate','adult instruction','differ from blank slate'],
-    answer: "It differs sharply, because the central claim here is that children are not blank slates; they arrive already holding intuitive theories that actively shape how they take in new information. On the blank-slate view, teaching is just pouring in correct content, whereas on this view teaching has to contend with explanations the child already has and may defend. That is exactly why a tool like the thought experiment is needed, since you are not filling an empty mind but helping an existing belief system notice its own conflicts. Do you have another question about the lesson?"
-  },
-
-  // === Holding competing explanations ===
-  {
-    id: 'hold_both_explanations',
-    triggers: ['hold both explanations','can children hold both','can children hold multiple explanations','both impetus and newtonian','two explanations same time'],
-    answer: "Yes, and this is one of the lesson's core claims: a child can hold an impetus explanation and a Newtonian one at once, applying each in different situations. The two only cause trouble when a situation forces both predictions into view at the same moment. Do you have another question about the lesson?"
-  },
-  {
-    id: 'aware_of_multiple',
-    triggers: ['aware they are holding multiple explanations','aware of multiple','do children know they hold','aware of competing explanations','noticing they hold rival ideas'],
-    answer: "Usually not. The explanations tend to be triggered by different contexts, so they rarely sit in the child's mind at the same time to be compared. Because the child is only ever using one at a given moment, there is normally no felt sense of holding rival ideas. Do you have another question about the lesson?"
-  },
-  {
-    id: 'notice_contradictions',
-    triggers: ['can children notice contradictions','notice contradictions among explanations','spot contradictions on their own','notice clash beliefs'],
-    answer: "Typically not on their own, which is the gap the lesson is built around. Noticing a contradiction requires both beliefs to be active at once and lined up against the same situation, and that almost never happens spontaneously. This is precisely why a thought experiment helps, since it deliberately brings both predictions into view so the clash becomes noticeable. Do you have another question about the lesson?"
-  },
-  {
-    id: 'context_dependence',
-    triggers: ['context dependent','moving between explanations by situation','naive theories context dependent','context dependence','why inconsistencies unnoticed'],
-    answer: "Yes on both counts. The fact that a child switches explanations depending on the situation is a sign that these ideas are cued by context rather than unified into one consistent system. And that context-dependence is a large part of why the inconsistencies stay hidden, because two beliefs that are never activated together are never compared, so their disagreement never surfaces. Do you have another question about the lesson?"
-  },
-  {
-    id: 'adults_manage_competing',
-    triggers: ['holding competing explanations change as children grow','adults manage competing beliefs','adults coordinate beliefs','what changes as children grow'],
-    answer: "The basic situation of holding competing explanations does not disappear, but the management of it improves. What develops is the ability to notice conflicts, suppress the intuitive but incorrect explanation, and reliably deploy the correct one, supported by growing cognitive control and reflection. So the change is less about losing the old belief and more about getting better at regulating which explanation wins out. Do you have another question about the lesson?"
+    id: 'blank_slate_view', // was: blank_slate_view
+    triggers: ['blank slate','velorans as blank slates','learn only from stone-keepers','stone-keeper instruction','differ from blank slate'],
+    answer: "The lesson rejects that picture: Velorans did not first learn about Marks from the Stone-keepers. Each had already formed a reckoning, from what they saw around them, long before meeting the Stone-keepers. That is why simply telling someone the law of alignment may not be enough, since the law has to contend with a reckoning the person already uses, and why a Weighing, which works with the claims a person already holds, can help. Do you have another question about the lesson?"
   },
 
-  // === Degrees of belief details ===
+  // === Holding competing rules ===
   {
-    id: 'degrees_measurement',
-    triggers: ['how are degrees of belief measured','measuring degrees of belief','who measures degrees of belief','tell when adjusted','measurement of belief'],
-    answer: "A degree of belief is how much confidence a child places in a given explanation, treated like a subjective probability rather than a flat yes or no. The lesson does not spell out a measurement method, but in research it is usually inferred by an outside observer from behavior, such as which prediction the child makes, how consistent they are across similar problems, and how they justify their answer, rather than from the child reporting a number. You can tell a degree has shifted when the child starts favoring a different explanation across varied situations, especially ones they have not been directly coached on. Do you have another question about the lesson?"
+    id: 'hold_both_rules', // was: hold_both_explanations
+    triggers: ['hold both rules','can velorans hold both','can someone hold two rules','both cradle rule and law of alignment','two rules same time'],
+    answer: "Yes, and this is one of the lesson's core claims: adults often kept both the cradle rule and the law of alignment, reaching for each in different situations. The two only cause trouble when a situation forces both rules to apply at the same moment, such as two Houses needing the same person at the same hour. Do you have another question about the lesson?"
   },
   {
-    id: 'believe_to_different_degrees',
-    triggers: ['believe each explanation to a different degree','different degrees of belief','what does it mean to believe','trust some more than others'],
-    answer: "It means the child does not treat their explanations as simply true or false but holds several at once, trusting some more than others. One explanation might be their go-to in most situations while another is held more weakly in reserve. Revising a belief, on this view, is just shifting how much trust is assigned to each, not adding or deleting explanations. Do you have another question about the lesson?"
+    id: 'aware_of_both_rules', // was: aware_of_multiple
+    triggers: ['aware they are holding two rules','aware of both rules','do velorans know they hold both','aware of competing rules','noticing they hold rival rules'],
+    answer: "The lesson does not say directly whether Velorans knew they held both rules. It says adults often kept both, reaching for the cradle rule in some situations and the law of alignment in others, without ever setting the two side by side. So whatever they knew, they did not compare the two rules, which is how the disagreement between them could go unnoticed. Do you have another question about the lesson?"
   },
   {
-    id: 'adjusting_vs_replacing',
-    triggers: ['difference between adjusting degrees of belief and replacing','adjusting degrees vs replacing','degrees vs replacement','adjust or replace','adjusting degrees compared to replacing'],
-    answer: "Adjusting degrees keeps every explanation available and only changes how much confidence each gets, so the weaker one survives, just trusted less. Replacing overwrites the weaker explanation so the child can no longer access it, changing which explanations exist rather than how strongly they are held. Do you have another question about the lesson?"
+    id: 'notice_disagreement_alone', // was: notice_contradictions
+    triggers: ['can velorans notice the disagreement on their own','notice conflicts between rules','spot the conflict on their own','notice clash between rules'],
+    answer: "The lesson does not say whether Velorans can notice the disagreement on their own. What it does say is that adults often kept both the cradle rule and the law of alignment without ever setting the two side by side, reaching for each in different situations. A Weighing is the lesson's way of putting both claims in one fixed case so the disagreement becomes visible. Do you have another question about the lesson?"
   },
   {
-    id: 'in_practice_revision',
-    triggers: ['in practice do children revise by adjusting','adjusting confidence or replacing','what really happens in revision','what mechanism in practice','combination of both'],
-    answer: "The evidence leans toward gradual adjustment of confidence as the everyday mechanism, since old explanations tend to persist and resurface rather than vanish, which fits coexistence rather than clean erasure. Genuine replacement does seem to happen in rarer, deeper cases of conceptual change, but a lot of what looks like replacement from the outside is probably heavy down-weighting of an explanation that is still latent. So the honest answer is mostly adjusting confidence. Do you have another question about the lesson?"
-  },
-  {
-    id: 'evidence_needed',
-    triggers: ['how much evidence needed to revise','amount of evidence','how much data needed','evidence required for revision','quantity of evidence'],
-    answer: "There is no fixed amount, because what matters is less the quantity of evidence than whether it creates a conflict the child cannot dismiss. A single well-targeted demonstration can work if it directly contradicts the child's prediction in a way they cannot explain away, while mountains of ambiguous evidence may change nothing. This is part of why a thought experiment can be effective with no new external evidence at all, since one sharp internal contradiction can do the work. Do you have another question about the lesson?"
-  },
-  {
-    id: 'revision_without_guidance',
-    triggers: ['belief revision on its own','without adult guidance','need scaffolding','can revision happen alone','child revise alone'],
-    answer: "It can happen on its own through everyday experience, but it is far more reliable with guidance. Left alone, children often fail to notice the contradictions that would prompt revision, so an adult who poses the right scenario and asks the child to trace its consequences greatly raises the odds. The whole rationale for thought experiments is that this kind of scaffolding makes the necessary conflict visible. Do you have another question about the lesson?"
-  },
-  {
-    id: 'how_long_revision',
-    triggers: ['how long for revision','time to revise','how long children revise','timescale of revision','how quickly revision'],
-    answer: "It varies widely, from minutes in a focused session to years for deep conceptual change. Surface adjustments in confidence can happen quickly within a single well-designed activity, but radically restructuring an intuitive theory, like a full grasp of matter or motion, unfolds slowly over development. So the timescale depends heavily on whether you mean a small shift or a genuine conceptual change. Do you have another question about the lesson?"
-  },
-  {
-    id: 'emotions_in_revision',
-    triggers: ['emotions in belief revision','feelings revising belief','emotional side of learning','dissatisfaction surprise','affect revision'],
-    answer: "The lesson does not focus on emotion, but the process has a clear affective side. The key one is a feeling of dissatisfaction or surprise when a prediction fails or a contradiction surfaces, which is part of what motivates the effort to resolve it. Curiosity can pull a child toward revision, while discomfort or defensiveness can push them to protect the old belief instead, which is one reason gentle framing matters. Do you have another question about the lesson?"
+    id: 'switching_by_situation', // was: context_dependence
+    triggers: ['situation dependent','switching rules by situation','reckonings situation dependent','context dependence','why disagreements go unnoticed'],
+    answer: "Yes on both counts. The lesson describes adults reaching for the cradle rule in some situations and the law of alignment in others, which shows the rules are cued by the situation rather than unified into one consistent reckoning. That switching is a large part of why the disagreement stays hidden, because two rules that are never applied to the same case are never compared. Do you have another question about the lesson?"
   },
 
-  // === Age-related ===
+  // === Degrees of alignment ===
   {
-    id: 'age_thought_experiments',
-    triggers: ['at what age can children engage in thought experiments','age for thought experiments','how young thought experiments','when can children do thought experiments'],
-    answer: "Simple hypothetical reasoning appears in the preschool years, and the disciplined kind strengthens through middle childhood. Concretely, one study found that 6-year-olds could accurately simulate a scenario in a thought experiment and revised their judgments about weight as much as children who saw a real demonstration. So even young children can do it effectively when the scenario is concrete and well guided, with the skill growing as cognitive control matures. Do you have another question about the lesson?"
+    id: 'alignment_measurement', // was: degrees_measurement
+    triggers: ['how is alignment measured','measuring alignment','who records alignment','tell when alignment changed','how strong is alignment'],
+    answer: "The lesson does not say how the strength of alignment is measured or recorded. It says only how alignment matters: when two Houses require incompatible actions at the same time, the House with the stronger alignment comes first, and alignment changes through the Turning of the Stone. Do you have another question about the lesson?"
   },
   {
-    id: 'age_competing_beliefs',
-    triggers: ['age children begin hold competing beliefs','when start holding rival beliefs','age coordinate competing beliefs','holding multiple ideas about world'],
-    answer: "Children hold competing intuitive explanations from early childhood, well before school, since these theories form through everyday experience. Coordinating them, meaning noticing and reconciling conflicts, develops later and more slowly, because it depends on being able to hold both ideas in mind at once and compare them. So holding rival beliefs comes early, but managing them is a later achievement. Do you have another question about the lesson?"
+    id: 'different_degrees_of_alignment', // was: believe_to_different_degrees
+    triggers: ['different degrees of alignment toward two houses','different degrees of alignment','what does stronger alignment mean','one house stronger than another'],
+    answer: "It means the person's obligations to the two Houses have different strengths rather than being equal. When the two Houses need incompatible things at the same time, the House with the stronger alignment comes first. In the lesson's description of the Turning as shifting strengths, the weaker obligation still holds whenever it does not interfere with the stronger one. Do you have another question about the lesson?"
+  },
+  {
+    id: 'shifting_vs_chiseling', // was: adjusting_vs_replacing
+    triggers: ['difference between weakening alignment and chiseling away the mark','weakening vs chiseling','shift strength vs remove mark','weaken or remove','shifting alignment compared to carving'],
+    answer: "Shifting alignment keeps the earlier Mark and only changes how strong each obligation is, so the weaker obligation survives and still applies when it does not conflict. Chiseling away the Mark removes the earlier Mark from the record stone, so every obligation it recorded ends, changing which obligations exist rather than how strong they are. Do you have another question about the lesson?"
+  },
+  {
+    id: 'what_turning_really_does', // was: in_practice_revision
+    triggers: ['in the end does the turning weaken or remove the mark','weaken or chisel away','what really happens in the turning','which description is right','combination of both'],
+    answer: "The lesson does not say. It describes the Turning both as weakening alignment while keeping the earlier Mark active, and as a Stone-keeper chiseling the earlier Mark away so that its obligations end, and these cannot both be true of the same Turning. Neither account is presented as the correct one, so the honest answer is that the lesson leaves this unresolved. Checking the two against a single case, such as the day Tor asks Nera to help with repairs, is a good way to see exactly where they disagree. Do you have another question about the lesson?"
+  },
+  {
+    id: 'how_much_to_recut', // was: evidence_needed
+    triggers: ['how much does it take to recut a reckoning','how many weighings','how much evidence needed','what is needed for a recut','quantity of evidence'],
+    answer: "The lesson gives no fixed amount. It says learning the law of alignment did not by itself make the cradle rule disappear, and that the Stone-keepers trusted a recut had taken hold only when the person applied the new rule to someone they had never considered before. Do you have another question about the lesson?"
+  },
+  {
+    id: 'recut_without_stone_keepers', // was: revision_without_guidance
+    triggers: ['recut on their own','without the stone-keepers','need a weighing','can recutting happen alone','veloran recut alone'],
+    answer: "The lesson does not say whether a recut can happen without the Stone-keepers. It describes truing as the habit of checking whether all of one's claims could hold together, and it says that learning the law of alignment did not on its own make the cradle rule disappear. Do you have another question about the lesson?"
+  },
+  // === Law of alignment and the festival example ===
+  {
+    id: 'law_of_alignment_def', // was: newtonian_def
+    triggers: ['what is the law of alignment','law of alignment','stone-keepers law','define law of alignment','explain law of alignment'],
+    answer: "The law of alignment is the Stone-keepers' rule that when two Houses require incompatible actions at the same time, the House with the stronger alignment comes first. Under it, receiving a Mark first does not by itself give that Mark greater priority. In the lesson it is the rule a Veloran recuts toward, and at the festival it sends Nera to prepare Seli's meal. It contrasts with the cradle rule, which always puts the first House first. Do you have another question about the lesson?"
+  },
+  {
+    id: 'why_festival_example', // was: why_rolling_ball
+    triggers: ['why use the festival example','festival example','why this example','festival of first rain example','festival example specifically'],
+    answer: "Because the festival is a case where the cradle rule and the law of alignment give clearly opposite answers for the same person at the same moment: one sends Nera to Tor's lanterns and the other to Seli's kitchen. That makes it a clean way to show how a Weighing brings a disagreement into view. It also meets the lesson's own requirement that the person, time, and circumstances stay fixed. Do you have another question about the lesson?"
+  },
+  {
+    id: 'festival_vs_ordinary_day', // was: earth_vs_empty_space
+    triggers: ['festival vs ordinary day','only one house needs her','different answers on another day','why both houses at the same hour','day when only one house needs help'],
+    answer: "Yes, and that difference is why the festival matters. On a day when only Seli needs Nera, the cradle rule and the law of alignment both send her to Seli's kitchen, so the disagreement between them stays hidden. Only when both Houses need her at the same hour do the two rules make visibly opposite demands, which is why the lesson warns that weighing one rule on one day and another rule on a different day could hide a disagreement. Do you have another question about the lesson?"
   },
 
-  // === Newtonian and motion example ===
+  // === Stone-keepers' role ===
   {
-    id: 'newtonian_def',
-    triggers: ['what is newtonian mechanics','newtonian mechanics','newton','define newtonian','explain newtonian'],
-    answer: "It is the scientific account of motion in which a moving object keeps moving at the same speed in the same direction unless an outside force acts on it. In the lesson it is the correct explanation the child is meant to revise toward, and for a ball moving through empty space it predicts the ball will simply keep going. It contrasts with the intuitive impetus idea that objects slow down on their own. Do you have another question about the lesson?"
+    id: 'stone_keepers_role', // was: educator_role
+    triggers: ['role of stone-keepers','stone-keepers role in changing reckonings','what do stone-keepers do','stone-keepers help velorans','stone-keeper guidance'],
+    answer: "In the lesson, Stone-keepers tend the record stone, name the rule of priority the law of alignment, and hold Weighings when Velorans disagree about which duty someone must perform. They also judge recuts: they trusted that a recut had taken hold only when the person applied the new rule to someone they had never considered before. Do you have another question about the lesson?"
   },
   {
-    id: 'why_rolling_ball',
-    triggers: ['why use rolling ball example','rolling ball example','why this example','ball in space example','ball example specifically'],
-    answer: "Because motion is the classic case where a coherent naïve theory collides cleanly with the scientific one, making the contradiction easy to display. The impetus and Newtonian views give flatly opposite predictions for the same ball, which is exactly what you want to show how a thought experiment exposes a conflict. It is also a heavily studied domain, so the misconception is well documented and reliable. Do you have another question about the lesson?"
+    id: 'designing_a_weighing', // was: designing_thought_exp
+    triggers: ['design a weighing','how to set up a weighing','how to design a weighing','choosing a case for a weighing','good weighing case'],
+    answer: "Start from the specific claims that might conflict, then pick one particular person at one particular moment in which both claims apply and would demand different actions. Keep the person, time, and circumstances fixed, trace what each claim requires, and compare, the way the festival case does for the cradle rule and the law of alignment. A case where the claims happen to agree, like a day when only one House needs help, will not reveal anything. Do you have another question about the lesson?"
   },
   {
-    id: 'earth_vs_empty_space',
-    triggers: ['ball on earth vs empty space','rolling on earth','different predictions earth','why empty space','friction earth'],
-    answer: "Yes, and that difference is the whole point of choosing empty space. On Earth, friction makes the ball slow and stop, so the impetus prediction looks confirmed and the contradiction stays hidden. Removing friction by imagining empty space strips away that cover, so the two explanations finally make visibly opposite predictions and the conflict comes into the open. Do you have another question about the lesson?"
+    id: 'social_influences_reckoning', // was: social_cultural_factors
+    triggers: ['social influences on reckonings','community and reckonings','family influence on reckonings','what others do shapes reckonings','community influences beliefs'],
+    answer: "They matter a lot in the lesson's account, because children's reckonings grew from what they saw around them, and watching adults serve the House of their childhood is exactly what led many to hold the cradle rule. The lesson does not go further into how families or neighbors influence later changes. So in the lesson, the social world mainly shapes where a reckoning starts. Do you have another question about the lesson?"
   },
   {
-    id: 'competing_in_morality',
-    triggers: ['competing explanations in morality','social behavior','domain without clear answer','morality','beliefs in domains without truth'],
-    answer: "The coexistence-of-competing-explanations part would still apply, since people hold rival intuitions in those domains too, and you could still surface internal inconsistencies. What changes is the \"revise toward the correct answer\" part, because without an agreed right answer you cannot say which belief should lose weight. So consistency-checking survives, but error-correction toward a known truth does not, which makes revision murkier. Do you have another question about the lesson?"
-  },
-
-  // === Educator role ===
-  {
-    id: 'educator_role',
-    triggers: ['role of educators','teachers role revise beliefs','what should teachers do','educators help children revise','teacher guidance'],
-    answer: "Their central role is to make hidden conflicts visible and to provide a credible alternative, rather than simply asserting the correct answer over the child's existing one. That means eliciting what the child already believes, designing situations where those beliefs make a testable prediction, and guiding the child to notice when the prediction fails. In short, the educator engineers the dissatisfaction and supports the path to a better explanation. Do you have another question about the lesson?"
-  },
-  {
-    id: 'designing_thought_exp',
-    triggers: ['design thought experiments challenge misconceptions','developmentally appropriate','how to design thought experiment','designing for kids','age appropriate thought experiment'],
-    answer: "Start from the specific misconception you want to target, then build a concrete, imaginable scenario in which the child's belief makes a clear prediction that can be shown to fail. Keep it simple and vivid enough for the child to simulate mentally, as the rice-grain-on-a-fulcrum example does for young children, and scaffold with questions rather than lecturing. Matching the scenario's complexity to the child's reasoning capacity is what keeps it both challenging and age-appropriate. Do you have another question about the lesson?"
-  },
-  {
-    id: 'social_cultural_factors',
-    triggers: ['social and cultural factors influence revising','culture beliefs','family peers influence','cultural factors revising','community influences beliefs'],
-    answer: "They matter a lot, because beliefs are partly shaped and reinforced by family, peers, and cultural teaching, and revising an idea can feel like going against one's community. Peer discussion can also be a powerful catalyst, since exchanging reasons with someone who disagrees can prompt change, sometimes within minutes. So whether a child is willing to revise depends not only on the evidence but on the social context in which the idea is held. Do you have another question about the lesson?"
-  },
-  {
-    id: 'test_revision_research',
-    triggers: ['how could researchers test thought experiments cause revision','test if thought experiments work','research methodology revise','study design test revision','pre test post test'],
-    answer: "The standard approach is an experiment with a pre-test, an intervention, and a post-test, often comparing a thought-experiment group against another condition. For example, one large study had participants reason about force and motion in a pre-training, training, and post-training design across two experiments with over a thousand participants, which lets researchers see whether the thought experiment, and not something else, produced the change. Random assignment to conditions is what supports the causal claim. Do you have another question about the lesson?"
+    id: 'testing_a_recut', // was: test_revision_research
+    triggers: ['how could stone-keepers tell a weighing changed a reckoning','test if a recut took hold','how to check a recut','evidence that a reckoning changed','new case test'],
+    answer: "The lesson gives a clear test: the Stone-keepers trusted that a recut had taken hold only when the person applied the new rule to someone they had never considered before. Reciting the law of alignment is not enough, since some Velorans could recite it perfectly and still fall back on the cradle rule in an unfamiliar case. So the evidence that matters is how the person reasons about a new case, not whether they can repeat the rule. Do you have another question about the lesson?"
   }
 ];
 
@@ -2845,18 +2941,19 @@ function isMetaQuestion(question) {
   return META_PATTERNS.some(p => p.test(q));
 }
 
-// Returns the top curated candidate (by cosine vs. trigger embeddings)
-// only if its cosine clears MATCH_FLOOR. The caller then asks the GPT
 // =====================================================
 // UNIFIED GPT ROUTER
 // -----------------------------------------------------
-// One GPT call per question decides everything: look up
-// a canonical answer in the curated repository, look up a
-// reused answer from the cross-participant cache, or
-// generate fresh. No cosine, no embedding thresholds.
+// One GPT call per question (server-side, api/router.js)
+// decides everything: look up a canonical answer in the
+// curated repository, look up a reused answer from the
+// cross-participant cache, or generate fresh. No cosine,
+// no embedding thresholds. Questions matching
+// FOLLOWUP_PATTERNS / META_PATTERNS skip the router and
+// are always generated fresh.
 //
 // The router sees:
-//   - The 55 curated entries (id, first trigger, answer)
+//   - Every curated entry (id, first trigger, answer preview)
 //   - The server-side Firebase cache and this session's cache
 //   - Last 4 turns of conversation
 //   - The current question
@@ -3072,6 +3169,37 @@ function _buildLikertSection(items, ratings, orderShown) {
   };
 }
 
+function _buildLlmKnowledgeSection(responses, orderShown) {
+  const scoredMap = (state.responses && state.responses.llm_knowledge_scored) || {};
+  const items = LLM_KNOWLEDGE_ITEMS.map(it => {
+    const resp = responses[it.id] || {};
+    const scored = scoredMap[it.id] || {};
+    const idx = orderShown ? orderShown.indexOf(it.id) : -1;
+    return {
+      id: it.id,
+      prompt: it.prompt,
+      question_type: 'multiple_choice',
+      options: it.options.map(o => ({ key: o.key, text: o.text })),
+      presented_order: resp.presented_order || null,
+      position_shown: idx >= 0 ? idx + 1 : null,
+      participant_selected_key: resp.selected_key || null,
+      participant_selected_text: resp.selected_text || null,
+      participant_answer: resp.selected_key ? (resp.selected_key + '. ' + (resp.selected_text || '')) : null,
+      // Points are computed server-side (api/score.js). If that call did
+      // not complete, these stay null and are scored post-hoc from the key.
+      points: (scored.points != null) ? scored.points : null,
+      max_points: 3
+    };
+  });
+  const allScored = items.every(i => i.points != null);
+  return {
+    scoring: '3 = completely right, 2 = mostly right, 1 = kind of right, 0 = wrong',
+    total_points: allScored ? items.reduce((s, i) => s + i.points, 0) : null,
+    max_total_points: items.length * 3,
+    items
+  };
+}
+
 function _buildCrtSection(answers, timings) {
   const scoredMap = (state.responses && state.responses.crt_scored) || {};
   return {
@@ -3133,7 +3261,7 @@ function buildParticipantPayload() {
   const crtTimings = r.crt_item_timings || {};
 
   return {
-    schema_version: '1.1',
+    schema_version: '1.2',
 
     // Top-level mirrors of the three keys DataPipe validates against.
     // Duplicated under session below for the labeled view; kept here
@@ -3182,7 +3310,8 @@ function buildParticipantPayload() {
       chatbot_experience_likert: _buildLikertSection(EXP_CHATBOT_ITEMS, r.exp_chatbot || {}, r.exp_chatbot_order || [])
     },
 
-    tf_perceptions: _buildLikertSection(TF_ITEMS, r.tf || {}, r.tf_order || []),
+    llm_knowledge: _buildLlmKnowledgeSection(r.llm_knowledge || {}, r.llm_knowledge_order || []),
+    llm_beliefs:   _buildLikertSection(LLM_BELIEFS_ITEMS,   r.llm_beliefs   || {}, r.llm_beliefs_order   || []),
 
     crt: _buildCrtSection(r.crt || {}, crtTimings),
 
@@ -3342,10 +3471,10 @@ async function retryPendingUploads() {
   }
 }
 
-// Score the CRT on the backend (api/score.js holds the answer key, not the
-// client). Best-effort: on failure the raw participant answers are still in
-// the payload and can be scored during analysis.
-async function scoreCrtFromBackend() {
+// Score the CRT and LLM-knowledge on the backend (api/score.js holds the
+// answer keys, not the client). Best-effort: on failure the raw participant
+// answers are still in the payload and can be scored during analysis.
+async function scoreResponsesFromBackend() {
   try {
     const src = (state.responses && state.responses.crt) || {};
     const crt = {};
@@ -3353,10 +3482,17 @@ async function scoreCrtFromBackend() {
       const a = src[id];
       if (a && a.answer != null) crt[id] = a.answer;
     }
-    const res = await proxyFetchWithTimeout('/score', { crt }, 5000);
+    const llmSrc = (state.responses && state.responses.llm_knowledge) || {};
+    const llm_knowledge = {};
+    for (const id of Object.keys(llmSrc)) {
+      const a = llmSrc[id];
+      if (a && a.selected_key) llm_knowledge[id] = a.selected_key;
+    }
+    const res = await proxyFetchWithTimeout('/score', { crt, llm_knowledge }, 5000);
     if (!res.ok) return;
     const data = await res.json();
     if (data && data.scored) state.responses.crt_scored = data.scored;
+    if (data && data.llm_knowledge_scored) state.responses.llm_knowledge_scored = data.llm_knowledge_scored;
   } catch { /* best-effort; raw answers remain in the payload */ }
 }
 
@@ -3382,8 +3518,8 @@ async function saveParticipantData() {
   // moment of successful completion — so dropouts never consume an ID.
   await claimSequentialParticipantId();
 
-  // Score the CRT server-side before building the payload (best-effort).
-  await scoreCrtFromBackend();
+  // Score the CRT and LLM-knowledge server-side before building the payload (best-effort).
+  await scoreResponsesFromBackend();
 
   // Step 2: build the payload with the (now sequential) participantId
   // and ALWAYS write a localStorage backup before touching the network.
@@ -3711,11 +3847,13 @@ async function captureConsentPDF(completedAt) {
 }
 
 // =====================================================
-// PER-PARTICIPANT XLSX (one workbook with 4 sheets)
+// PER-PARTICIPANT XLSX (one workbook with 11 sheets)
 // -----------------------------------------------------
-// Mirrors the JSON payload but in a researcher-readable
-// shape: Chatbot (turn-by-turn), Learning (row per Q),
-// CRT (row per Q), Other (everything else flattened).
+// Mirrors the participant's answers from the JSON payload in a
+// researcher-readable shape: Chatbot Questions, Chatbot
+// Conversation, Learning, CRT, Consent, Manipulation Check,
+// Lesson Experience, Chatbot Experience, LLM-knowledge,
+// LLM-beliefs, Demographics (see the per-sheet comments below).
 // Uploaded to Dataverse via DataPipe base64 endpoint, with the
 // same localStorage backup + retry pattern as the consent
 // PDF so transient network failures recover on next load.
@@ -3839,13 +3977,19 @@ function buildParticipantXLSX(payload) {
   cL.forEach(it => cLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(cLRows)), 'Chatbot Experience');
 
-  // ---- Sheet 8: TF Perceptions (column per Likert item) ----
-  const tfL = (payload.tf_perceptions && payload.tf_perceptions.items) || [];
-  const tfRows = [['item_id', 'statement', 'participant_rating']];
-  tfL.forEach(it => tfRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(tfRows)), 'TF Perceptions');
+  // ---- Sheet 8: LLM-knowledge (column per multiple-choice item) ----
+  const lk = (payload.llm_knowledge && payload.llm_knowledge.items) || [];
+  const lkRows = [['item_id', 'question', 'participant_answer', 'points']];
+  lk.forEach(it => lkRows.push([it.id, it.prompt, it.participant_answer || '', it.points != null ? it.points : '']));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lkRows)), 'LLM-knowledge');
 
-  // ---- Sheet 9: Demographics (column per question) ----
+  // ---- Sheet 9: LLM-beliefs (column per Likert item) ----
+  const lb = (payload.llm_beliefs && payload.llm_beliefs.items) || [];
+  const lbRows = [['item_id', 'statement', 'participant_rating']];
+  lb.forEach(it => lbRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lbRows)), 'LLM-beliefs');
+
+  // ---- Sheet 10: Demographics (column per question) ----
   const demo = (payload.demographics && payload.demographics.items) || [];
   const demoRows = [['item_id', 'question', 'participant_answer']];
   demo.forEach(it => {
@@ -3928,7 +4072,8 @@ async function captureParticipantXLSX(payload) {
 }
 
 // =====================================================
-// SEMANTIC CACHE (embedding-based, meaning not word overlap)
+// EMBEDDING HELPERS (used by the scope anchor; answer
+// routing itself is done by the GPT router, not cosine)
 // =====================================================
 async function getEmbedding(text) {
   const res = await proxyFetch('/embed', { model: 'text-embedding-3-small', input: text });
@@ -3948,8 +4093,9 @@ function cosineSimilarity(a, b) {
 // ------------------------------------------------------------
 // Fresh answers are saved to the server-side Firebase cache so
 // future participants can reuse them. The browser keeps only this
-// participant's session cache; it no longer downloads the shared
-// Firebase cache.
+// participant's session cache, which is sent to the router with
+// each question. It no longer downloads the shared Firebase cache:
+// loadFirebaseCacheMirror() is a leftover stub that always yields [].
 // ============================================================
 let sessionAnswerCache = [];
 let firebaseCacheMirror = null;
@@ -3966,10 +4112,9 @@ async function loadFirebaseCacheMirror() {
 }
 
 async function persistAnswer(question, embedding, answer) {
-  // 1. SYNCHRONOUS in-memory push: the next question in this session
-  //    (and any concurrent request) can find this answer immediately,
-  //    no Firebase latency dependency. This is what makes same-session
-  //    reuse work flawlessly even when the participant types fast.
+  // 1. SYNCHRONOUS in-memory push: the session cache is sent to the
+  //    router with the next question, so same-session reuse does not
+  //    depend on the Firebase write below having landed.
   const entry = { question, embedding, answer, savedAt: new Date().toISOString() };
   sessionAnswerCache.push(entry);
   if (firebaseCacheMirror !== null) firebaseCacheMirror.push(entry);
@@ -4223,22 +4368,27 @@ function goTo(screenId) {
   if (screenId === 'framing') {
     if (renderFraming()) startGate('framing');
   }
-  if (screenId === 'chatbot') { precomputeCuratedRepoEmbeddings(); loadFirebaseCacheMirror(); renderVisibilityBanner(); renderChatbotWelcome(); }
+  if (screenId === 'chatbot') { precomputeCuratedRepoEmbeddings(); loadFirebaseCacheMirror(); renderChatbotTypeBanner(); renderChatbotWelcome(); }
   if (screenId === 'complete') saveParticipantData();
 
   // Snapshot the in-progress session to localStorage so a participant
   // who closes the tab mid-study can resume on the next page load.
   snapshotSession();
   if (screenId === 'exp-lesson') renderLikert('likert-exp-lesson', EXP_LESSON_ITEMS, 'exp_lesson');
-  if (screenId === 'exp-chatbot') renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot');
+  if (screenId === 'exp-chatbot') { renderChatbotTypeCue(); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
   if (screenId === 'manipulation-check') renderManipCheck();
+  if (screenId === 'learning-items') {
+    if (!state.learningQueue) { state.learningQueue = buildLearningQueue(); state.learningIndex = 0; }
+    renderLearningItem();
+  }
   if (screenId === 'crt-items') {
     if (!state.crtQueue) { state.crtQueue = shuffle(CRT_ITEMS); state.crtIndex = 0; }
     renderCRTItem();
   }
-  if (screenId === 'tf-questions') renderLikert('likert-tf', TF_ITEMS, 'tf');
+  if (screenId === 'llm-knowledge') renderLlmKnowledge();
+  if (screenId === 'llm-beliefs') renderLikert('likert-llm-beliefs', LLM_BELIEFS_ITEMS, 'llm_beliefs');
   if (screenId === 'demographics') renderDemographics();
-  if (screenId === 'study-debrief') renderVisibleDebrief();
+  if (screenId === 'study-debrief') renderStudyDebrief();
 }
 
 function updateProgress() {
@@ -4254,61 +4404,63 @@ function updateProgress() {
 // =====================================================
 // LEARNING MEASURE: one-at-a-time presentation
 // =====================================================
+// Item IDs are recorded in the data; the trailing Q-number comments map
+// each item to the numbering in the researcher answer key (kept off-repo).
 const LEARNING_ITEMS_RAW = {
   open_response: {
     sectionLabel: 'Part 1 of 3 · Explain in your own words',
     maxWords: 60,
     items: [
-      { id: 'or_naive_theory', prompt: 'In your own words, please briefly explain what a naïve theory is.' },
-      { id: 'or_consistency_monitoring', prompt: 'In your own words, please briefly explain what consistency monitoring is.' },
-      { id: 'or_thought_experiment_contradiction', prompt: 'How can a thought experiment help a learner notice that two explanations make contradictory predictions about the same situation?' },
-      { id: 'or_naive_theory_persistence', prompt: 'In your own words, why do naïve theories persist even when learners encounter evidence that contradicts them?' },
-      { id: 'or_belief_revision_outcome', prompt: 'According to the lesson, when a learner revises a belief, what happens to the explanation they originally held? Explain in your own words.' },
-      { id: 'or_thought_experiment_vs_fact', prompt: 'According to the lesson, are thought experiments just another way of giving a learner another fact or example? Explain why or why not.' },
-      { id: 'or_belief_weight', prompt: 'In your own words, please briefly explain what it means to say a child believes each explanation "to a different degree," or gives each one a different "belief weight."' },
-      { id: 'or_whales_dolphins', prompt: 'A student has long categorized whales and dolphins as fish because they live in water and have fins. The student then learns that, because they breathe air, give birth to live young, and nurse their offspring, whales are categorized as mammals. After hearing dolphins also give birth to live offspring, the student spontaneously infers that dolphins are mammals as well. Drawing on the lesson, has this child experienced belief revision? Why or why not?' },
-      { id: 'or_plants_telling_not_enough', prompt: 'A child says that plants are not alive because they do not walk, talk, or show feelings. The teacher explains that plants are living organisms. The child writes “plants are alive” on a worksheet. A week later, when asked about a tree stump, the child says it is not alive because “it does not do anything.” Based on the lesson, why might simply telling the child the correct answer not be enough for their understanding?' }
+      { id: 'or_cradle_rule_persistence', prompt: 'In your own words, why might a Veloran keep using the cradle rule even after learning the law of alignment?' }, // Q1
+      { id: 'or_turning_outcome', prompt: 'According to the lesson, after a Veloran completes the Turning of the Stone, what happens to their earlier House Mark and its obligations? Explain in your own words.' }, // Q4 (diagnostic)
+      { id: 'or_truing', prompt: 'In your own words, briefly explain what the Stone-keepers meant by truing.' }, // Q6
+      { id: 'or_mira_recut', prompt: "Mira, a young Veloran, has always assumed that anyone working in Tor's lantern hall belongs to Tor. She then learns that membership depends on House Marks, and that working in a House's building does not by itself grant its Mark. Later, she meets a stranger repairing Seli's kitchen and says she cannot tell which House the stranger belongs to without knowing their Mark. Has Mira recut her reckoning? Why or why not?" }, // Q7
+      { id: 'or_alignment_degrees', prompt: 'In your own words, what does it mean for a Veloran to have different degrees of alignment toward two Houses?' }, // Q9
+      { id: 'or_weighing_incompatible', prompt: 'How can a Weighing help a Veloran notice that two rules require incompatible actions in the same situation?' }, // Q11
+      { id: 'or_reckoning', prompt: 'In your own words, briefly explain what a reckoning is.' }, // Q12
+      { id: 'or_weighing_vs_custom', prompt: 'According to the lesson, is a Weighing simply another way of teaching someone a new custom or giving them another fact? Explain why or why not.' }, // Q13
+      { id: 'or_doran_telling_not_enough', prompt: 'As a child, Doran believed that people must always serve their first House. After studying with the Stone-keepers, he can recite the law of alignment correctly. A week later, he considers a neighbor with stronger Seli alignment who is needed by Tor and Seli at the same hour, and he says she must go to Tor because it was her first House. Why might simply telling Doran the law of alignment not have been enough?' } // Q15
     ]
   },
   multiple_choice: {
     sectionLabel: 'Part 2 of 3 · Multiple choice',
     maxWords: 60,
     items: [
-      { id: 'mc_belief_revision', type: 'mc', prompt: "In the lesson, what is belief revision?", options: [
-        { key: 'A', text: "All of the above", pinLast: true },
-        { key: 'B', text: "Replacing an old belief so it is no longer available to the learner." },
-        { key: 'C', text: "Shifting confidence across several beliefs the learner already holds." },
-        { key: 'D', text: "Adding information that fits without changing the learner’s beliefs." }
+      { id: 'mc_weighing_festival', type: 'mc', prompt: "A Veloran says that Nera must carry Tor's lanterns at the festival because Tor was her first House. The same Veloran also says she must prepare Seli's meal because her Seli alignment is stronger. Both duties fall at the same hour, and Nera can perform only one. What would a Weighing reveal?", options: [ // Q2
+        { key: 'A', text: "The Veloran has already given up the cradle rule but lacks the right civic vocabulary." },
+        { key: 'B', text: "The Veloran is relying on two rules that require incompatible actions of the same person at the same moment." },
+        { key: 'C', text: "The Veloran has no reckoning at all and must learn the names of the Houses before reasoning." },
+        { key: 'D', text: "The Veloran only needs another fact about the festival to make both requirements compatible." }
       ] },
-      { id: 'mc_thought_experiments', type: 'mc', prompt: "Why can thought experiments support belief revision, according to the lesson?", options: [
-        { key: 'A', text: "They ask learners to apply the scientific explanation to a new case, making transfer beyond the taught example more likely." },
-        { key: 'B', text: "They ask learners to imagine a situation and trace what their own explanation predicts, making hidden contradictions easier to notice." },
-        { key: 'C', text: "They ask learners to observe a real example and compare it with new evidence, making wrong beliefs easier to reject." },
-        { key: 'D', text: "They ask learners to compare two explanations across several cases, making the more coherent explanation easier to identify." }
+      { id: 'mc_weighing_why', type: 'mc', prompt: "According to the lesson, why can a Weighing help a Veloran reconsider their reckoning?", options: [ // Q3
+        { key: 'A', text: "It reveals which rule is more popular by counting how many Velorans follow it." },
+        { key: 'B', text: "It guarantees that the Stone-keepers' newest rule will apply to every unfamiliar case." },
+        { key: 'C', text: "It requires tracing what existing claims demand of one person at one moment, making disagreements easier to notice." },
+        { key: 'D', text: "It supplies a new custom that automatically replaces the person's earlier reckoning." }
       ] },
-      { id: 'mc_motion_ball', type: 'mc', prompt: "A child says a ball moving through empty space will slow down because its inner push fades. The same child also says nothing can slow the ball if nothing touches it. What does a thought experiment reveal?", options: [
-        { key: 'A', text: "The child lacks any explanation of motion and needs the Newtonian rule before reasoning begins." },
-        { key: 'B', text: "The child has replaced the impetus explanation but lacks the correct scientific vocabulary." },
-        { key: 'C', text: "The child has two explanations that make incompatible predictions about the same imagined case." },
-        { key: 'D', text: "The child needs another ordinary example so the naive theory can be enriched with more detail." }
+      { id: 'mc_turning_does', type: 'mc', prompt: "According to the section Alignment and the Turning, what does the Turning of the Stone do?", options: [ // Q5
+        { key: 'A', text: "It adds another duty without changing the strength of any obligation." },
+        { key: 'B', text: "It changes the relative strength of the person's obligations while keeping the earlier Mark active." },
+        { key: 'C', text: "It removes the earlier Mark so that its obligations end." },
+        { key: 'D', text: "It does all three of these things.", pinLast: true }
       ] },
-      { id: 'mc_plants_learning_type', type: 'mc', prompt: "A student already knows that plants need sunlight to grow and then learns that plants also require certain minerals from the soil. Drawing on the lesson, what kind of learning is this best understood as?", options: [
-        { key: 'A', text: "Enrichment" },
-        { key: 'B', text: "Conceptual replacement" },
-        { key: 'C', text: "Consistency monitoring" },
-        { key: 'D', text: "Naive theory persistence" }
+      { id: 'mc_cradle_rule_persistence', type: 'mc', prompt: "Why might a Veloran keep using the cradle rule after hearing the law of alignment?", options: [ // Q8
+        { key: 'A', text: "Hearing the law always erases the old rule, so the Veloran must be reinventing the cradle rule each time." },
+        { key: 'B', text: "The Veloran prefers the cradle rule because the lesson says older rules always take priority." },
+        { key: 'C', text: "The cradle rule may remain available, and the Veloran may not notice the disagreement or apply the law of alignment to unfamiliar cases." },
+        { key: 'D', text: "A Veloran can never hold two rules at once, so the cradle rule must remain the only one." }
       ] },
-      { id: 'mc_impetus_explanation', type: 'mc', prompt: "In the lesson’s motion example, what is the child’s impetus-based explanation of motion?", options: [
-        { key: 'A', text: "The false belief that a moving object carries an inner push that gradually fades, so the object slows down on its own." },
-        { key: 'B', text: "The false belief that a moving object keeps moving at the same speed unless an outside force acts on it." },
-        { key: 'C', text: "The correct belief that a moving object carries an inner push that gradually fades, so the object slows down on its own." },
-        { key: 'D', text: "The correct belief that a moving object keeps moving at the same speed unless an outside force acts on it." }
+      { id: 'mc_adding_vs_recutting', type: 'mc', prompt: "A Veloran already knows that Tor members carry the festival lanterns. They then learn that Tor members also repair the lantern hall. Their rule for deciding who must serve Tor, and when Tor's duties come first, stays the same. What kind of change is this?", options: [ // Q10
+        { key: 'A', text: "Persistence of the cradle rule." },
+        { key: 'B', text: "Adding." },
+        { key: 'C', text: "Truing." },
+        { key: 'D', text: "Recutting." }
       ] },
-      { id: 'mc_holding_old_explanation', type: 'mc', prompt: "According to the lesson, why might a child continue using an old explanation even after being told the correct scientific answer that contradicts the older one?", options: [
-        { key: 'A', text: "The correct new explanation completely overwrites the old explanation when it is learned, so in cases when children deploy older explanations, it suggests they are reconstructing the “older” idea on the fly, from the evidence given in the problem." },
-        { key: 'B', text: "Children cannot hold two explanations at once, even implicitly, so the old one stays in use until the correct one is repeated enough to fully replace it." },
-        { key: 'C', text: "The child may hold both explanations but choose the old one because it is more surprising with respect to the data and they are testing their theory by using it." },
-        { key: 'D', text: "The child may still have access to the old explanation, even after hearing the scientific one and not recognize the contradiction nor appropriately apply the scientific explanation to new problems." }
+      { id: 'mc_cradle_rule_definition', type: 'mc', prompt: "What is the cradle rule described in the lesson?", options: [ // Q14
+        { key: 'A', text: "The mistaken belief that a person must always put first the House whose Mark they received first." },
+        { key: 'B', text: "The Stone-keepers' law that the stronger alignment determines which duty comes first." },
+        { key: 'C', text: "The belief that anyone who helps a House automatically receives its Mark." },
+        { key: 'D', text: "The rule that every Veloran owes equally strong obligations to all their Houses." }
       ] }
     ]
   },
@@ -4316,7 +4468,7 @@ const LEARNING_ITEMS_RAW = {
     sectionLabel: 'Part 3 of 3 · One last question',
     maxWords: 60,
     items: [
-      { id: 'consistency_1', prompt: 'Imagine the content you just read about here in this study will be shown to another participant. Is there any part of it you would change before showing it to them because it seemed unclear or seemed to contradict itself? Why or why not?' }
+      { id: 'consistency_1', prompt: 'Imagine this lesson will be shown to another participant. Is there any part you would change because it seemed unclear or seemed to contradict itself? Explain what you would change and why, or why you would leave it unchanged.' } // Q16 (diagnostic)
     ]
   }
 };
@@ -4391,8 +4543,7 @@ state.learningItemTimings = {};
 function startLearningItems() {
   state.learningQueue = buildLearningQueue();
   state.learningIndex = 0;
-  goTo('learning-items');
-  renderLearningItem();
+  goTo('learning-items'); // goTo renders the current item
 }
 
 function renderLearningItem() {
@@ -4956,10 +5107,12 @@ function updateDebriefConfirm() {
 // Firebase-backed ABC ABC ABC rotation. The counter increments on each
 // real assignment (not on dropouts at landing/email/consent screens, since
 // those screens are before consent submission). The %3 rotation guarantees
-// baseline -> private -> visible -> baseline -> ... across all participants
+// baseline -> framing-reasoning -> framing-scripted -> baseline -> ... across all participants
 // globally, not per-browser, so opening the study in a fresh browser does
-// not reset the rotation. localStorage is the offline fallback.
-const CONDITION_ROTATION = ['baseline', 'private', 'visible'];
+// not reset the rotation. If the counter is unreachable, the condition is
+// assigned at random (state.conditionAssignmentFallback = true).
+// localStorage only keeps an assigned condition sticky across reloads.
+const CONDITION_ROTATION = ['baseline', 'framing-reasoning', 'framing-scripted'];
 let conditionAssignmentPromise = null;
 
 function randomFallbackCondition() {
@@ -5067,11 +5220,14 @@ function assignConditionAndContinue() {
     consent_pdf_filename: `${state.participantId}_consent_${formatDateDDMMYYYY(consentTs)}.pdf`
   };
 
-  // NOTE: the consent PDF, email→Firebase write, and chatbot user
+  // NOTE: the consent PDF, email-hash→Firebase write, and chatbot user
   // CSV write are all deferred to saveParticipantData() at the
   // 'complete' screen. That way they all use the same sequential
   // P00X (claimed at completion), and dropouts never consume an ID
-  // or pollute the email/PDF/CSV nodes with abandoned sessions.
+  // or pollute the email_hashes/PDF/CSV outputs with abandoned sessions.
+  // The one exception is recordContactEmailEarly() (below), which stores
+  // the raw email in contact_emails right after consent, so it DOES
+  // include participants who later drop out.
 
   goTo('instructions');
 }
@@ -5149,22 +5305,22 @@ function renderFraming() {
   const tagEl = document.getElementById('framing-tag');
   const textEl = document.getElementById('framing-text');
   if (tagEl) {
-    tagEl.textContent = state.condition === 'baseline' ? 'Baseline · Lesson only' :
-      state.condition === 'private' ? 'Lesson + private chatbot' : 'Lesson + visible chatbot';
+    tagEl.textContent = state.condition === 'framing-reasoning' ? 'Lesson + reflective chatbot' :
+      state.condition === 'framing-scripted' ? 'Lesson + templatic chatbot' : 'Lesson + chatbot';
   }
   if (textEl) {
     textEl.innerHTML = FRAMING[state.condition];
   }
 
   // Condition-specific acknowledgment text. The participant has to
-  // explicitly check the box that matches what they just read about
-  // visibility, so they don't just blow past the framing copy.
+  // explicitly check the box that matches what they just read about the
+  // chatbot, so they don't just blow past the framing copy.
   const checkSpan = document.querySelector('#framing-check-label span');
   if (checkSpan) {
-    if (state.condition === 'private') {
-      checkSpan.textContent = 'I have read the information above. I understand that the research team will read my chatbot conversation, but that they will not be able to identify which participant I am.';
-    } else if (state.condition === 'visible') {
-      checkSpan.textContent = 'I have read the information above. I understand that the research team will read my chatbot conversation, but that they will not be able to identify which participant I am.';
+    if (state.condition === 'framing-reasoning') {
+      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with a reflective chatbot.';
+    } else if (state.condition === 'framing-scripted') {
+      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with a templatic chatbot.';
     } else {
       checkSpan.textContent = 'I have read the information above.';
     }
@@ -5172,14 +5328,14 @@ function renderFraming() {
   return true;
 }
 
+// All three conditions have the chatbot (they differ only in how it is
+// framed), so everyone goes lesson -> chatbot and rates the chatbot.
 function afterLessonRoute() {
-  if (state.condition === 'baseline') goTo('learning-intro');
-  else goTo('chatbot');
+  goTo('chatbot');
 }
 
 function afterExpLessonRoute() {
-  if (state.condition === 'baseline') goTo('crt-intro');
-  else goTo('exp-chatbot');
+  goTo('exp-chatbot');
 }
 
 // =====================================================
@@ -5329,31 +5485,56 @@ function renderChatbotWelcome() {
     removeTypingIndicator(typingId);
     const msg = document.createElement('div');
     msg.className = 'chat-msg assistant';
-    msg.innerHTML = `<span class="role">Chatbot</span><div class="body">Hi! I'm a chatbot here to help with the lesson you just read on <strong>thought experiments and children's belief revision</strong>. The lesson is on the left, so you can read and refer back to it anytime, and you can ask me questions about it here. For example, you can ask me what any key term in the lesson means, or any other question you have about the lesson. What's your first question?</div>`;
+    msg.innerHTML = `<span class="role">Chatbot</span><div class="body">Hi! I'm a chatbot here to help with the lesson you just read on <strong>the Houses of Velora</strong>. The lesson is on the left, so you can read and refer back to it anytime, and you can ask me questions about it here. For example, you can ask me what any key term in the lesson means, or any other question you have about the lesson. What's your first question?</div>`;
     container.appendChild(msg);
     container.scrollTop = container.scrollHeight;
   }, 1500);
 }
 
-function renderVisibilityBanner() {
-  const slot = document.getElementById('visibility-banner-slot');
-  if (!slot) return;
-  slot.innerHTML = '';
-  if (state.condition === 'private') {
-    slot.innerHTML = `
-      <div class="vis-notice private vis-notice-bodyonly">
-        <div class="vis-notice-body">
-          All of your interactions with the chatbot, including the questions you ask, will be <strong>anonymous and visible only to the research team, and to no one else</strong>. The research team, and only the research team, will be able to read your conversations with the chatbot, but <strong>they will not be able to tell which participant any conversation belongs to</strong>. This way, you can review any parts of this lesson that you find confusing.
-        </div>
-      </div>`;
-  } else if (state.condition === 'visible') {
-    slot.innerHTML = `
-      <div class="vis-notice visible vis-notice-bodyonly">
-        <div class="vis-notice-body">
-          All of your interactions with the chatbot, including the questions you ask, will be <strong>anonymous and visible only to the research team, and to no one else</strong>. The research team, and only the research team, will be able to read your conversations with the chatbot, but <strong>they will not be able to tell which participant any conversation belongs to</strong>. This way, you can review any parts of this lesson that you find confusing.
-        </div>
-      </div>`;
+// Reminds participants in the two framing conditions which kind of chatbot
+// they were told they are using: a banner above the chatbot page, an icon
+// header at the top of the chat window, and an icon cue on the chatbot
+// rating page. Baseline participants see none of these.
+const CHATBOT_TYPES = {
+  'framing-reasoning': {
+    name: 'Reflective chatbot',
+    icon: 'images/icon-reflective.png',
+    banner: 'Reminder: you are interacting with a <strong>reflective chatbot</strong>. It reflects on what information is necessary to answer your question, why you might be asking it, and the most effective way to structure its response given your earlier questions.'
+  },
+  'framing-scripted': {
+    name: 'Templatic chatbot',
+    icon: 'images/icon-templatic.png',
+    banner: 'Reminder: you are interacting with a <strong>templatic chatbot</strong>. It matches keywords from your question to a database of pre-established answers, then stitches together a response that addresses all relevant aspects of your question.'
   }
+};
+
+// Icon + name row; the icon is decorative because the name is beside it.
+function chatbotTypeIdentity(type, subtitle) {
+  return `<img src="${type.icon}" alt="" width="192" height="192" />`
+    + `<div><div class="chat-type-name">${type.name}</div><div class="chat-type-sub">${subtitle}</div></div>`;
+}
+
+function renderChatbotTypeBanner() {
+  const type = CHATBOT_TYPES[state.condition];
+  const slot = document.getElementById('chatbot-type-banner-slot');
+  if (slot) {
+    slot.innerHTML = type
+      ? `<div class="vis-notice vis-notice-bodyonly"><div class="vis-notice-body">${type.banner}</div></div>`
+      : '';
+  }
+  const header = document.getElementById('chat-type-header');
+  if (header) {
+    header.innerHTML = type ? chatbotTypeIdentity(type, 'Your chatbot for this lesson') : '';
+    header.style.display = type ? 'flex' : 'none';
+  }
+}
+
+function renderChatbotTypeCue() {
+  const type = CHATBOT_TYPES[state.condition];
+  const cue = document.getElementById('exp-chatbot-type-cue');
+  if (!cue) return;
+  cue.innerHTML = type ? chatbotTypeIdentity(type, 'The chatbot you used in this study') : '';
+  cue.style.display = type ? 'flex' : 'none';
 }
 
 async function sendChatMessage() {
@@ -5367,7 +5548,7 @@ async function sendChatMessage() {
   sendBtn.disabled = true;
 
   // Build conversation history BEFORE pushing the new user message,
-  // so cache verification sees only the prior turns (not the current question).
+  // so the router sees only the prior turns (not the current question).
   const priorHistory = state.responses.chatbot_messages
     .filter(m => m.role === 'user' || m.role === 'assistant')
     .map(m => ({ role: m.role, content: m.content }));
@@ -5381,8 +5562,9 @@ async function sendChatMessage() {
 
   const skipCache = isFollowUp(text) || isMetaQuestion(text);
 
-  // Embed the question once. The same embedding feeds the curated-repo
-  // router, the cross-participant semantic cache, and the scope anchor.
+  // Embed the question once. The embedding builds the scope anchor for a
+  // fresh answer and is stored with that answer in the cache entry. The
+  // router does not use it.
   let questionEmbedding = null;
   try { questionEmbedding = await getEmbedding(text); } catch { /* fall through */ }
 
@@ -5392,10 +5574,11 @@ async function sendChatMessage() {
     try { await precomputeCuratedRepoEmbeddings(); } catch { /* non-blocking */ }
   }
 
-  // 1. UNIFIED GPT ROUTER — one GPT call sees the 55-entry curated
-  //    repository and the current Firebase / session cache, decides
+  // 1. UNIFIED GPT ROUTER — one GPT call sees the curated repository
+  //    and the current Firebase / session cache, decides
   //    CURATED / CACHE / GENERATE. No cosine. No threshold. Returns
-  //    the canonical text verbatim when there is a match.
+  //    the canonical text verbatim when there is a match. Skipped for
+  //    follow-up and meta questions, which always get a fresh answer.
   if (!skipCache) {
     const routed = await unifiedGPTRouter(text, priorHistory);
     if (routed && routed.answer) {
@@ -5411,11 +5594,12 @@ async function sendChatMessage() {
     }
   }
 
-  // 3. FRESH ANSWER — call gpt-5.4 with a scope anchor built from the
+  // 2. FRESH ANSWER — call gpt-5.4 with a scope anchor built from the
   //    nearest curated answers. The anchor pins length, depth, and tone
   //    to the realm of the curated answers without overriding the
-  //    participant's actual question. Save to semantic cache for future
-  //    participants who ask the same thing.
+  //    participant's actual question. Save to the session and Firebase
+  //    caches (except follow-up / meta questions) so the router can
+  //    reuse it for later participants who ask the same thing.
   removeTypingIndicator(typingId);
   const thinkingId = appendThinkingIndicator();
   let stream = null;
@@ -5658,7 +5842,8 @@ function onSliderInput(input, key, itemId) {
 }
 
 function submitLikert(key, next) {
-  const screenId = key === 'exp_lesson' ? 'exp-lesson' : key === 'exp_chatbot' ? 'exp-chatbot' : 'tf-questions';
+  // Screen ids mirror the response keys with dashes (exp_lesson -> exp-lesson).
+  const screenId = key.replace(/_/g, '-');
   const rows = document.querySelectorAll('#screen-' + screenId + ' .likert-slider-row');
   let allAnswered = true;
   rows.forEach(row => { if (!(row.dataset.itemId in state.responses[key])) allAnswered = false; });
@@ -5668,12 +5853,61 @@ function submitLikert(key, next) {
 }
 
 // =====================================================
+// LLM-KNOWLEDGE (multiple choice, all on one page)
+// =====================================================
+function renderLlmKnowledge() {
+  // Shuffle question order and each question's option order once per
+  // participant. Cached in state.likertOrder (persisted by snapshotSession)
+  // so back-navigation or a reload re-renders without reshuffling.
+  if (!state.likertOrder) state.likertOrder = {};
+  if (!state.likertOrder.llm_knowledge) {
+    state.likertOrder.llm_knowledge = shuffle(LLM_KNOWLEDGE_ITEMS)
+      .map(it => ({ ...it, displayOptions: shuffleOptions(it.options) }));
+    state.responses.llm_knowledge_order = state.likertOrder.llm_knowledge.map(it => it.id);
+  }
+  const saved = state.responses.llm_knowledge || {};
+  const container = document.getElementById('llm-knowledge-container');
+  container.innerHTML = state.likertOrder.llm_knowledge.map((item, qi) => `
+    <div class="card">
+      <label style="font-size:15px; margin-bottom:14px;">${qi+1}. ${escapeHtml(item.prompt)}</label>
+      <div class="option-list">
+        ${item.displayOptions.map(opt => {
+          const checked = saved[item.id] && saved[item.id].selected_key === opt.key;
+          return `<label class="${checked ? 'selected' : ''}"><input type="radio" name="llmk_${item.id}" value="${opt.key}"${checked ? ' checked' : ''} onchange="selectLlmKnowledgeOption(this, '${item.id}')" /><span>${escapeHtml(opt.text)}</span></label>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Single choice per question: highlight the chosen option and record it
+// immediately so a back-navigation re-render keeps the selection.
+function selectLlmKnowledgeOption(input, itemId) {
+  input.closest('.option-list').querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+  input.closest('label').classList.add('selected');
+  const item = state.likertOrder.llm_knowledge.find(it => it.id === itemId);
+  const opt = item.displayOptions.find(o => o.key === input.value);
+  state.responses.llm_knowledge[itemId] = {
+    selected_key: input.value,
+    selected_text: opt ? opt.text : null,
+    presented_order: item.displayOptions.map(o => o.key)
+  };
+}
+
+function submitLlmKnowledge() {
+  const answers = state.responses.llm_knowledge || {};
+  const allAnswered = LLM_KNOWLEDGE_ITEMS.every(it => answers[it.id] && answers[it.id].selected_key);
+  if (!allAnswered) { alert('Please answer every question before continuing.'); return; }
+  goTo('llm-beliefs');
+}
+
+// =====================================================
 // MANIP CHECK
 // =====================================================
 function renderManipCheck() {
   const container = document.getElementById('manipcheck-options');
   container.innerHTML = MANIP_OPTIONS.map(opt => `
-    <label><input type="checkbox" value="${escapeHtml(opt)}" onchange="toggleSelected(this)" /><span>${opt}</span></label>
+    <label><input type="radio" name="manipcheck" value="${escapeHtml(opt)}" onchange="selectManipOption(this)" /><span>${opt}</span></label>
   `).join('');
 }
 
@@ -5681,9 +5915,16 @@ function toggleSelected(input) {
   input.closest('label').classList.toggle('selected', input.checked);
 }
 
+// Single choice: highlight only the chosen option's label.
+function selectManipOption(input) {
+  document.querySelectorAll('#manipcheck-options label').forEach(l => l.classList.remove('selected'));
+  input.closest('label').classList.add('selected');
+}
+
 function submitManipulationCheck() {
+  // Stored as a one-element array so the data shape (selected_options) is unchanged.
   const selected = Array.from(document.querySelectorAll('#manipcheck-options input:checked')).map(i => i.value);
-  if (selected.length === 0) { alert('Please select at least one option.'); return; }
+  if (selected.length === 0) { alert('Please select an answer.'); return; }
   state.responses.manipulation_check = selected;
   goTo('crt-intro');
 }
@@ -5756,7 +5997,7 @@ function crtNext() {
 
   if (state.crtIndex >= state.crtQueue.length - 1) {
     state.responses.crt_item_timings = state.crtItemTimings;
-    goTo('tf-questions');
+    goTo('llm-knowledge');
   } else {
     state.crtIndex++;
     renderCRTItem();
@@ -5859,12 +6100,14 @@ function submitDemographics() {
 // =====================================================
 // DEBRIEF
 // =====================================================
-function renderVisibleDebrief() {
+// The old visibility-condition deception disclosure was removed with those
+// conditions. The slot is left empty for a framing-condition disclosure.
+function renderStudyDebrief() {
   const slot = document.getElementById('visible-debrief-extra');
   const confirmText = document.getElementById('confirm-text');
-
-  if (slot) {
-    slot.innerHTML = '';
+  if (slot) slot.innerHTML = '';
+  if (confirmText) {
+    confirmText.textContent = 'I confirm that I understand my responses are anonymous and are visible only to the research team and nobody else.';
   }
 
   if (confirmText) {
@@ -5915,15 +6158,16 @@ function applyForcedCondition(value) {
     if (meta) meta.textContent = '—';
     return;
   }
-  if (!['baseline', 'private', 'visible'].includes(value)) return;
+  if (!CONDITION_ROTATION.includes(value)) return;
   state.condition = value;
   try { localStorage.setItem('hpl_condition', value); } catch {}
   if (meta) meta.textContent = value;
   // If we're currently on a condition-dependent screen, re-render it.
   const cur = state.currentScreen;
   if (cur === 'framing') renderFraming();
-  if (cur === 'chatbot') { renderVisibilityBanner(); renderChatbotWelcome(); }
-  if (cur === 'lesson-debrief' || cur === 'study-debrief') renderVisibleDebrief && renderVisibleDebrief();
+  if (cur === 'chatbot') { renderChatbotTypeBanner(); renderChatbotWelcome(); }
+  if (cur === 'exp-chatbot') renderChatbotTypeCue();
+  if (cur === 'study-debrief') renderStudyDebrief();
 }
 
 function resetStudy() {
@@ -5945,7 +6189,8 @@ function resetStudy() {
 }
 
 // Researchers reveal the hidden test panel by loading the study with
-// ?researcher=hpl-staff (the same flag that unlocks the panel actions).
+// ?researcher-access (or the older ?researcher=hpl-staff); the same flag
+// unlocks the panel actions.
 if (researcherModeEnabled()) {
   const __tp = document.getElementById('test-panel');
   if (__tp) __tp.style.display = 'block';
@@ -6238,7 +6483,7 @@ function sendPartialSnapshotOnDropout() {
     const now = new Date();
     const dateStr = formatDateDDMMYYYY(now);
     const partial = {
-      schema_version: '1.1-partial',
+      schema_version: '1.2-partial',
       // Top-level keys DataPipe validation requires
       participantId: state.participantId,
       condition: state.condition || 'unassigned',
