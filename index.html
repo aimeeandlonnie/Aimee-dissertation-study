@@ -2099,20 +2099,6 @@
     </div>
   </section>
 
-  <!-- ============ EXP: LESSON ============ -->
-  <section class="screen" id="screen-exp-lesson">
-    <span class="tag">Your experience</span>
-    <h1>How was the lesson?</h1>
-    <p>The following questions are about your experience with the lesson. Please indicate how much you agree or disagree with each statement.</p>
-    <div class="card">
-      <div id="likert-exp-lesson"></div>
-    </div>
-    <div class="actions">
-      <div class="spacer"></div>
-      <button class="btn primary" onclick="submitLikert('exp_lesson', afterExpLessonRoute)">Continue</button>
-    </div>
-  </section>
-
   <!-- ============ EXP: CHATBOT ============ -->
   <section class="screen" id="screen-exp-chatbot">
     <span class="tag">Your experience with the chatbot</span>
@@ -2131,9 +2117,13 @@
   <!-- ============ MANIPULATION CHECK ============ -->
   <section class="screen" id="screen-manipulation-check">
     <span class="tag">Check</span>
-    <h1>One more question about the chatbot</h1>
-    <p>Based on what you were told at the start of the study, how did the chatbot you used construct its responses?</p>
-    <div class="option-list" id="manipcheck-options"></div>
+    <h1>Two more questions about the chatbot</h1>
+    <h3>Question 1</h3>
+    <p id="manipcheck-prompt">Based on <b>what you were told at the start of the study</b>, how did the chatbot you used construct its responses?</p>
+    <div class="option-list" id="manipcheck-options" role="radiogroup" aria-labelledby="manipcheck-prompt"></div>
+    <h3>Question 2</h3>
+    <p id="manipcheck-experience-prompt">Based on <b>your actual experiences with the chatbot</b>, how did you think the chatbot constructed its responses?</p>
+    <div class="option-list" id="manipcheck-experience-options" role="radiogroup" aria-labelledby="manipcheck-experience-prompt"></div>
     <div class="actions">
       <div class="spacer"></div>
       <button class="btn primary" onclick="submitManipulationCheck()">Continue</button>
@@ -2358,7 +2348,8 @@ const state = {
   pageTimings: {},
   responses: {
     open_response: {}, multiple_choice: {}, consistency: {},
-    exp_lesson: {}, exp_chatbot: {}, manipulation_check: [],
+    exp_chatbot: {}, manipulation_check: [], manipulation_check_experience: [],
+    manipulation_check_other: null, manipulation_check_experience_other: null,
     crt: {}, llm_knowledge: {}, llm_beliefs: {}, demographics: {},
     chatbot_messages: [],
     // Engagement signals: when the tab loses/regains focus, when
@@ -2379,7 +2370,7 @@ const state = {
 const SCREENS = [
   'landing','email','consent','instructions','ground-rules','framing','lesson','chatbot',
   'learning-intro','learning-items',
-  'exp-lesson','exp-chatbot','manipulation-check',
+  'exp-chatbot','manipulation-check',
   'crt-intro','crt-items',
   'llm-knowledge','llm-beliefs','demographics',
   'lesson-debrief','study-debrief','complete','already-completed'
@@ -2415,13 +2406,6 @@ const FRAMING = {
 // LIKERT SCALES + ITEMS
 // =====================================================
 const LIKERT_LABELS = ['Strongly Disagree', 'Disagree', 'Somewhat Disagree', 'Neither', 'Somewhat Agree', 'Agree', 'Strongly Agree'];
-
-const EXP_LESSON_ITEMS = [
-  { id: 'easy_understand', text: 'The lesson was easy to understand.' },
-  { id: 'clear_ideas', text: 'The lesson explained ideas in a way that was clear to me.' },
-  { id: 'engaged', text: 'I felt engaged with the material in the lesson.' },
-  { id: 'willing_future', text: 'I would be willing to learn from a lesson like this in the future.' }
-];
 
 const EXP_CHATBOT_ITEMS = [
   { id: 'comfort_ask', text: 'I felt comfortable asking the chatbot questions about the lesson.' },
@@ -2505,14 +2489,31 @@ const CRT_ITEMS = [
   { id: 'shoes', text: 'A store owner reduced the price of a $100 pair of shoes by 10 percent. A week later, he reduced the price of the shoes by another 10 percent. How much do the shoes cost now?', unit: 'dollars' }
 ];
 
-const MANIP_OPTIONS = [
-  'It reflected on what information was needed to answer my question, why I might be asking it, and how best to structure its response.',
-  'It matched keywords from my question to a database of pre-established answers and stitched together a response.',
-  'I was not told how the chatbot constructed its responses.',
-  'I am not sure.'
-];
+const MANIP_REFLECTIVE_OPTION = 'It reflected on what information was needed to answer my question, why I might be asking it, and how best to structure its response.';
+const MANIP_TEMPLATIC_OPTION = 'It matched keywords from my question to a database of pre-established answers and stitched together a response.';
+// Choosing "Other" reveals a free-text box. The answer is saved as
+// "Other: <text>" (same convention as demographics self-describe).
+const MANIP_OTHER_OPTION = 'Other';
+const MANIP_NOT_SURE_OPTION = 'I am not sure.';
 
 const MANIP_PROMPT = 'Based on what you were told at the start of the study, how did the chatbot you used construct its responses?';
+// Only question 1 offers "I was not told...", since it asks about the instructions.
+const MANIP_OPTIONS = [
+  MANIP_REFLECTIVE_OPTION,
+  MANIP_TEMPLATIC_OPTION,
+  'I was not told how the chatbot constructed its responses.',
+  MANIP_NOT_SURE_OPTION,
+  MANIP_OTHER_OPTION
+];
+
+// Second question on the same page.
+const MANIP_EXPERIENCE_PROMPT = 'Based on your actual experiences with the chatbot, how did you think the chatbot constructed its responses?';
+const MANIP_EXPERIENCE_OPTIONS = [
+  MANIP_REFLECTIVE_OPTION,
+  MANIP_TEMPLATIC_OPTION,
+  MANIP_NOT_SURE_OPTION,
+  MANIP_OTHER_OPTION
+];
 
 // CRT scoring key moved server-side (api/score.js) so the answers are not
 // readable in the client (participants could otherwise look them up in the
@@ -3308,7 +3309,6 @@ function buildParticipantPayload() {
     },
 
     appraisal: {
-      lesson_experience_likert:  _buildLikertSection(EXP_LESSON_ITEMS,  r.exp_lesson  || {}, r.exp_lesson_order  || []),
       chatbot_experience_likert: _buildLikertSection(EXP_CHATBOT_ITEMS, r.exp_chatbot || {}, r.exp_chatbot_order || [])
     },
 
@@ -3319,7 +3319,16 @@ function buildParticipantPayload() {
 
     manipulation_check: {
       prompt: MANIP_PROMPT,
-      selected_options: r.manipulation_check || []
+      options_shown: MANIP_OPTIONS,
+      selected_options: r.manipulation_check || [],
+      other_text: r.manipulation_check_other || null
+    },
+
+    manipulation_check_experience: {
+      prompt: MANIP_EXPERIENCE_PROMPT,
+      options_shown: MANIP_EXPERIENCE_OPTIONS,
+      selected_options: r.manipulation_check_experience || [],
+      other_text: r.manipulation_check_experience_other || null
     },
 
     demographics: _buildDemographicsSection(r.demographics || {}),
@@ -3849,12 +3858,12 @@ async function captureConsentPDF(completedAt) {
 }
 
 // =====================================================
-// PER-PARTICIPANT XLSX (one workbook with 11 sheets)
+// PER-PARTICIPANT XLSX (one workbook with 10 sheets)
 // -----------------------------------------------------
 // Mirrors the participant's answers from the JSON payload in a
 // researcher-readable shape: Chatbot Questions, Chatbot
 // Conversation, Learning, CRT, Consent, Manipulation Check,
-// Lesson Experience, Chatbot Experience, LLM-knowledge,
+// Chatbot Experience, LLM-knowledge,
 // LLM-beliefs, Demographics (see the per-sheet comments below).
 // Uploaded to Dataverse via DataPipe base64 endpoint, with the
 // same localStorage backup + retry pattern as the consent
@@ -3965,33 +3974,32 @@ function buildParticipantXLSX(payload) {
   const manipRows = [['attribute', 'value']];
   manipRows.push(['prompt', manip.prompt || '']);
   manipRows.push(['selected_options', (manip.selected_options || []).join('; ')]);
+  manipRows.push(['other_text', manip.other_text || '']);
+  const manipExp = payload.manipulation_check_experience || {};
+  manipRows.push(['question_2_prompt', manipExp.prompt || '']);
+  manipRows.push(['question_2_selected_options', (manipExp.selected_options || []).join('; ')]);
+  manipRows.push(['question_2_other_text', manipExp.other_text || '']);
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(manipRows), 'Manipulation Check');
 
-  // ---- Sheet 6: Lesson Experience (column per Likert item) ----
-  const lL = (payload.appraisal && payload.appraisal.lesson_experience_likert && payload.appraisal.lesson_experience_likert.items) || [];
-  const lLRows = [['item_id', 'statement', 'participant_rating']];
-  lL.forEach(it => lLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lLRows)), 'Lesson Experience');
-
-  // ---- Sheet 7: Chatbot Experience (column per Likert item) ----
+  // ---- Sheet 6: Chatbot Experience (column per Likert item) ----
   const cL = (payload.appraisal && payload.appraisal.chatbot_experience_likert && payload.appraisal.chatbot_experience_likert.items) || [];
   const cLRows = [['item_id', 'statement', 'participant_rating']];
   cL.forEach(it => cLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(cLRows)), 'Chatbot Experience');
 
-  // ---- Sheet 8: LLM-knowledge (column per multiple-choice item) ----
+  // ---- Sheet 7: LLM-knowledge (column per multiple-choice item) ----
   const lk = (payload.llm_knowledge && payload.llm_knowledge.items) || [];
   const lkRows = [['item_id', 'question', 'participant_answer', 'points']];
   lk.forEach(it => lkRows.push([it.id, it.prompt, it.participant_answer || '', it.points != null ? it.points : '']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lkRows)), 'LLM-knowledge');
 
-  // ---- Sheet 9: LLM-beliefs (column per Likert item) ----
+  // ---- Sheet 8: LLM-beliefs (column per Likert item) ----
   const lb = (payload.llm_beliefs && payload.llm_beliefs.items) || [];
   const lbRows = [['item_id', 'statement', 'participant_rating']];
   lb.forEach(it => lbRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lbRows)), 'LLM-beliefs');
 
-  // ---- Sheet 10: Demographics (column per question) ----
+  // ---- Sheet 9: Demographics (column per question) ----
   const demo = (payload.demographics && payload.demographics.items) || [];
   const demoRows = [['item_id', 'question', 'participant_answer']];
   demo.forEach(it => {
@@ -4376,7 +4384,6 @@ function goTo(screenId) {
   // Snapshot the in-progress session to localStorage so a participant
   // who closes the tab mid-study can resume on the next page load.
   snapshotSession();
-  if (screenId === 'exp-lesson') renderLikert('likert-exp-lesson', EXP_LESSON_ITEMS, 'exp_lesson');
   if (screenId === 'exp-chatbot') { renderChatbotTypeCue(); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
   if (screenId === 'manipulation-check') renderManipCheck();
   if (screenId === 'learning-items') {
@@ -4671,7 +4678,7 @@ function learningNext() {
   if (state.learningIndex >= state.learningQueue.length - 1) {
     // Done with all items
     state.responses.learning_item_timings = state.learningItemTimings;
-    goTo('exp-lesson');
+    goTo('exp-chatbot');
   } else {
     state.learningIndex++;
     renderLearningItem();
@@ -5336,10 +5343,6 @@ function afterLessonRoute() {
   goTo('chatbot');
 }
 
-function afterExpLessonRoute() {
-  goTo('exp-chatbot');
-}
-
 // =====================================================
 // TIME GATES (generic, used by framing + lesson)
 // =====================================================
@@ -5844,7 +5847,7 @@ function onSliderInput(input, key, itemId) {
 }
 
 function submitLikert(key, next) {
-  // Screen ids mirror the response keys with dashes (exp_lesson -> exp-lesson).
+  // Screen ids mirror the response keys with dashes (exp_chatbot -> exp-chatbot).
   const screenId = key.replace(/_/g, '-');
   const rows = document.querySelectorAll('#screen-' + screenId + ' .likert-slider-row');
   let allAnswered = true;
@@ -5907,9 +5910,16 @@ function submitLlmKnowledge() {
 // MANIP CHECK
 // =====================================================
 function renderManipCheck() {
-  const container = document.getElementById('manipcheck-options');
-  container.innerHTML = MANIP_OPTIONS.map(opt => `
-    <label><input type="radio" name="manipcheck" value="${escapeHtml(opt)}" onchange="selectManipOption(this)" /><span>${opt}</span></label>
+  renderManipOptions('manipcheck-options', 'manipcheck', MANIP_OPTIONS);
+  renderManipOptions('manipcheck-experience-options', 'manipcheck-experience', MANIP_EXPERIENCE_OPTIONS);
+}
+
+function renderManipOptions(containerId, name, options) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = options.map(opt => opt === MANIP_OTHER_OPTION ? `
+    <label><input type="radio" name="${name}" value="${MANIP_OTHER_OPTION}" data-other="true" onchange="selectManipOption(this)" /><span>${MANIP_OTHER_OPTION}</span></label>
+    <input type="text" id="${name}-other-text" class="manip-other-input" aria-label="Other: please describe" style="display:none; width:100%; font-size:15px; padding:12px 14px; border:1.5px solid var(--rule); border-radius:10px; outline:none; font-family:var(--sans); color:var(--ink); margin:6px 0 4px;" placeholder="Please describe..." />` : `
+    <label><input type="radio" name="${name}" value="${escapeHtml(opt)}" onchange="selectManipOption(this)" /><span>${opt}</span></label>
   `).join('');
 }
 
@@ -5917,17 +5927,43 @@ function toggleSelected(input) {
   input.closest('label').classList.toggle('selected', input.checked);
 }
 
-// Single choice: highlight only the chosen option's label.
+// Single choice: highlight only the chosen option's label within its question.
 function selectManipOption(input) {
-  document.querySelectorAll('#manipcheck-options label').forEach(l => l.classList.remove('selected'));
+  input.closest('.option-list').querySelectorAll('label').forEach(l => l.classList.remove('selected'));
   input.closest('label').classList.add('selected');
+  // Show the free-text box only while "Other" is the chosen option.
+  const textInput = document.getElementById(input.name + '-other-text');
+  if (!textInput) return;
+  if (input.dataset.other === 'true') {
+    textInput.style.display = 'block';
+    textInput.focus();
+  } else {
+    textInput.style.display = 'none';
+    textInput.value = '';
+  }
+}
+
+// Returns { selected, otherText } for one question, or null if unanswered.
+// otherText is '' when "Other" is chosen but its box is empty.
+function readManipAnswer(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  if (!checked) return null;
+  if (checked.dataset.other !== 'true') return { selected: [checked.value], otherText: null };
+  const textInput = document.getElementById(name + '-other-text');
+  const otherText = (textInput && textInput.value.trim()) || '';
+  return { selected: [`${MANIP_OTHER_OPTION}: ${otherText}`], otherText };
 }
 
 function submitManipulationCheck() {
-  // Stored as a one-element array so the data shape (selected_options) is unchanged.
-  const selected = Array.from(document.querySelectorAll('#manipcheck-options input:checked')).map(i => i.value);
-  if (selected.length === 0) { alert('Please select an answer.'); return; }
-  state.responses.manipulation_check = selected;
+  // Stored as one-element arrays so the data shape (selected_options) is unchanged.
+  const told = readManipAnswer('manipcheck');
+  const experienced = readManipAnswer('manipcheck-experience');
+  if (!told || !experienced) { alert('Please answer both questions.'); return; }
+  if (told.otherText === '' || experienced.otherText === '') { alert('You selected "Other" — please describe your answer before continuing.'); return; }
+  state.responses.manipulation_check = told.selected;
+  state.responses.manipulation_check_other = told.otherText;
+  state.responses.manipulation_check_experience = experienced.selected;
+  state.responses.manipulation_check_experience_other = experienced.otherText;
   goTo('crt-intro');
 }
 
@@ -6383,6 +6419,15 @@ function classifyPasteTarget(target, tag) {
   }
   if (id === 'participant-email') {
     return { field_type: 'participant_email', item_id: null, item_subscale: null, item_prompt: null };
+  }
+  if (id === 'manipcheck-other-text' || id === 'manipcheck-experience-other-text') {
+    const isExperience = id === 'manipcheck-experience-other-text';
+    return {
+      field_type: 'manipulation_check_other',
+      item_id: isExperience ? 'manipulation_check_experience' : 'manipulation_check',
+      item_subscale: 'manipulation_check',
+      item_prompt: isExperience ? MANIP_EXPERIENCE_PROMPT : MANIP_PROMPT
+    };
   }
   const demoMatch = id.match(/^demo_(.+)_describe$/);
   if (demoMatch) {

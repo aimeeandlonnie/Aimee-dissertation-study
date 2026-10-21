@@ -514,6 +514,7 @@
     const llmB = data.llm_beliefs || {};
     const crt = data.crt || {};
     const manip = data.manipulation_check || {};
+    const manipExp = data.manipulation_check_experience || null;
     const demo = data.demographics || {};
     const chat = data.chatbot_conversation || { messages: [] };
     const engagement = data.engagement_signals || {};
@@ -574,7 +575,7 @@
       ${renderLlmKnowledge(llmK)}
       ${renderLlmBeliefs(llmB)}
       ${renderCRT(crt)}
-      ${renderManip(manip)}
+      ${renderManip(manip, manipExp)}
       ${renderDemographics(demo)}
       ${renderChat(chat, condition)}
       ${renderEngagement(engagement)}
@@ -731,15 +732,12 @@
   }
 
   function renderAppraisal(app) {
-    const lesson = app.lesson_experience_likert || {};
     const chat = app.chatbot_experience_likert || {};
     return `
       <section class="section" id="sec-appraisal">
-        <h3 onclick="toggleSection('sec-appraisal')"><span class="chev">▼</span>Appraisal — Lesson & Chatbot</h3>
+        <h3 onclick="toggleSection('sec-appraisal')"><span class="chev">▼</span>Appraisal — Chatbot</h3>
         <div class="section-body">
-          <p class="learning-section-title" style="margin-top:4px;">Lesson Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
-          ${renderLikertTable(lesson.items)}
-          <p class="learning-section-title" style="margin-top:24px;">Chatbot Experience</p>
+          <p class="learning-section-title" style="margin-top:4px;">Chatbot Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
           ${(chat.items && chat.items.length) ? renderLikertTable(chat.items) : '<p style="color:var(--ink-muted);font-size:13px;">No chatbot Likert ratings recorded.</p>'}
         </div>
       </section>`;
@@ -848,16 +846,23 @@
       </section>`;
   }
 
-  function renderManip(manip) {
-    const selected = manip.selected_options || [];
+  function renderManipAnswer(q) {
+    const selected = q.selected_options || [];
+    return `
+          <p class="manip-prompt">${escapeHtml(q.prompt || '—')}</p>
+          ${selected.length === 0
+            ? '<p class="manip-none">No options selected.</p>'
+            : selected.map(o => `<span class="manip-chip">${escapeHtml(o)}</span>`).join('')}`;
+  }
+
+  // manipExp is absent in files recorded before the second question was added.
+  function renderManip(manip, manipExp) {
     return `
       <section class="section" id="sec-manip">
         <h3 onclick="toggleSection('sec-manip')"><span class="chev">▼</span>Manipulation Check</h3>
         <div class="section-body">
-          <p class="manip-prompt">${escapeHtml(manip.prompt || '—')}</p>
-          ${selected.length === 0
-            ? '<p class="manip-none">No options selected.</p>'
-            : selected.map(o => `<span class="manip-chip">${escapeHtml(o)}</span>`).join('')}
+          ${renderManipAnswer(manip)}
+          ${manipExp ? `<div style="margin-top:18px;">${renderManipAnswer(manipExp)}</div>` : ''}
         </div>
       </section>`;
   }
