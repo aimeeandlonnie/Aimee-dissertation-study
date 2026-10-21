@@ -1376,6 +1376,7 @@
   }
   .info-text p:last-child { margin-bottom: 0; }
   .info-text .framing-figure { margin: 28px auto 0; max-width: 560px; }
+  .info-text .framing-figure.wide { max-width: none; }
   .info-text .framing-figure img { display: block; width: 100%; height: auto; border-radius: 12px; }
 
   /* === Critical framing info — inline emphasis (bold + slightly larger) === */
@@ -2316,8 +2317,8 @@
     <select id="force-condition" onchange="applyForcedCondition(this.value)">
       <option value="random">Random (default rotation)</option>
       <option value="baseline">Baseline</option>
-      <option value="framing-reasoning">Framing: reasoning (reflective chatbot)</option>
-      <option value="framing-scripted">Framing: scripted (templatic chatbot)</option>
+      <option value="framing-reasoning">Framing: reasoning (Chatbot B)</option>
+      <option value="framing-scripted">Framing: scripted (Chatbot A)</option>
     </select>
 
     <label class="panel-label" for="jump-to">Go to screen</label>
@@ -2395,18 +2396,19 @@ const FRAMING_SHARED = `<p>Thank you for agreeing to participate in our study. I
 
 // Diagram shown under the chatbot paragraph in the two framing conditions.
 const FRAMING_FIGURES = {
-  reflective: { src: 'images/chatbot-reflective.jpg', w: 726, h: 1074, alt: 'Diagram of the reflective chatbot. A user asks "What is the Dijkstra algorithm?". Before answering, the chatbot reflects on what information is needed, why the user is asking, the user\'s prior interactions, and how the response should be structured, then gives a beginner-friendly answer.' },
-  templatic:  { src: 'images/chatbot-templatic.jpg',  w: 716, h: 1080, alt: 'Diagram of the templatic chatbot. A user asks "What is the Dijkstra algorithm?". The chatbot extracts keywords from the question, looks them up in a database of pre-established answers, and assembles the matching snippets into a response.' }
+  // Landscape side-by-side diagram, so it spans the full text column.
+  'comparison-a': { src: 'images/chatbot-comparison-a.jpg', w: 1448, h: 1086, wide: true, alt: 'Side-by-side diagram of two chatbots answering the same question, "What is the Dijkstra algorithm?". Chatbot A, outlined in red, does a keyword search in a lookup table, matching keywords such as "dijkstra", "algorithm", and "shortest path" to answer snippets and combining them into a response. Chatbot B reflects and plans its response by considering what information is needed, why the user is asking, prior interactions with the user, and how the response should be structured. Both give the same answer.' },
+  'comparison-b': { src: 'images/chatbot-comparison-b.jpg', w: 1448, h: 1086, wide: true, alt: 'Side-by-side diagram of two chatbots answering the same question, "What is the Dijkstra algorithm?". Chatbot A does a keyword search in a lookup table, matching keywords such as "dijkstra", "algorithm", and "shortest path" to answer snippets and combining them into a response. Chatbot B, outlined in red, reflects and plans its response by considering what information is needed, why the user is asking, prior interactions with the user, and how the response should be structured. Both give the same answer.' }
 };
 function FRAMING_FIGURE(kind) {
   const f = FRAMING_FIGURES[kind];
-  return `<figure class="framing-figure"><img src="${f.src}" alt="${f.alt}" width="${f.w}" height="${f.h}" /></figure>`;
+  return `<figure class="framing-figure${f.wide ? ' wide' : ''}"><img src="${f.src}" alt="${f.alt}" width="${f.w}" height="${f.h}" /></figure>`;
 }
 
 const FRAMING = {
   'baseline': FRAMING_SHARED,
-  'framing-reasoning': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response. For this lesson, you will be interacting with a <b>reflective chatbot</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p>${FRAMING_FIGURE('reflective')}`,
-  'framing-scripted': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response. For this lesson, you will be interacting with a <b>templatic chatbot</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p>${FRAMING_FIGURE('templatic')}`
+  'framing-reasoning': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response.</p><p>Chatbot A follows a <b>templatic approach</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p><p>Chatbot B follows a <b>reflective approach</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p><p>For this lesson, you will be interacting with <b>Chatbot B</b>.</p>${FRAMING_FIGURE('comparison-b')}`,
+  'framing-scripted': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response.</p><p>Chatbot A follows a <b>templatic approach</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p><p>Chatbot B follows a <b>reflective approach</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p><p>For this lesson, you will be interacting with <b>Chatbot A</b>.</p>${FRAMING_FIGURE('comparison-a')}`
 };
 
 // =====================================================
@@ -2669,7 +2671,7 @@ const CHATBOT_FAQ = [
   },
   {
     id: 'how_chatbot_works', // new: no counterpart in the original FAQ
-    triggers: ['how do you work','how do you generate your answers','are you a reflective chatbot','are you a templatic chatbot','do you match keywords','do you use pre-written answers','do you use a database of answers','do you reason before answering','do you remember my previous questions','what ai model are you'],
+    triggers: ['how do you work','how do you generate your answers','are you a reflective chatbot','are you a templatic chatbot','are you chatbot a','are you chatbot b','what is the difference between chatbot a and chatbot b','do you match keywords','do you use pre-written answers','do you use a database of answers','do you reason before answering','do you remember my previous questions','what ai model are you'],
     answer: "That's a good question, but I'm not able to go into how I work behind the scenes. I'm here to help you with the lesson, so let's focus on that. Do you have another question about the lesson?"
   },
   {
@@ -5305,8 +5307,8 @@ function renderFraming() {
   const tagEl = document.getElementById('framing-tag');
   const textEl = document.getElementById('framing-text');
   if (tagEl) {
-    tagEl.textContent = state.condition === 'framing-reasoning' ? 'Lesson + reflective chatbot' :
-      state.condition === 'framing-scripted' ? 'Lesson + templatic chatbot' : 'Lesson + chatbot';
+    tagEl.textContent = state.condition === 'framing-reasoning' ? 'Lesson + Chatbot B' :
+      state.condition === 'framing-scripted' ? 'Lesson + Chatbot A' : 'Lesson + chatbot';
   }
   if (textEl) {
     textEl.innerHTML = FRAMING[state.condition];
@@ -5318,9 +5320,9 @@ function renderFraming() {
   const checkSpan = document.querySelector('#framing-check-label span');
   if (checkSpan) {
     if (state.condition === 'framing-reasoning') {
-      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with a reflective chatbot.';
+      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with Chatbot B.';
     } else if (state.condition === 'framing-scripted') {
-      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with a templatic chatbot.';
+      checkSpan.textContent = 'I have read the information above. I understand that I will be interacting with Chatbot A.';
     } else {
       checkSpan.textContent = 'I have read the information above.';
     }
@@ -5497,14 +5499,14 @@ function renderChatbotWelcome() {
 // rating page. Baseline participants see none of these.
 const CHATBOT_TYPES = {
   'framing-reasoning': {
-    name: 'Reflective chatbot',
-    icon: 'images/icon-reflective.png',
-    banner: 'Reminder: you are interacting with a <strong>reflective chatbot</strong>. It reflects on what information is necessary to answer your question, why you might be asking it, and the most effective way to structure its response given your earlier questions.'
+    name: 'Chatbot B',
+    icon: 'images/icon-chatbot-b.png',
+    banner: 'Reminder: you are interacting with <strong>Chatbot B</strong>. It reflects on what information is necessary to answer your question, why you might be asking it, and the most effective way to structure its response given your earlier questions.'
   },
   'framing-scripted': {
-    name: 'Templatic chatbot',
-    icon: 'images/icon-templatic.png',
-    banner: 'Reminder: you are interacting with a <strong>templatic chatbot</strong>. It matches keywords from your question to a database of pre-established answers, then stitches together a response that addresses all relevant aspects of your question.'
+    name: 'Chatbot A',
+    icon: 'images/icon-chatbot-a.png',
+    banner: 'Reminder: you are interacting with <strong>Chatbot A</strong>. It matches keywords from your question to a database of pre-established answers, then stitches together a response that addresses all relevant aspects of your question.'
   }
 };
 
