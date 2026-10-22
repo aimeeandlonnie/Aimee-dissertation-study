@@ -2143,15 +2143,25 @@
   <section class="screen" id="screen-manipulation-check">
     <span class="tag">Check</span>
     <h1>Two more questions about the chatbot</h1>
-    <h3>Question 1</h3>
+    <h3>Question 1 of 2</h3>
     <p id="manipcheck-prompt">Based on <b>what you were told at the start of the study</b>, how did the chatbot you used construct its responses?</p>
     <div class="option-list" id="manipcheck-options" role="radiogroup" aria-labelledby="manipcheck-prompt"></div>
-    <h3>Question 2</h3>
+    <div class="actions">
+      <div class="spacer"></div>
+      <button class="btn primary" onclick="submitManipulationCheck()">Continue</button>
+    </div>
+  </section>
+
+  <!-- ============ MANIPULATION CHECK: EXPERIENCE ============ -->
+  <section class="screen" id="screen-manipulation-check-experience">
+    <span class="tag">Check</span>
+    <h1>Two more questions about the chatbot</h1>
+    <h3>Question 2 of 2</h3>
     <p id="manipcheck-experience-prompt">Based on <b>your actual experiences with the chatbot</b>, how did you think the chatbot constructed its responses?</p>
     <div class="option-list" id="manipcheck-experience-options" role="radiogroup" aria-labelledby="manipcheck-experience-prompt"></div>
     <div class="actions">
       <div class="spacer"></div>
-      <button class="btn primary" onclick="submitManipulationCheck()">Continue</button>
+      <button class="btn primary" onclick="submitManipulationCheckExperience()">Continue</button>
     </div>
   </section>
 
@@ -2259,7 +2269,7 @@
     <span class="tag">About the study</span>
     <h1>Thank you</h1>
     <div class="card">
-      <p>Thank you for completing this study. In this study, we are interested in understanding whether explicitly framing a chatbot’s approach to construct a response affects people’s interactions with the chatbot, as well as their evaluation of the chatbot-assisted learning process.</p>
+      <p>Thank you for completing this study. In this study, we are interested in understanding whether people's perception of the way in which the chatbot generated its answers affects people’s interactions with the chatbot, as well as their evaluation of the chatbot-assisted learning process.</p>
       <p>All participants read the same lesson and had access to the same chatbot before answering the subsequent questions. However, participants were randomly assigned to one of three groups, where the only difference between the groups was what we told participants about the chatbot’s response strategy at the start:</p>
       <ul>
         <li>One group was told only that they would be able to ask an AI chatbot questions about the lesson. They were told nothing about how it worked.</li>
@@ -2397,7 +2407,7 @@ const state = {
 const SCREENS = [
   'landing','email','consent','instructions','ground-rules','framing','lesson','chatbot',
   'learning-intro','learning-items',
-  'exp-chatbot','exp-learning','manipulation-check',
+  'exp-chatbot','exp-learning','manipulation-check','manipulation-check-experience',
   'crt-intro','crt-items',
   'llm-knowledge','llm-beliefs','demographics',
   /* 'lesson-debrief', */ 'study-debrief','complete','already-completed'
@@ -2447,19 +2457,14 @@ const EXP_CHATBOT_ITEMS = [
   { id: 'willing_future', text: 'I would be willing to use a chatbot like this to learn new material in the future.' }
 ];
 
-// Learning-experience items. framingOnly items refer to the chatbot's
-// described approach, so baseline participants (told nothing about how the
-// chatbot works) don't see them.
+// Learning-experience items, shown in every condition.
 const EXP_LEARNING_ITEMS = [
-  { id: 'responses_appropriate', text: 'I find the chatbot’s responses appropriate for my learning.' },
-  { id: 'approach_appropriate', text: 'I find the chatbot’s approach to construct the answers appropriate for my learning.', framingOnly: true },
-  { id: 'approach_effortful', text: 'I find chatbot’s approach to construct the answers effortful.', framingOnly: true },
+  { id: 'responses_appropriate', text: 'The chatbot’s responses were completely appropriate for my learning.' },
+  { id: 'approach_appropriate', text: 'The way in which the chatbot generated its answers was completely appropriate for my learning.' },
+  { id: 'approach_effortful', text: 'The way in which the chatbot generated its answers required a great deal of effort.' },
   { id: 'learning_self_concept', text: 'I am good at understanding and learning about new information.' },
   { id: 'chatbot_learning_self_efficacy', text: 'I know how to learn new information effectively with the chatbot.' } // metacognitive self-efficacy
 ];
-function expLearningItems() {
-  return EXP_LEARNING_ITEMS.filter(it => !it.framingOnly || CHATBOT_TYPES[state.condition]);
-}
 
 // LLM-knowledge: technical knowledge of large language models, asked as
 // multiple choice. Each option is scored 0–3 (wrong / kind of right /
@@ -2988,6 +2993,32 @@ function isMetaQuestion(question) {
   return META_PATTERNS.some(p => p.test(q));
 }
 
+// Context-dependent questions only make sense next to the previous turn
+// ("why?", "and Seli?", "is that true?"). Their text alone doesn't say what
+// is being asked, so caching them by text could hand one participant's
+// answer to another participant asking about something else. Bare terms
+// like "truing?" are NOT matched here; they still route to the curated
+// definitions.
+const CONTEXT_DEPENDENT_PATTERNS = [
+  // Bare interjection or interrogative: "why?", "how come?", "really?", "and?"
+  /^(why|how|how come|really|huh|what|and|so|but|wait|ok|okay|then|is it|are they)\W*$/i,
+  // Continues the previous turn: "and Seli?", "what about Tor?", "but why"
+  /^(and|but|then|also|what about|how about)\b/i,
+  // Asks about the previous answer: "is that true?", "was it always so"
+  /^(is|was|isn't|wasn't|are|were) (that|it|this|she|he) (true|right|correct|so|the case|always|ever|possible)\b/i,
+  // Asks why/how about something just mentioned: "why does she do that", "how does it work"
+  /^(why|how|how come|when) (is|was|does|did|do|would|could|can|should|will) (that|it|this|she|he)\b/i
+];
+// Short questions ending on a back-reference: "what happens then", "explain that".
+const CONTEXT_TRAILING_REFERENCE = /\b(that|it|this|then)\W*$/i;
+const CONTEXT_TRAILING_MAX_WORDS = 6;
+
+function isContextDependent(question) {
+  const q = question.trim();
+  if (CONTEXT_DEPENDENT_PATTERNS.some(p => p.test(q))) return true;
+  return countWords(q) <= CONTEXT_TRAILING_MAX_WORDS && CONTEXT_TRAILING_REFERENCE.test(q);
+}
+
 // =====================================================
 // UNIFIED GPT ROUTER
 // -----------------------------------------------------
@@ -3008,7 +3039,9 @@ function isMetaQuestion(question) {
 // It outputs one of:
 //   CURATED: <id>      -> return that curated answer verbatim
 //   CACHE: <index>     -> return that cache answer verbatim
-//   GENERATE           -> fall through to fresh gpt-5.4
+//   GENERATE           -> fall through to fresh gpt-5.4, passing along
+//                         the closest cached answers (`related`) so any
+//                         Velora details they invented stay consistent
 //
 // Latency: one round-trip to gpt-5.4-mini (~500ms).
 // Cost at study scale: ~$0.001 per question, capped well
@@ -3024,13 +3057,14 @@ function _formatCuratedForRouter() {
 }
 const CURATED_CATALOG_FOR_ROUTER = _formatCuratedForRouter();
 
-async function unifiedGPTRouter(question, history) {
+async function unifiedGPTRouter(question, history, questionEmbedding) {
   try {
     const res = await proxyFetch('/router', {
       routeQuestion: true,
       model: 'gpt-5.4-mini',
       question,
       history,
+      questionEmbedding,
       curatedCatalog: CURATED_CATALOG_FOR_ROUTER,
       sessionCache: sessionAnswerCache.map(e => ({ question: e.question, answer: e.answer }))
     });
@@ -3040,9 +3074,11 @@ async function unifiedGPTRouter(question, history) {
     }
     const data = await res.json();
 
-    if (!data || data.type === 'generate') {
-      console.log(`Router: GENERATE for "${question.substring(0, 60)}"`);
-      return null;
+    if (!data) return null;
+    if (data.type === 'generate') {
+      const related = Array.isArray(data.related) ? data.related : [];
+      console.log(`Router: GENERATE for "${question.substring(0, 60)}" (${related.length} related cached answers)`);
+      return { type: 'generate', related };
     }
 
     if (data.type === 'curated' && data.id) {
@@ -3354,7 +3390,7 @@ function buildParticipantPayload() {
 
     appraisal: {
       chatbot_experience_likert: _buildLikertSection(EXP_CHATBOT_ITEMS, r.exp_chatbot || {}, r.exp_chatbot_order || []),
-      learning_experience_likert: _buildLikertSection(expLearningItems(), r.exp_learning || {}, r.exp_learning_order || [])
+      learning_experience_likert: _buildLikertSection(EXP_LEARNING_ITEMS, r.exp_learning || {}, r.exp_learning_order || [])
     },
 
     llm_knowledge: _buildLlmKnowledgeSection(r.llm_knowledge || {}, r.llm_knowledge_order || []),
@@ -4237,12 +4273,19 @@ function firebaseAction(body, timeoutMs = 8000) {
 // (injected by api/chat.js when hplSystem:true) so its research-integrity
 // rules are not exposed in the client.
 
-// Builds a "scope anchor" system message that pins fresh answers to the
-// realm of the curated repository. We pass the top-3 nearest curated
-// Q&As so the model can see the depth, tone, length, and conceptual
-// register of the canonical answers without being told to copy them.
-function buildScopeAnchor(questionEmbedding) {
-  if (!curatedRepoEmbeddings || curatedRepoEmbeddings.length === 0) return null;
+// Builds a "scope anchor" system message for a fresh answer. We pass the
+// top-3 nearest curated Q&As so the model can see the depth, tone, and
+// length of the canonical answers without being told to copy them, plus
+// any related cached answers (from the router) whose invented Velora
+// details the fresh answer must not contradict.
+function buildScopeAnchor(questionEmbedding, related) {
+  const established = (related || []).map((e, i) => `Earlier answer ${i + 1}, Question: "${e.question}"\nAnswer: ${e.answer}`).join('\n\n');
+  const establishedBlock = established
+    ? `\n\nEstablished Velora details. These answers were already given to participants. Treat any detail in them that goes beyond the lesson as settled fact: reuse it where relevant and never contradict it or offer a competing version.\n\n${established}`
+    : '';
+  if (!curatedRepoEmbeddings || curatedRepoEmbeddings.length === 0) {
+    return establishedBlock ? establishedBlock.trim() : null;
+  }
   const seen = new Set();
   const ranked = curatedRepoEmbeddings
     .map(e => ({ ...e, score: cosineSimilarity(questionEmbedding, e.embedding) }))
@@ -4255,7 +4298,7 @@ function buildScopeAnchor(questionEmbedding) {
     if (top.length >= 3) break;
   }
   const examples = top.map((e, i) => `Example ${i + 1} — Question: "${e.triggerText}"\nCanonical answer: ${e.answer}`).join('\n\n');
-  return `Reference scope. The questions below are the closest curated repository questions to what the participant just asked. Their canonical answers show the exact conceptual depth, factual scope, length (2 to 4 sentences in a single paragraph), and plain-prose tone you must stay within when writing the fresh answer. Do NOT copy them. Answer the participant's actual question, but stay strictly inside the same conceptual realm and at the same level of depth. If the participant's question is unrelated to anything in the reference scope, follow the system prompt rules as usual.\n\n${examples}`;
+  return `Reference style. The questions below are the closest curated repository questions to what the participant just asked. Their canonical answers show the depth, length (2 to 4 sentences in a single paragraph), and plain-prose tone to match when writing the fresh answer, and they must never be contradicted. Do NOT copy them. Answer the participant's actual question; if it goes beyond the lesson, follow the system prompt's rules for adding Velora details.\n\n${examples}${establishedBlock}`;
 }
 
 async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
@@ -4436,8 +4479,9 @@ function goTo(screenId) {
   // who closes the tab mid-study can resume on the next page load.
   snapshotSession();
   if (screenId === 'exp-chatbot') { renderChatbotTypeCue(); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
-  if (screenId === 'exp-learning') renderLikert('likert-exp-learning', expLearningItems(), 'exp_learning');
-  if (screenId === 'manipulation-check') renderManipCheck();
+  if (screenId === 'exp-learning') renderLikert('likert-exp-learning', EXP_LEARNING_ITEMS, 'exp_learning');
+  if (screenId === 'manipulation-check') renderManipOptions('manipcheck-options', 'manipcheck', MANIP_OPTIONS);
+  if (screenId === 'manipulation-check-experience') renderManipOptions('manipcheck-experience-options', 'manipcheck-experience', MANIP_EXPERIENCE_OPTIONS);
   if (screenId === 'learning-items') {
     if (!state.learningQueue) { state.learningQueue = buildLearningQueue(); state.learningIndex = 0; }
     renderLearningItem();
@@ -5617,11 +5661,13 @@ async function sendChatMessage() {
 
   const typingId = appendTypingIndicator();
 
-  const skipCache = isFollowUp(text) || isMetaQuestion(text);
+  // Follow-up, meta, and context-dependent questions skip the router (no
+  // curated or cached reuse) and their answers are never cached.
+  const skipCache = isFollowUp(text) || isMetaQuestion(text) || isContextDependent(text);
 
   // Embed the question once. The embedding builds the scope anchor for a
   // fresh answer and is stored with that answer in the cache entry. The
-  // router does not use it.
+  // router uses it only to find related cached answers, not to decide.
   let questionEmbedding = null;
   try { questionEmbedding = await getEmbedding(text); } catch { /* fall through */ }
 
@@ -5634,10 +5680,14 @@ async function sendChatMessage() {
   // 1. UNIFIED GPT ROUTER — one GPT call sees the curated repository
   //    and the current Firebase / session cache, decides
   //    CURATED / CACHE / GENERATE. No cosine. No threshold. Returns
-  //    the canonical text verbatim when there is a match. Skipped for
-  //    follow-up and meta questions, which always get a fresh answer.
+  //    the canonical text verbatim when there is a match. On GENERATE it
+  //    also returns related cached answers for the scope anchor. Skipped
+  //    for follow-up, meta, and context-dependent questions, which always
+  //    get a fresh answer.
+  let related = [];
   if (!skipCache) {
-    const routed = await unifiedGPTRouter(text, priorHistory);
+    const routed = await unifiedGPTRouter(text, priorHistory, questionEmbedding);
+    if (routed && routed.related) related = routed.related;
     if (routed && routed.answer) {
       removeTypingIndicator(typingId);
       removeTypingIndicator(typingId);
@@ -5652,11 +5702,11 @@ async function sendChatMessage() {
   }
 
   // 2. FRESH ANSWER — call gpt-5.4 with a scope anchor built from the
-  //    nearest curated answers. The anchor pins length, depth, and tone
-  //    to the realm of the curated answers without overriding the
-  //    participant's actual question. Save to the session and Firebase
-  //    caches (except follow-up / meta questions) so the router can
-  //    reuse it for later participants who ask the same thing.
+  //    nearest curated answers (length, depth, tone) and the related
+  //    cached answers from the router (Velora details already given to
+  //    other participants, to stay consistent with). Save to the session
+  //    and Firebase caches (unless skipCache) so the router can reuse it
+  //    for later participants who ask the same thing.
   removeTypingIndicator(typingId);
   const thinkingId = appendThinkingIndicator();
   let stream = null;
@@ -5664,7 +5714,7 @@ async function sendChatMessage() {
     const history = state.responses.chatbot_messages
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
-    const scopeAnchor = questionEmbedding ? buildScopeAnchor(questionEmbedding) : null;
+    const scopeAnchor = questionEmbedding ? buildScopeAnchor(questionEmbedding, related) : null;
     const reply = await callOpenAI(history, scopeAnchor, (fullText) => {
       if (!stream) {
         removeThinkingIndicator(thinkingId);
@@ -5682,7 +5732,7 @@ async function sendChatMessage() {
     }
     state.responses.chatbot_messages.push({ role: 'assistant', content: reply, timestamp: new Date().toISOString() });
     snapshotSession();
-    if (!isFollowUp(text) && !isMetaQuestion(text) && questionEmbedding) await persistAnswer(text, questionEmbedding, reply);
+    if (!skipCache && questionEmbedding) await persistAnswer(text, questionEmbedding, reply);
   } catch (err) {
     console.error('Chatbot OpenAI call failed:', err);
     removeThinkingIndicator(thinkingId);
@@ -5963,11 +6013,6 @@ function submitLlmKnowledge() {
 // =====================================================
 // MANIP CHECK
 // =====================================================
-function renderManipCheck() {
-  renderManipOptions('manipcheck-options', 'manipcheck', MANIP_OPTIONS);
-  renderManipOptions('manipcheck-experience-options', 'manipcheck-experience', MANIP_EXPERIENCE_OPTIONS);
-}
-
 function renderManipOptions(containerId, name, options) {
   const container = document.getElementById(containerId);
   container.innerHTML = options.map(opt => opt === MANIP_OTHER_OPTION ? `
@@ -6008,14 +6053,21 @@ function readManipAnswer(name) {
   return { selected: [`${MANIP_OTHER_OPTION}: ${otherText}`], otherText };
 }
 
+// The two questions are on separate pages. Answers are stored as
+// one-element arrays so the data shape (selected_options) is unchanged.
 function submitManipulationCheck() {
-  // Stored as one-element arrays so the data shape (selected_options) is unchanged.
   const told = readManipAnswer('manipcheck');
-  const experienced = readManipAnswer('manipcheck-experience');
-  if (!told || !experienced) { alert('Please answer both questions.'); return; }
-  if (told.otherText === '' || experienced.otherText === '') { alert('You selected "Other" — please describe your answer before continuing.'); return; }
+  if (!told) { alert('Please answer the question.'); return; }
+  if (told.otherText === '') { alert('You selected "Other" — please describe your answer before continuing.'); return; }
   state.responses.manipulation_check = told.selected;
   state.responses.manipulation_check_other = told.otherText;
+  goTo('manipulation-check-experience');
+}
+
+function submitManipulationCheckExperience() {
+  const experienced = readManipAnswer('manipcheck-experience');
+  if (!experienced) { alert('Please answer the question.'); return; }
+  if (experienced.otherText === '') { alert('You selected "Other" — please describe your answer before continuing.'); return; }
   state.responses.manipulation_check_experience = experienced.selected;
   state.responses.manipulation_check_experience_other = experienced.otherText;
   goTo('crt-intro');
@@ -6260,11 +6312,6 @@ function applyForcedCondition(value) {
   if (cur === 'framing') renderFraming();
   if (cur === 'chatbot') { renderChatbotTypeBanner(); renderChatbotWelcome(); }
   if (cur === 'exp-chatbot') renderChatbotTypeCue();
-  if (cur === 'exp-learning') {
-    // The item set depends on condition, so drop the cached order.
-    delete state.likertOrder.exp_learning;
-    renderLikert('likert-exp-learning', expLearningItems(), 'exp_learning');
-  }
   if (cur === 'study-debrief') renderStudyDebrief();
 }
 

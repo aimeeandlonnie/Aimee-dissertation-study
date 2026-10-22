@@ -1,9 +1,15 @@
 import { applyCors, authAndRateLimit, readJson, getOpenAIKey } from '../lib/auth.js';
 import { getFirebaseDatabase, withTimeout } from '../lib/firebase-admin.js';
+import { CHATBOT_CACHE_VERSION } from '../lib/chatbot-system-prompt.js';
 
 const ALLOWED_MODELS = new Set(['gpt-5.4-mini', 'gpt-4o-mini']);
 const MAX_COMPLETION_TOKENS = 60;
 const MAX_INPUT_CHARS = 32 * 1024;
+
+// On GENERATE, the closest cached answers are returned so the fresh answer
+// can stay consistent with Velora details invented in earlier answers.
+const RELATED_MAX = 5;
+const RELATED_MIN_SIMILARITY = 0.45;
 
 function preview(text, n = 250) {
   const s = String(text || '');
@@ -32,13 +38,38 @@ async function loadFirebaseSemanticCache() {
     // cross-participant cache rather than stalling every question for 30s.
     const snap = await withTimeout(getFirebaseDatabase().ref('semantic_cache').get(), 2500);
     const data = snap.val();
+    // Entries written under an older prompt (or before versioning) are
+    // ignored rather than deleted.
     return data
-      ? Object.values(data).filter(e => e && e.question && e.answer)
+      ? Object.values(data).filter(e => e && e.question && e.answer && e.cacheVersion === CHATBOT_CACHE_VERSION)
       : [];
   } catch (err) {
     console.warn('semantic cache unavailable:', err.message);
     return [];
   }
+}
+
+function cleanEmbedding(embedding) {
+  if (!Array.isArray(embedding) || embedding.length === 0 || embedding.length > 4096) return null;
+  return embedding.every(n => typeof n === 'number' && Number.isFinite(n)) ? embedding : null;
+}
+
+function cosineSimilarity(a, b) {
+  if (!a || !b || a.length !== b.length) return 0;
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; magA += a[i] * a[i]; magB += b[i] * b[i]; }
+  return (magA && magB) ? dot / (Math.sqrt(magA) * Math.sqrt(magB)) : 0;
+}
+
+function relatedEntries(cache, questionEmbedding) {
+  if (!questionEmbedding) return [];
+  return cache
+    .filter(e => e.embedding)
+    .map(e => ({ question: e.question, answer: e.answer, score: cosineSimilarity(questionEmbedding, e.embedding) }))
+    .filter(e => e.score >= RELATED_MIN_SIMILARITY)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, RELATED_MAX)
+    .map(e => ({ question: e.question, answer: e.answer }));
 }
 
 function buildRouterPrompt({ question, history, curatedCatalog, cache }) {
@@ -122,7 +153,8 @@ async function routeQuestion(body, res) {
     seen.add(k);
     cache.push({
       question: String(entry.question).slice(0, 4000),
-      answer: String(entry.answer).slice(0, 12000)
+      answer: String(entry.answer).slice(0, 12000),
+      embedding: cleanEmbedding(entry.embedding)
     });
     if (cache.length >= 500) break;
   }
@@ -158,9 +190,13 @@ async function routeQuestion(body, res) {
 
   const data = await upstream.json();
   const reply = (data.choices?.[0]?.message?.content || '').trim();
+  const generate = () => res.status(200).json({
+    type: 'generate',
+    related: relatedEntries(cache, cleanEmbedding(body.questionEmbedding))
+  });
 
   if (/^\s*generate\b/i.test(reply)) {
-    res.status(200).json({ type: 'generate' });
+    generate();
     return true;
   }
 
@@ -179,7 +215,7 @@ async function routeQuestion(body, res) {
     }
   }
 
-  res.status(200).json({ type: 'generate' });
+  generate();
   return true;
 }
 

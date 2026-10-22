@@ -1,5 +1,6 @@
 import { applyCors, authAndRateLimit, readJson } from '../lib/auth.js';
 import { getFirebaseDatabase, withTimeout } from '../lib/firebase-admin.js';
+import { CHATBOT_CACHE_VERSION } from '../lib/chatbot-system-prompt.js';
 
 const CONDITION_ROTATION = ['baseline', 'framing-reasoning', 'framing-scripted'];
 const MAX_STRING = 32 * 1024;
@@ -50,6 +51,9 @@ function normalizeCacheEntry(entry) {
     question,
     answer,
     ...(embedding ? { embedding } : {}),
+    // Set server-side so the router only reuses answers written under the
+    // current prompt (see CHATBOT_CACHE_VERSION).
+    cacheVersion: CHATBOT_CACHE_VERSION,
     savedAt: typeof entry.savedAt === 'string' ? entry.savedAt : nowIso()
   };
 }
