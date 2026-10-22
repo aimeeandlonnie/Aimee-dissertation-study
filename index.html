@@ -1032,7 +1032,7 @@
     margin-bottom: 12px;
     border-bottom: 1px solid #e5e5e7;
   }
-  .chat-type-header img { width: 44px; height: 44px; flex-shrink: 0; }
+  .chat-type-header img { width: auto; height: 52px; flex-shrink: 0; }
   .chat-type-cue {
     gap: 16px;
     padding: 16px 20px;
@@ -1041,7 +1041,7 @@
     border-radius: 14px;
     background: #fff; /* white so the icons' white corners blend in */
   }
-  .chat-type-cue img { width: 64px; height: 64px; flex-shrink: 0; }
+  .chat-type-cue img { width: auto; height: 88px; flex-shrink: 0; }
   .chat-type-name { font-weight: 600; font-size: 16px; color: var(--ink); line-height: 1.3; }
   .chat-type-sub { font-size: 13px; color: var(--ink-muted); }
 
@@ -1375,9 +1375,20 @@
     margin-bottom: 20px;
   }
   .info-text p:last-child { margin-bottom: 0; }
+  .info-text ul {
+    margin: 0 0 20px;
+    padding-left: 24px;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+  .info-text li { margin-bottom: 10px; }
   .info-text .framing-figure { margin: 28px auto 0; max-width: 560px; }
   .info-text .framing-figure.wide { max-width: none; }
   .info-text .framing-figure img { display: block; width: 100%; height: auto; border-radius: 12px; }
+  /* Chatbot names in the framing text, colored to match their icons/diagrams. */
+  .info-text .bot-a { color: #a02b93; }
+  .info-text .bot-b { color: #104862; }
 
   /* === Critical framing info — inline emphasis (bold + slightly larger) === */
   .info-text .hl-key {
@@ -1511,11 +1522,11 @@
     -ms-user-select: text;
     user-select: text;
   }
-  /* The lesson debrief (what the lesson was about) and its citations, plus
-     any contact-email links, stay selectable so participants can copy
-     references to read later and copy the researcher's email. */
-  #screen-lesson-debrief,
-  #screen-lesson-debrief *,
+  /* Contact-email links stay selectable so participants can copy the
+     researcher's email. (The lesson debrief used to be selectable here too,
+     but that screen is disabled.) */
+  /* #screen-lesson-debrief,
+  #screen-lesson-debrief *, */
   #main-container a[href^="mailto:"] {
     -webkit-user-select: text;
     -moz-user-select: text;
@@ -2110,7 +2121,21 @@
     </div>
     <div class="actions">
       <div class="spacer"></div>
-      <button class="btn primary" onclick="submitLikert('exp_chatbot', 'manipulation-check')">Continue</button>
+      <button class="btn primary" onclick="submitLikert('exp_chatbot', 'exp-learning')">Continue</button>
+    </div>
+  </section>
+
+  <!-- ============ EXP: LEARNING ============ -->
+  <section class="screen" id="screen-exp-learning">
+    <span class="tag">Your learning experience</span>
+    <h1>How was the learning experience?</h1>
+    <p>The following questions are about your experience learning with the chatbot.</p>
+    <div class="card">
+      <div id="likert-exp-learning"></div>
+    </div>
+    <div class="actions">
+      <div class="spacer"></div>
+      <button class="btn primary" onclick="submitLikert('exp_learning', 'manipulation-check')">Continue</button>
     </div>
   </section>
 
@@ -2206,7 +2231,8 @@
     </div>
   </section>
 
-  <!-- ============ LESSON DEBRIEF ============ -->
+  <!-- ============ LESSON DEBRIEF (disabled) ============ -->
+  <!--
   <section class="screen" id="screen-lesson-debrief">
     <span class="tag">About the lesson</span>
     <h1>About the Lesson You Just Read</h1>
@@ -2226,25 +2252,26 @@
       <button class="btn primary" onclick="goTo('study-debrief')">Continue</button>
     </div>
   </section>
+  -->
 
   <!-- ============ STUDY DEBRIEF ============ -->
   <section class="screen" id="screen-study-debrief">
     <span class="tag">About the study</span>
     <h1>Thank you</h1>
     <div class="card">
-      <p>Thank you for completing this study. In this study, we are interested in whether having access to a chatbot helps students learn challenging academic material better and whether the context in which students use that chatbot changes how they interact with it.</p>
-      <!-- TODO (researcher): describe the three conditions (baseline, framing-reasoning,
-           framing-scripted) here, and disclose that the chatbot was identical in all of them. -->
-      <p>While the study is related to the How People Learn course, <strong style="font-size:18px;">your participation has no effect on your grades, course standing, or relationship with the HPL teaching team</strong>. <strong style="font-size:18px;">No one involved in the course will know whether you participated, which condition you were assigned to, or how you performed</strong>.</p>
+      <p>Thank you for completing this study. In this study, we are interested in understanding whether explicitly framing a chatbot’s approach to construct a response affects people’s interactions with the chatbot, as well as their evaluation of the chatbot-assisted learning process.</p>
+      <p>All participants read the same lesson and had access to the same chatbot before answering the subsequent questions. However, participants were randomly assigned to one of three groups, where the only difference between the groups was what we told participants about the chatbot’s response strategy at the start:</p>
+      <ul>
+        <li>One group was told only that they would be able to ask an AI chatbot questions about the lesson. They were told nothing about how it worked.</li>
+        <li>A second group was told they would use <b>Chatbot A</b>, described as using a <b>keyword search algorithm</b> to retrieve the most relevant pieces of information to present to the user from a <b>stored lookup table</b>.</li>
+        <li>A third group was told they would use <b>Chatbot B</b>, described as using <b>context-sensitive planning</b> to <b>reason in-the-moment</b> about what information would be most relevant to present to the user, and why.</li>
+      </ul>
+      <p><b>In reality, there was only one chatbot, and it was identical in all three groups.</b> "Chatbot A" and "Chatbot B" were the same AI model with the same instructions. Only the name, icon, and description you saw were different.</p>
       <p>The research team, and only the research team, will be able to read conversations with the chatbot, but they will not be able to tell which participant any conversation belongs to.</p>
+      <p style="margin:0;">If you have any concerns about this study, you can contact Elizabeth Bonawitz, PhD, at <a href="mailto:elizabeth_bonawitz@gse.harvard.edu" style="color:var(--accent);">elizabeth_bonawitz@gse.harvard.edu</a>.</p>
     </div>
 
     <div id="visible-debrief-extra"></div>
-
-    <div class="card" style="margin-top:24px;">
-      <p style="margin:0 0 12px;"><b>Because this study is still ongoing and other students may not yet have participated, we ask that you please do not discuss the details of the study design or what you learned in this debrief with other students in the course.</b> If someone asks about the study, you are welcome to say that it involves reading a lesson and answering questions about it.</p>
-      <p style="margin:0;">If you have any concerns about this study, you can contact Elizabeth Bonawitz, PhD, at <a href="mailto:elizabeth_bonawitz@gse.harvard.edu" style="color:var(--accent);">elizabeth_bonawitz@gse.harvard.edu</a>.</p>
-    </div>
 
     <div class="option-list" style="margin:24px 0 8px;">
       <label id="debrief-confirm-label" style="background:#f0f7ff; border-color:#bfdbfe;">
@@ -2348,7 +2375,7 @@ const state = {
   pageTimings: {},
   responses: {
     open_response: {}, multiple_choice: {}, consistency: {},
-    exp_chatbot: {}, manipulation_check: [], manipulation_check_experience: [],
+    exp_chatbot: {}, exp_learning: {}, manipulation_check: [], manipulation_check_experience: [],
     manipulation_check_other: null, manipulation_check_experience_other: null,
     crt: {}, llm_knowledge: {}, llm_beliefs: {}, demographics: {},
     chatbot_messages: [],
@@ -2370,10 +2397,10 @@ const state = {
 const SCREENS = [
   'landing','email','consent','instructions','ground-rules','framing','lesson','chatbot',
   'learning-intro','learning-items',
-  'exp-chatbot','manipulation-check',
+  'exp-chatbot','exp-learning','manipulation-check',
   'crt-intro','crt-items',
   'llm-knowledge','llm-beliefs','demographics',
-  'lesson-debrief','study-debrief','complete','already-completed'
+  /* 'lesson-debrief', */ 'study-debrief','complete','already-completed'
 ];
 
 // =====================================================
@@ -2388,18 +2415,21 @@ const FRAMING_SHARED = `<p>Thank you for agreeing to participate in our study. I
 // Diagram shown under the chatbot paragraph in the two framing conditions.
 const FRAMING_FIGURES = {
   // Landscape side-by-side diagram, so it spans the full text column.
-  'comparison-a': { src: 'images/chatbot-comparison-a.jpg', w: 1448, h: 1086, wide: true, alt: 'Side-by-side diagram of two chatbots answering the same question, "What is the Dijkstra algorithm?". Chatbot A, outlined in red, does a keyword search in a lookup table, matching keywords such as "dijkstra", "algorithm", and "shortest path" to answer snippets and combining them into a response. Chatbot B reflects and plans its response by considering what information is needed, why the user is asking, prior interactions with the user, and how the response should be structured. Both give the same answer.' },
-  'comparison-b': { src: 'images/chatbot-comparison-b.jpg', w: 1448, h: 1086, wide: true, alt: 'Side-by-side diagram of two chatbots answering the same question, "What is the Dijkstra algorithm?". Chatbot A does a keyword search in a lookup table, matching keywords such as "dijkstra", "algorithm", and "shortest path" to answer snippets and combining them into a response. Chatbot B, outlined in red, reflects and plans its response by considering what information is needed, why the user is asking, prior interactions with the user, and how the response should be structured. Both give the same answer.' }
+  'comparison-a': { src: 'images/chatbot-comparison-a.jpg', w: 1600, h: 1600, wide: true, alt: 'Diagram of two chatbots answering the question "What is Dijkstra\'s algorithm?", stacked one above the other. Chatbot A, highlighted and outlined in red, uses a keyword search in a lookup table: keywords such as "what is" and "Dijkstra\'s algorithm" map to answer snippets such as "seeking a definition" and "optimization problem in graph space", and it responds that Dijkstra\'s algorithm is a method for finding shortest paths in a weighted graph. Chatbot B, shown faded, uses context-sensitive response planning: it asks what information is most important, why the user is asking, what the user already knows from prior interactions, and what the best structure for the response is, and it responds that Dijkstra\'s algorithm finds the shortest paths between all nodes in a graph.' },
+  'comparison-b': { src: 'images/chatbot-comparison-b.jpg', w: 1600, h: 1600, wide: true, alt: 'Diagram of two chatbots answering the question "What is Dijkstra\'s algorithm?", stacked one above the other. Chatbot A, shown faded, uses a keyword search in a lookup table: keywords such as "what is" and "Dijkstra\'s algorithm" map to answer snippets such as "seeking a definition" and "optimization problem in graph space", and it responds that Dijkstra\'s algorithm is a method for finding shortest paths in a weighted graph. Chatbot B, highlighted and outlined in red, uses context-sensitive response planning: it asks what information is most important, why the user is asking, what the user already knows from prior interactions, and what the best structure for the response is, and it responds that Dijkstra\'s algorithm finds the shortest paths between all nodes in a graph.' }
 };
 function FRAMING_FIGURE(kind) {
   const f = FRAMING_FIGURES[kind];
   return `<figure class="framing-figure${f.wide ? ' wide' : ''}"><img src="${f.src}" alt="${f.alt}" width="${f.w}" height="${f.h}" /></figure>`;
 }
 
+// Description of both chatbots, identical in the two framing conditions.
+const FRAMING_CHATBOTS = `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response.</p><ul><li><b class="bot-a">Chatbot A</b> uses a <b>keyword search algorithm</b> to retrieve the most relevant pieces of information to present to the user from a <b>stored lookup table</b>.</li><li><b class="bot-b">Chatbot B</b> uses <b>context-sensitive planning</b> to <b>reason in-the-moment</b> about what information would be most relevant to present to the user, and why.</li></ul>`;
+
 const FRAMING = {
   'baseline': FRAMING_SHARED,
-  'framing-reasoning': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response.</p><p>Chatbot A follows a <b>templatic approach</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p><p>Chatbot B follows a <b>reflective approach</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p><p>For this lesson, you will be interacting with <b>Chatbot B</b>.</p>${FRAMING_FIGURE('comparison-b')}`,
-  'framing-scripted': FRAMING_SHARED + `<p class="hl-key">In particular, we are piloting two different AI chatbots that use different approaches to process a user’s question and construct a response.</p><p>Chatbot A follows a <b>templatic approach</b>, where it will match keywords from the received question to a database of pre-established answers, and then stitch together a coherent response that addresses all relevant aspects of the question.</p><p>Chatbot B follows a <b>reflective approach</b>, where it will reflect on what information is necessary to answer the question, why the user might ask this question, and what is the most effective way to structure the response taking into account prior interactions with the user.</p><p>For this lesson, you will be interacting with <b>Chatbot A</b>.</p>${FRAMING_FIGURE('comparison-a')}`
+  'framing-reasoning': FRAMING_SHARED + FRAMING_CHATBOTS + `<p>For this lesson, you will be interacting with <b class="bot-b">Chatbot B</b>.</p>${FRAMING_FIGURE('comparison-b')}`,
+  'framing-scripted': FRAMING_SHARED + FRAMING_CHATBOTS + `<p>For this lesson, you will be interacting with <b class="bot-a">Chatbot A</b>.</p>${FRAMING_FIGURE('comparison-a')}`
 };
 
 // =====================================================
@@ -2416,6 +2446,20 @@ const EXP_CHATBOT_ITEMS = [
   { id: 'enjoyed', text: 'I enjoyed interacting with the chatbot.' },
   { id: 'willing_future', text: 'I would be willing to use a chatbot like this to learn new material in the future.' }
 ];
+
+// Learning-experience items. framingOnly items refer to the chatbot's
+// described approach, so baseline participants (told nothing about how the
+// chatbot works) don't see them.
+const EXP_LEARNING_ITEMS = [
+  { id: 'responses_appropriate', text: 'I find the chatbot’s responses appropriate for my learning.' },
+  { id: 'approach_appropriate', text: 'I find the chatbot’s approach to construct the answers appropriate for my learning.', framingOnly: true },
+  { id: 'approach_effortful', text: 'I find chatbot’s approach to construct the answers effortful.', framingOnly: true },
+  { id: 'learning_self_concept', text: 'I am good at understanding and learning about new information.' },
+  { id: 'chatbot_learning_self_efficacy', text: 'I know how to learn new information effectively with the chatbot.' } // metacognitive self-efficacy
+];
+function expLearningItems() {
+  return EXP_LEARNING_ITEMS.filter(it => !it.framingOnly || CHATBOT_TYPES[state.condition]);
+}
 
 // LLM-knowledge: technical knowledge of large language models, asked as
 // multiple choice. Each option is scored 0–3 (wrong / kind of right /
@@ -3309,7 +3353,8 @@ function buildParticipantPayload() {
     },
 
     appraisal: {
-      chatbot_experience_likert: _buildLikertSection(EXP_CHATBOT_ITEMS, r.exp_chatbot || {}, r.exp_chatbot_order || [])
+      chatbot_experience_likert: _buildLikertSection(EXP_CHATBOT_ITEMS, r.exp_chatbot || {}, r.exp_chatbot_order || []),
+      learning_experience_likert: _buildLikertSection(expLearningItems(), r.exp_learning || {}, r.exp_learning_order || [])
     },
 
     llm_knowledge: _buildLlmKnowledgeSection(r.llm_knowledge || {}, r.llm_knowledge_order || []),
@@ -3981,11 +4026,17 @@ function buildParticipantXLSX(payload) {
   manipRows.push(['question_2_other_text', manipExp.other_text || '']);
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(manipRows), 'Manipulation Check');
 
-  // ---- Sheet 6: Chatbot Experience (column per Likert item) ----
+  // ---- Sheet 6a: Chatbot Experience (column per Likert item) ----
   const cL = (payload.appraisal && payload.appraisal.chatbot_experience_likert && payload.appraisal.chatbot_experience_likert.items) || [];
   const cLRows = [['item_id', 'statement', 'participant_rating']];
   cL.forEach(it => cLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(cLRows)), 'Chatbot Experience');
+
+  // ---- Sheet 6b: Learning Experience (column per Likert item) ----
+  const lL = (payload.appraisal && payload.appraisal.learning_experience_likert && payload.appraisal.learning_experience_likert.items) || [];
+  const lLRows = [['item_id', 'statement', 'participant_rating']];
+  lL.forEach(it => lLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '']));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(lLRows)), 'Learning Experience');
 
   // ---- Sheet 7: LLM-knowledge (column per multiple-choice item) ----
   const lk = (payload.llm_knowledge && payload.llm_knowledge.items) || [];
@@ -4385,6 +4436,7 @@ function goTo(screenId) {
   // who closes the tab mid-study can resume on the next page load.
   snapshotSession();
   if (screenId === 'exp-chatbot') { renderChatbotTypeCue(); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
+  if (screenId === 'exp-learning') renderLikert('likert-exp-learning', expLearningItems(), 'exp_learning');
   if (screenId === 'manipulation-check') renderManipCheck();
   if (screenId === 'learning-items') {
     if (!state.learningQueue) { state.learningQueue = buildLearningQueue(); state.learningIndex = 0; }
@@ -5504,18 +5556,18 @@ const CHATBOT_TYPES = {
   'framing-reasoning': {
     name: 'Chatbot B',
     icon: 'images/icon-chatbot-b.png',
-    banner: 'Reminder: you are interacting with <strong>Chatbot B</strong>. It reflects on what information is necessary to answer your question, why you might be asking it, and the most effective way to structure its response given your earlier questions.'
+    banner: 'Reminder: you are interacting with <strong>Chatbot B</strong>. It uses context-sensitive planning to reason in-the-moment about what information would be most relevant to present to you, and why.'
   },
   'framing-scripted': {
     name: 'Chatbot A',
     icon: 'images/icon-chatbot-a.png',
-    banner: 'Reminder: you are interacting with <strong>Chatbot A</strong>. It matches keywords from your question to a database of pre-established answers, then stitches together a response that addresses all relevant aspects of your question.'
+    banner: 'Reminder: you are interacting with <strong>Chatbot A</strong>. It uses a keyword search algorithm to retrieve the most relevant pieces of information to present to you from a stored lookup table.'
   }
 };
 
 // Icon + name row; the icon is decorative because the name is beside it.
 function chatbotTypeIdentity(type, subtitle) {
-  return `<img src="${type.icon}" alt="" width="192" height="192" />`
+  return `<img src="${type.icon}" alt="" width="400" height="364" />`
     + `<div><div class="chat-type-name">${type.name}</div><div class="chat-type-sub">${subtitle}</div></div>`;
 }
 
@@ -5806,6 +5858,8 @@ function renderLikert(containerId, items, key) {
   // If any item is reverse-coded, use the constrained shuffle that prevents
   // two reverse items from landing adjacent to each other.
   if (!state.likertOrder) state.likertOrder = {};
+  // Sessions resumed from before a scale was added have no bucket for it.
+  if (!state.responses[key]) state.responses[key] = {};
   if (!state.likertOrder[key]) {
     const anyReverse = items.some(it => it.reverse);
     state.likertOrder[key] = anyReverse
@@ -6132,7 +6186,8 @@ function submitDemographics() {
   if (needsDescribe) { alert('You selected "Prefer to self-describe" — please fill in the description before continuing.'); return; }
   if (!valid) { alert('Please answer all demographic questions.'); return; }
   state.responses.demographics = out;
-  goTo('lesson-debrief');
+  // goTo('lesson-debrief');  // lesson debrief disabled
+  goTo('study-debrief');
 }
 
 // =====================================================
@@ -6205,6 +6260,11 @@ function applyForcedCondition(value) {
   if (cur === 'framing') renderFraming();
   if (cur === 'chatbot') { renderChatbotTypeBanner(); renderChatbotWelcome(); }
   if (cur === 'exp-chatbot') renderChatbotTypeCue();
+  if (cur === 'exp-learning') {
+    // The item set depends on condition, so drop the cached order.
+    delete state.likertOrder.exp_learning;
+    renderLikert('likert-exp-learning', expLearningItems(), 'exp_learning');
+  }
   if (cur === 'study-debrief') renderStudyDebrief();
 }
 
@@ -6473,9 +6533,11 @@ document.addEventListener('paste', (e) => {
 // Block copy / cut of study content everywhere so it can't be lifted out
 // of the study (e.g. pasted into an external AI). Copying stays allowed
 // from the participant's own answer fields and from a few reference
-// regions: the lesson shown beside the chatbot, the lesson debrief and its
-// citations, and contact-email links. Researcher mode is exempt.
-const COPY_ALLOWED_SELECTORS = '#screen-chatbot .chatbot-lesson, #screen-lesson-debrief, a[href^="mailto:"]';
+// regions: the lesson shown beside the chatbot and contact-email links.
+// Researcher mode is exempt. (The lesson debrief was removed from this
+// list when that screen was disabled.)
+// const COPY_ALLOWED_SELECTORS = '#screen-chatbot .chatbot-lesson, #screen-lesson-debrief, a[href^="mailto:"]';
+const COPY_ALLOWED_SELECTORS = '#screen-chatbot .chatbot-lesson, a[href^="mailto:"]';
 function copyEventAllowed(e) {
   if (researcherModeEnabled()) return true;
   const t = e.target;

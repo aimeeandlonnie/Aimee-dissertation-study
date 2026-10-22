@@ -733,12 +733,15 @@
 
   function renderAppraisal(app) {
     const chat = app.chatbot_experience_likert || {};
+    const learn = app.learning_experience_likert || {};
     return `
       <section class="section" id="sec-appraisal">
         <h3 onclick="toggleSection('sec-appraisal')"><span class="chev">▼</span>Appraisal — Chatbot</h3>
         <div class="section-body">
           <p class="learning-section-title" style="margin-top:4px;">Chatbot Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
           ${(chat.items && chat.items.length) ? renderLikertTable(chat.items) : '<p style="color:var(--ink-muted);font-size:13px;">No chatbot Likert ratings recorded.</p>'}
+          <p class="learning-section-title">Learning Experience (1 = Strongly Disagree, 7 = Strongly Agree)</p>
+          ${(learn.items && learn.items.length) ? renderLikertTable(learn.items) : '<p style="color:var(--ink-muted);font-size:13px;">No learning-experience ratings recorded.</p>'}
         </div>
       </section>`;
   }
