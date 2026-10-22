@@ -2130,6 +2130,7 @@
     <span class="tag">Your learning experience</span>
     <h1>How was the learning experience?</h1>
     <p>The following questions are about your experience learning with the chatbot.</p>
+    <div class="chat-type-cue" id="exp-learning-type-cue" style="display:none;"></div>
     <div class="card">
       <div id="likert-exp-learning"></div>
     </div>
@@ -4478,7 +4479,8 @@ function goTo(screenId) {
   // Snapshot the in-progress session to localStorage so a participant
   // who closes the tab mid-study can resume on the next page load.
   snapshotSession();
-  if (screenId === 'exp-chatbot') { renderChatbotTypeCue(); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
+  if (screenId === 'exp-chatbot') { renderChatbotTypeCue('exp-chatbot-type-cue'); renderLikert('likert-exp-chatbot', EXP_CHATBOT_ITEMS, 'exp_chatbot'); }
+  if (screenId === 'exp-learning') renderChatbotTypeCue('exp-learning-type-cue');
   if (screenId === 'exp-learning') renderLikert('likert-exp-learning', EXP_LEARNING_ITEMS, 'exp_learning');
   if (screenId === 'manipulation-check') renderManipOptions('manipcheck-options', 'manipcheck', MANIP_OPTIONS);
   if (screenId === 'manipulation-check-experience') renderManipOptions('manipcheck-experience-options', 'manipcheck-experience', MANIP_EXPERIENCE_OPTIONS);
@@ -5630,9 +5632,9 @@ function renderChatbotTypeBanner() {
   }
 }
 
-function renderChatbotTypeCue() {
+function renderChatbotTypeCue(cueId) {
   const type = CHATBOT_TYPES[state.condition];
-  const cue = document.getElementById('exp-chatbot-type-cue');
+  const cue = document.getElementById(cueId);
   if (!cue) return;
   cue.innerHTML = type ? chatbotTypeIdentity(type, 'The chatbot you used in this study') : '';
   cue.style.display = type ? 'flex' : 'none';
@@ -6311,7 +6313,8 @@ function applyForcedCondition(value) {
   const cur = state.currentScreen;
   if (cur === 'framing') renderFraming();
   if (cur === 'chatbot') { renderChatbotTypeBanner(); renderChatbotWelcome(); }
-  if (cur === 'exp-chatbot') renderChatbotTypeCue();
+  if (cur === 'exp-chatbot') renderChatbotTypeCue('exp-chatbot-type-cue');
+  if (cur === 'exp-learning') renderChatbotTypeCue('exp-learning-type-cue');
   if (cur === 'study-debrief') renderStudyDebrief();
 }
 
