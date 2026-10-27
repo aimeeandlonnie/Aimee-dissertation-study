@@ -2,6 +2,9 @@
 
 How to test the deployed study as a team, check that data is actually stored, and reset everything before launch. Read [SETUP.md](SETUP.md) first for how the pipeline is built.
 
+- **Live study URL:** https://aimee-dissertation-study.vercel.app/
+- **Researcher mode:** https://aimee-dissertation-study.vercel.app/?researcher-access
+
 > **The rule that matters most:** researcher mode does **not** upload data, so it cannot tell you whether storage works. Checking storage needs a normal participant run, and those write to the real databases. Do them **before launch only**, then reset.
 
 ---
@@ -23,7 +26,7 @@ GitHub repo ──deploys──► Vercel (holds the secret keys)
 
 | Service | Needed for | How the owner grants it |
 |---|---|---|
-| Study URL | Running the study | Just share the link |
+| [Study URL](https://aimee-dissertation-study.vercel.app/) | Running the study | Public, nothing to grant |
 | **Dataverse** | Seeing the uploaded files | Collection → *Edit → Permissions* → assign the tester's Harvard Dataverse account a role. Viewing needs a read role. **Resetting needs a role that can edit files** (e.g. Curator / Contributor). |
 | **Firebase** | Checking counters, cache, emails, chat logs | Firebase console → *Project settings → Users and permissions*. **Viewer** can read the data; **Editor** is needed to reset it. |
 | Vercel | Deploy logs and server errors (optional) | The free Hobby plan likely can't add members; the owner can share logs instead. |
@@ -43,9 +46,8 @@ Testing "on your laptop" means using the **deployed URL in your laptop's browser
 | The **Google account email** you'll use for Firebase | Add you under *Project settings → Users and permissions* (Viewer to check, Editor to reset) |
 | Your **GitHub username** (only if you'll push code) | Give you access to the repo |
 
-**Ask the owner for:**
+**Additional info/checks:**
 
-- [ ] The **live study URL** (the Vercel production URL)
 - [ ] Links to the **four Dataverse collections**, and confirmation that their datasets are **still unpublished** (see §6.2)
 - [ ] Which **branch Vercel deploys from**, and whether pushing to it updates the live study
 - [ ] Whether **Preview deployments** have the same environment variables as Production, if you want to test a branch at its own preview URL before merging
@@ -64,7 +66,7 @@ Opening `index.html` straight from disk won't work either. It calls `/api/...` o
 
 ## 3. Phase 1: researcher-mode testing (no real data stored)
 
-Open the study URL with **`?researcher-access`** at the end, spelled exactly like that. (The older `?researcher=hpl-staff` also works; `?research-access` does **not**, and runs as a normal participant.)
+Open **https://aimee-dissertation-study.vercel.app/?researcher-access**. The flag must be spelled exactly like that. (The older `?researcher=hpl-staff` also works; `?research-access` does **not**, and runs as a normal participant.)
 
 A test panel appears: force a condition, jump to any screen, skip the reading timers, dump the data, reset the study. Copy/paste blocks are lifted.
 
@@ -101,7 +103,7 @@ At the end, the page says nothing was uploaded. The full data is printed in the 
 
 ## 4. Phase 2: participant-mode testing (writes to the real databases)
 
-**Only before launch.** Open the study URL **without** `?researcher-access`.
+**Only before launch.** Open **https://aimee-dissertation-study.vercel.app/**, without `?researcher-access`.
 
 **Before you start:**
 - Use a **throwaway email for each run**. Afterwards it's saved as "already participated" and that email is blocked.
