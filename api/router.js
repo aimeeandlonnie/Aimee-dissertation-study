@@ -90,9 +90,11 @@ OUTPUT EXACTLY ONE OF THESE LINES, WITH NO EXPLANATION OR PREAMBLE:
 - CACHE: <index>       (reuse a cache answer from a prior participant)
 - GENERATE             (generate a fresh answer)
 
-DEFAULT RULE. When in doubt, REUSE. The cost of incorrectly reusing is small (a slightly off answer). The cost of incorrectly generating is high (two participants get different answers to the same question, breaking experimental consistency). Bias toward REUSE.
+SUBJECT RULE (check this first). Identify what the question is about: the term, House, person, place, event, or idea it names. Only an entry about that SAME subject can be reused. Many things the lesson names may have no entry of their own (for example the Houses Tor and Seli, House Marks, the record stone, Nera, the Festival of First Rain, or Velora itself). A question about such a subject is GENERATE unless an entry or cache item is specifically about it. Never pick an entry because the question has the same shape ("what is X", "define X", "explain X"), because the entry is a definition, or because it appears first in the list. Reusing an answer about a different subject is the worst possible outcome: the participant gets an answer to a question they did not ask. Generating is safe, because fresh answers are cached and later participants who ask the same thing get the same answer.
 
-REUSE RULES. Reuse (CURATED or CACHE) when the participant's question is asking for the SAME core information as an existing entry, even if:
+DEFAULT RULE. Among entries about the same subject, when in doubt, REUSE. The cost of incorrectly reusing a same-subject answer is small (a slightly off answer). The cost of incorrectly generating is high (two participants get different answers to the same question, breaking experimental consistency).
+
+REUSE RULES. Reuse (CURATED or CACHE) when the participant's question is asking for the SAME core information about the SAME subject as an existing entry, even if:
 - it is paraphrased ("what is X" vs "explain X" vs "describe X" vs "tell me about X")
 - it is a shortened form ("X?" or just "X" right after a fuller question about X is in the catalog or context)
 - it contains typos ("alignmnet", "reckonning", "weiging")
@@ -110,13 +112,15 @@ GENERATE RULES. Generate only when no existing entry answers the participant's s
 DISAMBIGUATION.
 - When both a CURATED and a CACHE entry match, always prefer CURATED.
 - When multiple CURATED entries match, pick the one whose answer most directly addresses the question's core (definition entry wins for "what is X"; comparison entry wins for "X vs Y").
-- When the question could plausibly be REUSE or GENERATE, REUSE wins. Tie-breaker is consistency.
+- When the question could plausibly be REUSE or GENERATE and the entry is about the same subject, REUSE wins. Tie-breaker is consistency. If no entry is about the same subject, GENERATE.
 
 WORKED EXAMPLES.
 - Prior: (none). Now: "what is truing" -> CURATED: truing_def
 - Prior: Q "what is truing" -> A. Now: "truing?" -> CURATED: truing_def (shortened repeat)
 - Prior: Q "what does incompatible mean" -> A. Now: "incompatible?" -> CURATED: incompatible_claims_def (shortened repeat of same concept)
 - Prior: (none). Now: "alignmnet? :)" -> CURATED: alignment_def (typo, same concept)
+- Prior: (none). Now: "what is tor" -> GENERATE when no entry or cache item is about Tor (same "what is" shape as a definition entry, but a different subject)
+- Prior: Q "what is a weighing" -> A. Now: "what is seli" -> GENERATE when no entry or cache item is about Seli (a new subject, not a repeat)
 - Prior: Q "what is X" -> A. Now: "give me an example of X" -> GENERATE (asking for new info: example)
 - Prior: Q "what is X" -> A. Now: "how is it different from Y" -> CURATED if an X-vs-Y entry exists, else GENERATE
 - Prior: (none). Now: "what will i be asked later" -> CURATED: future_questions

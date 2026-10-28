@@ -26,7 +26,7 @@ GitHub repo ──deploys──► Vercel (holds the secret keys)
 
 | Service | Needed for | How the owner grants it |
 |---|---|---|
-| [Study URL](https://aimee-dissertation-study.vercel.app/) | Running the study | Public, nothing to grant |
+| [Study URL](https://aimee-dissertation-study.vercel.app/) | Running the study | Public |
 | **Dataverse** | Seeing the uploaded files | Collection → *Edit → Permissions* → assign the tester's Harvard Dataverse account a role. Viewing needs a read role. **Resetting needs a role that can edit files** (e.g. Curator / Contributor). |
 | **Firebase** | Checking counters, cache, emails, chat logs | Firebase console → *Project settings → Users and permissions*. **Viewer** can read the data; **Editor** is needed to reset it. |
 | Vercel | Deploy logs and server errors (optional) | The free Hobby plan likely can't add members; the owner can share logs instead. |
@@ -66,7 +66,7 @@ Opening `index.html` straight from disk won't work either. It calls `/api/...` o
 
 ## 3. Phase 1: researcher-mode testing (no real data stored)
 
-Open **https://aimee-dissertation-study.vercel.app/?researcher-access**. The flag must be spelled exactly like that. (The older `?researcher=hpl-staff` also works; `?research-access` does **not**, and runs as a normal participant.)
+Open **https://aimee-dissertation-study.vercel.app/?researcher-access**. The flag must be spelled exactly like that. 
 
 A test panel appears: force a condition, jump to any screen, skip the reading timers, dump the data, reset the study. Copy/paste blocks are lifted.
 
