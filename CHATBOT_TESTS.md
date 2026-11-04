@@ -13,7 +13,7 @@ Open the browser dev tools console (View → Developer → JavaScript Console) b
 | **GENERATE** | `Router: GENERATE for "…" (N related cached answers)` | Yes, written to Firebase `semantic_cache` |
 | **SKIP** | No `Router:` line at all | No; follow-up, meta and context-dependent questions always get a fresh answer and are never cached |
 | **MULTI** | `Router: MULTI for "…": "part 1" -> CURATED, "part 2" -> GENERATE, …` | Yes, the stitched answer is cached under the full question |
-| **REPEAT** | A `Router: CURATED` or `Router: CACHE` line, then `Repeated question: re-explaining…` | No; a re-explanation depends on this chat |
+| **REPEAT** | `Repeated question (same as an earlier one in this chat)…` with no `Router:` line, or a `Router: CURATED`/`CACHE` line then `Repeated question (router reused an answer already shown)…` | No; a re-explanation depends on this chat |
 
 Before you start:
 

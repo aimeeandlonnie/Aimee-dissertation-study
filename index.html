@@ -4330,20 +4330,56 @@ function buildScopeAnchor(questionEmbedding, related) {
 // =====================================================
 // REPEATED QUESTIONS
 // -----------------------------------------------------
-// A reused (curated or cached) answer that was already shown earlier in
-// this chat means the participant is asking the same thing again. Sending
-// the identical text back reads as scripted, so the answer is regenerated
-// with a natural opening and a fresh explanation that stays consistent
-// with the earlier answer. Applies in every condition (the debrief says
-// the chatbot was identical across groups). Exempt: the fixed "how I
-// work" reply, which must stay word for word, and short replies without
-// the closer (e.g. "Okay, glad to help.").
+// Sending the identical text back to a question the participant already
+// asked in this chat reads as scripted, so a repeat is regenerated with a
+// natural opening and a fresh explanation that stays consistent with the
+// earlier answer. A repeat is detected two ways:
+//   1. Before routing, from the participant's own history: the same
+//      question text (ignoring case and punctuation), or a near-identical
+//      rewording (question embeddings at least REPEAT_MIN_SIMILARITY).
+//   2. After routing, as a backstop: the router picked a curated or
+//      cached answer that was already shown in this chat (e.g. "truing?"
+//      after "what is truing").
+// Applies in every condition (the debrief says the chatbot was identical
+// across groups). Exempt: the fixed "how I work" reply, which must stay
+// word for word, and short replies without the closer (e.g. "Okay, glad
+// to help.").
 // =====================================================
 const CHATBOT_CLOSER = 'Do you have another question about the lesson?';
 const HOW_I_WORK_REPLY = CHATBOT_FAQ.find(e => e.id === 'how_chatbot_works').answer;
+const REPEAT_MIN_SIMILARITY = 0.95;
+
+// Embeddings of the questions asked in this chat, keyed by question text.
+// In memory only: after a page refresh, earlier questions are matched on
+// text alone.
+const chatQuestionEmbeddings = new Map();
+
+function canReexplain(answer) {
+  return answer !== HOW_I_WORK_REPLY && answer.trim().endsWith(CHATBOT_CLOSER);
+}
+
+function normalizeQuestionText(q) {
+  return q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// Returns the latest answer given in this chat to the same question, or
+// null. The current question is the last message, so it is skipped.
+function findEarlierAnswerToSameQuestion(text, embedding) {
+  const msgs = state.responses.chatbot_messages;
+  const norm = normalizeQuestionText(text);
+  for (let i = msgs.length - 2; i >= 0; i--) {
+    const next = msgs[i + 1];
+    if (msgs[i].role !== 'user' || !next || next.role !== 'assistant') continue;
+    const prior = chatQuestionEmbeddings.get(msgs[i].content);
+    const sameText = normalizeQuestionText(msgs[i].content) === norm;
+    const sameMeaning = embedding && prior && cosineSimilarity(embedding, prior) >= REPEAT_MIN_SIMILARITY;
+    if (sameText || sameMeaning) return next.content;
+  }
+  return null;
+}
 
 function isRepeatOfEarlierAnswer(answer) {
-  if (answer === HOW_I_WORK_REPLY || !answer.trim().endsWith(CHATBOT_CLOSER)) return false;
+  if (!canReexplain(answer)) return false;
   return state.responses.chatbot_messages.some(m => m.role === 'assistant' && m.content === answer);
 }
 
@@ -5782,12 +5818,22 @@ async function sendChatMessage() {
   let related = [];
   let multiParts = null;
   let repeatOf = null;
+  // Repeated question in this chat: skip the router and re-explain the
+  // earlier answer (see REPEATED QUESTIONS).
   if (!skipCache) {
+    const earlier = findEarlierAnswerToSameQuestion(text, questionEmbedding);
+    if (earlier && canReexplain(earlier)) {
+      console.log('Repeated question (same as an earlier one in this chat): re-explaining the earlier answer');
+      repeatOf = earlier;
+    }
+  }
+  if (questionEmbedding) chatQuestionEmbeddings.set(text, questionEmbedding);
+  if (!skipCache && !repeatOf) {
     const routed = await unifiedGPTRouter(text, priorHistory, questionEmbedding);
     if (routed && routed.related) related = routed.related;
     if (routed && routed.parts) multiParts = routed.parts;
     if (routed && routed.answer && isRepeatOfEarlierAnswer(routed.answer)) {
-      console.log('Repeated question: re-explaining the earlier answer instead of repeating it');
+      console.log('Repeated question (router reused an answer already shown): re-explaining the earlier answer');
       repeatOf = routed.answer;
     } else if (routed && routed.answer) {
       removeTypingIndicator(typingId);
