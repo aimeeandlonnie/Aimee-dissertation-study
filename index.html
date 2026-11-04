@@ -3038,11 +3038,18 @@ function isContextDependent(question) {
 //   - The current question
 //
 // It outputs one of:
-//   CURATED: <id>      -> return that curated answer verbatim
-//   CACHE: <index>     -> return that cache answer verbatim
+//   CURATED: <id>      -> return that curated answer verbatim (unless it
+//                         was already given in this chat; see
+//                         isRepeatOfEarlierAnswer)
+//   CACHE: <index>     -> return that cache answer verbatim (same caveat)
 //   GENERATE           -> fall through to fresh gpt-5.4, passing along
 //                         the closest cached answers (`related`) so any
 //                         Velora details they invented stay consistent
+//   MULTI + one line per part -> each part routed on its own; a fresh
+//                         gpt-5.4 answer stitches them into one
+//                         paragraph, consistent with each part's
+//                         reusable answer, then a coverage check confirms
+//                         no part was skipped
 //
 // Latency: one round-trip to gpt-5.4-mini (~500ms).
 // Cost at study scale: ~$0.001 per question, capped well
@@ -3080,6 +3087,24 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
       const related = Array.isArray(data.related) ? data.related : [];
       console.log(`Router: GENERATE for "${question.substring(0, 60)}" (${related.length} related cached answers)`);
       return { type: 'generate', related };
+    }
+
+    if (data.type === 'multi' && Array.isArray(data.parts)) {
+      const related = Array.isArray(data.related) ? data.related : [];
+      // Resolve each part to its reusable answer (curated or cached), or
+      // null when that part needs a fresh answer.
+      const parts = data.parts.map(p => {
+        let answer = null;
+        if (p.type === 'curated') {
+          const entry = CHATBOT_FAQ.find(e => e.id.toLowerCase() === String(p.id).toLowerCase());
+          answer = entry ? entry.answer : null;
+        } else if (p.type === 'cache' && typeof p.answer === 'string') {
+          answer = p.answer;
+        }
+        return { question: String(p.question || ''), answer, route: answer ? p.type : 'generate' };
+      });
+      console.log(`Router: MULTI for "${question.substring(0, 60)}": ${parts.map(p => `"${p.question}" -> ${p.route.toUpperCase()}`).join(', ')}`);
+      return { type: 'multi', parts, related };
     }
 
     if (data.type === 'curated' && data.id) {
@@ -4300,6 +4325,72 @@ function buildScopeAnchor(questionEmbedding, related) {
   }
   const examples = top.map((e, i) => `Example ${i + 1} — Question: "${e.triggerText}"\nCanonical answer: ${e.answer}`).join('\n\n');
   return `Reference style. The questions below are the closest curated repository questions to what the participant just asked. Their canonical answers show the depth, length (2 to 4 sentences in a single paragraph), and plain-prose tone to match when writing the fresh answer, and they must never be contradicted. Do NOT copy them. Answer the participant's actual question; if it goes beyond the lesson, follow the system prompt's rules for adding Velora details.\n\n${examples}${establishedBlock}`;
+}
+
+// =====================================================
+// REPEATED QUESTIONS
+// -----------------------------------------------------
+// A reused (curated or cached) answer that was already shown earlier in
+// this chat means the participant is asking the same thing again. Sending
+// the identical text back reads as scripted, so the answer is regenerated
+// with a natural opening and a fresh explanation that stays consistent
+// with the earlier answer. Applies in every condition (the debrief says
+// the chatbot was identical across groups). Exempt: the fixed "how I
+// work" reply, which must stay word for word, and short replies without
+// the closer (e.g. "Okay, glad to help.").
+// =====================================================
+const CHATBOT_CLOSER = 'Do you have another question about the lesson?';
+const HOW_I_WORK_REPLY = CHATBOT_FAQ.find(e => e.id === 'how_chatbot_works').answer;
+
+function isRepeatOfEarlierAnswer(answer) {
+  if (answer === HOW_I_WORK_REPLY || !answer.trim().endsWith(CHATBOT_CLOSER)) return false;
+  return state.responses.chatbot_messages.some(m => m.role === 'assistant' && m.content === answer);
+}
+
+function buildRepeatBlock(earlierAnswer) {
+  return `Repeated question. The participant already asked this earlier in this conversation and received the answer below, so they may still find it unclear. Do NOT repeat that answer word for word. Start with one short, natural sentence acknowledging that they are coming back to it (for example "I get why this is still tricky, so let's clarify it further." or "This one is worth a second look."). Vary that opening and never reuse one already used in this conversation. Then explain the same idea a different way, for example from another angle or by walking through a concrete case from the lesson. Keep every fact and Velora detail consistent with the earlier answer and add nothing that contradicts it. The opening sentence counts toward the 2 to 4 sentences.\n\nEarlier answer: ${earlierAnswer}`;
+}
+
+// =====================================================
+// MULTI-PART QUESTIONS
+// -----------------------------------------------------
+// The router splits a message that asks several things into parts and
+// routes each one. The fresh answer gets every part with its reusable
+// answer (if any) so it can stitch them into one consistent paragraph.
+// A coverage check then confirms each part was answered; if one was
+// skipped, the answer is regenerated once with the missing parts named.
+// =====================================================
+function buildMultiPartBlock(parts) {
+  const list = parts.map((p, i) => p.answer
+    ? `Part ${i + 1}: "${p.question}"\nEstablished answer (keep to its facts and Velora details; restate briefly, do not copy): ${p.answer}`
+    : `Part ${i + 1}: "${p.question}"\nNo established answer. Answer it following the system prompt's rules.`
+  ).join('\n\n');
+  return `Multi-part question. The participant's message asks ${parts.length} separate things, listed below. Answer EVERY part; do not skip or drop any of them. Stitch the parts into one coherent paragraph of 2 to 4 sentences in total, giving each part at least its own clause, then end with the closer once. For any part about how you work, follow the system prompt's rule for that.\n\n${list}`;
+}
+
+// Returns the 1-based numbers of the parts the reply leaves unanswered
+// ([] when all are covered, or when the check itself fails).
+async function findUnansweredParts(parts, reply) {
+  const list = parts.map((p, i) => `${i + 1}. ${p.question}`).join('\n');
+  try {
+    const res = await proxyFetch('/router', {
+      model: 'gpt-5.4-mini',
+      max_completion_tokens: 30,
+      messages: [{
+        role: 'user',
+        content: `A chatbot reply must answer every one of these questions:\n${list}\n\nReply:\n${reply}\n\nWhich questions does the reply leave unanswered? A brief answer counts as answered. Output exactly "ALL" if every question is answered, otherwise "MISSING:" followed by the question numbers, e.g. "MISSING: 2".`
+      }]
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const out = (data.choices?.[0]?.message?.content || '').trim();
+    const m = out.match(/^missing\s*:?\s*([\d,\s]+)/i);
+    if (!m) return [];
+    return [...new Set(m[1].split(/[,\s]+/).map(n => parseInt(n, 10)))]
+      .filter(n => n >= 1 && n <= parts.length);
+  } catch {
+    return [];
+  }
 }
 
 async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
@@ -5681,16 +5772,24 @@ async function sendChatMessage() {
 
   // 1. UNIFIED GPT ROUTER — one GPT call sees the curated repository
   //    and the current Firebase / session cache, decides
-  //    CURATED / CACHE / GENERATE. No cosine. No threshold. Returns
-  //    the canonical text verbatim when there is a match. On GENERATE it
-  //    also returns related cached answers for the scope anchor. Skipped
-  //    for follow-up, meta, and context-dependent questions, which always
-  //    get a fresh answer.
+  //    CURATED / CACHE / GENERATE / MULTI. No cosine. No threshold. Returns
+  //    the canonical text verbatim when there is a match, unless that
+  //    text was already shown in this chat (a repeated question), which
+  //    gets a fresh, re-explained answer instead. On GENERATE and MULTI
+  //    it also returns related cached answers for the scope anchor.
+  //    Skipped for follow-up, meta, and context-dependent questions,
+  //    which always get a fresh answer.
   let related = [];
+  let multiParts = null;
+  let repeatOf = null;
   if (!skipCache) {
     const routed = await unifiedGPTRouter(text, priorHistory, questionEmbedding);
     if (routed && routed.related) related = routed.related;
-    if (routed && routed.answer) {
+    if (routed && routed.parts) multiParts = routed.parts;
+    if (routed && routed.answer && isRepeatOfEarlierAnswer(routed.answer)) {
+      console.log('Repeated question: re-explaining the earlier answer instead of repeating it');
+      repeatOf = routed.answer;
+    } else if (routed && routed.answer) {
       removeTypingIndicator(typingId);
       removeTypingIndicator(typingId);
       const cachedStream = startStreamingAssistantMessage();
@@ -5706,9 +5805,11 @@ async function sendChatMessage() {
   // 2. FRESH ANSWER — call gpt-5.4 with a scope anchor built from the
   //    nearest curated answers (length, depth, tone) and the related
   //    cached answers from the router (Velora details already given to
-  //    other participants, to stay consistent with). Save to the session
-  //    and Firebase caches (unless skipCache) so the router can reuse it
-  //    for later participants who ask the same thing.
+  //    other participants, to stay consistent with), plus the parts of a
+  //    multi-part question or the earlier answer to a repeated one. Save
+  //    to the session and Firebase caches (unless skipCache, or a
+  //    repeat, whose answer depends on this chat) so the router can
+  //    reuse it for later participants who ask the same thing.
   removeTypingIndicator(typingId);
   const thinkingId = appendThinkingIndicator();
   let stream = null;
@@ -5716,14 +5817,29 @@ async function sendChatMessage() {
     const history = state.responses.chatbot_messages
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
-    const scopeAnchor = questionEmbedding ? buildScopeAnchor(questionEmbedding, related) : null;
-    const reply = await callOpenAI(history, scopeAnchor, (fullText) => {
+    const anchorParts = [questionEmbedding ? buildScopeAnchor(questionEmbedding, related) : null];
+    if (multiParts) anchorParts.push(buildMultiPartBlock(multiParts));
+    if (repeatOf) anchorParts.push(buildRepeatBlock(repeatOf));
+    const scopeAnchor = anchorParts.filter(Boolean).join('\n\n') || null;
+    // A multi-part answer is checked before it is shown, so it is not
+    // streamed: the thinking indicator stays up until it has passed.
+    const onChunk = multiParts ? null : (fullText) => {
       if (!stream) {
         removeThinkingIndicator(thinkingId);
         stream = startStreamingAssistantMessage();
       }
       stream.update(fullText);
-    });
+    };
+    let reply = await callOpenAI(history, scopeAnchor, onChunk);
+    if (multiParts) {
+      const missing = await findUnansweredParts(multiParts, reply);
+      if (missing.length > 0) {
+        console.log(`Multi-part answer skipped part(s) ${missing.join(', ')}; regenerating`);
+        const missingList = missing.map(n => `"${multiParts[n - 1].question}"`).join(', ');
+        const retryAnchor = `${scopeAnchor}\n\nA previous draft of this answer left these parts unanswered: ${missingList}. Make sure this answer covers them too, still within 2 to 4 sentences in one paragraph.`;
+        reply = await callOpenAI(history, retryAnchor, null);
+      }
+    }
     if (!stream) {
       removeThinkingIndicator(thinkingId);
       stream = startStreamingAssistantMessage();
@@ -5734,7 +5850,7 @@ async function sendChatMessage() {
     }
     state.responses.chatbot_messages.push({ role: 'assistant', content: reply, timestamp: new Date().toISOString() });
     snapshotSession();
-    if (!skipCache && questionEmbedding) await persistAnswer(text, questionEmbedding, reply);
+    if (!skipCache && !repeatOf && questionEmbedding) await persistAnswer(text, questionEmbedding, reply);
   } catch (err) {
     console.error('Chatbot OpenAI call failed:', err);
     removeThinkingIndicator(thinkingId);

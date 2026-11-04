@@ -4,7 +4,7 @@ Questions to type into the chatbot to cover every path in its logic. Each one li
 
 ## How to read the results
 
-Open the browser dev tools console (View → Developer → JavaScript Console) before you start chatting. Every question takes one of four routes:
+Open the browser dev tools console (View → Developer → JavaScript Console) before you start chatting. Every question takes one of these routes:
 
 | Route | Console shows | Cached for later participants? |
 |---|---|---|
@@ -12,17 +12,19 @@ Open the browser dev tools console (View → Developer → JavaScript Console) b
 | **CACHE** | `Router: CACHE for "…"` | Already cached; reuses an earlier answer word for word |
 | **GENERATE** | `Router: GENERATE for "…" (N related cached answers)` | Yes, written to Firebase `semantic_cache` |
 | **SKIP** | No `Router:` line at all | No; follow-up, meta and context-dependent questions always get a fresh answer and are never cached |
+| **MULTI** | `Router: MULTI for "…": "part 1" -> CURATED, "part 2" -> GENERATE, …` | Yes, the stitched answer is cached under the full question |
+| **REPEAT** | A `Router: CURATED` or `Router: CACHE` line, then `Repeated question: re-explaining…` | No; a re-explanation depends on this chat |
 
 Before you start:
 
 - Use a **fresh browser session** (a private window, or "Reset study" in the researcher panel) when a test says "new session". Opening a new session is how you stand in for a second participant.
 - **Researcher mode still writes to the shared `semantic_cache`.** Answers you generate while testing will be reused for real participants. Before launch, bump `CHATBOT_CACHE_VERSION` in [lib/chatbot-system-prompt.js](lib/chatbot-system-prompt.js) or clear `semantic_cache` (see [TESTING.md](TESTING.md) §6).
-- Each browser session has a budget of 500 API calls. One question uses about 3 (embed, router, answer). For long test runs, reset now and then.
+- Each browser session has a budget of 500 API calls. One question uses about 3 (embed, router, answer); a multi-part question uses 4 or 5. For long test runs, reset now and then.
 
 ## Checks that apply to every reply
 
 - [ ] No em dash (—), en dash (–) or `--` anywhere.
-- [ ] 2 to 4 sentences in one paragraph; no bullets, headers or bold unless you asked for a list.
+- [ ] Generated answers: 2 to 4 sentences in **one** paragraph, not counting the closer, even for broad or multi-part questions. No bullets, headers or bold unless you asked for a list. (Curated FAQ answers are fixed text and may be longer.)
 - [ ] Ends with exactly "Do you have another question about the lesson?" (the only exception is the "I'm done" replies in §11).
 - [ ] In English, even if you wrote in another language.
 - [ ] Never brings in real-world research, people or analogies.
@@ -71,7 +73,7 @@ Each row should hit the same entry for the plain question, a paraphrase, a typo 
 | What does incompatible mean? | incompatible? | `incompatible_claims_def` |
 | What does it mean for claims to hold together? | coherent claims | `claims_hold_together_def` |
 
-**Same-session repeat:** ask "What is truing?", then "truing?". The second should be CURATED `truing_def` again, with identical text.
+Test the paraphrase column in a **new session**. In the same chat, a second question about the same term counts as a repeat (§16) and gets re-explained rather than the FAQ text.
 
 ## 3. Curated non-definition entries (CURATED)
 
@@ -250,8 +252,46 @@ Ask these right after "What is Tor?". Each answer must use the previous turn, an
 | Refresh mid-chat | Earlier messages restored from the session snapshot |
 | Turn Wi-Fi off and send | "Sorry, I had trouble connecting…"; works again once back online |
 
-## 15. Data captured (participant-mode run only)
+## 15. Multi-part questions (MULTI)
+
+Every part must be answered, in one paragraph of 2 to 4 sentences. Parts with an FAQ or cached answer must stay consistent with it. The console shows how each part was routed, and logs `Multi-part answer skipped part(s) …; regenerating` if the coverage check caught a missing part.
+
+| Question | Expected parts | Check |
+|---|---|---|
+| What is Tor and what is Seli? | Tor -> GENERATE or CACHE, Seli -> GENERATE or CACHE | Both Houses covered |
+| What is truing, and how is it different from a Weighing? | truing -> CURATED `truing_def`; difference -> GENERATE | Both covered; matches the `truing_def` facts |
+| Who is Nera and why did she go to Seli at the festival? | 2 parts | Second part follows the law of alignment; says nothing about the repair day |
+| What is recutting? What is adding? Which one did Nera do? | 3 parts | All three covered within 4 sentences |
+| What is a reckoning, what is the cradle rule, what is the law of alignment and what is truing? | 4 parts | All four covered; still one paragraph |
+| What is a House Mark and are you Chatbot B? | Mark -> GENERATE; how-you-work -> CURATED | Answers the Mark part, then "I'm not able to go into how I work behind the scenes." and the closer |
+| What does the Turning do to the earlier Mark, and what is Tor? | 2 parts | Turning part still gives both descriptions without picking (§5) |
+| How is adding different from recutting? | **Not** MULTI | One comparison question: GENERATE or CURATED |
+| What is Tor and what is Seli? (new session, after the first was cached) | CACHE | Same answer as before |
+
+## 16. Repeated questions in the same chat (REPEAT)
+
+The first answer is the FAQ or cached text. Asking the same thing again in the **same chat** should get a re-explanation. It should:
+
+- open with a natural sentence such as "I get why this is still tricky, so let's clarify it further.";
+- explain the idea from another angle;
+- stay consistent with the first answer;
+- stay within 2 to 4 sentences.
+
+This applies in every chatbot condition, since the debrief says the chatbot was identical across groups.
+
+| Sequence | Check |
+|---|---|
+| "What is truing?" then "What is truing?" | Second reply opens naturally and is **not** the same text |
+| "What is truing?", "truing?", "I still don't get truing" | Each later reply uses a **different** opening sentence |
+| "What is Tor?" (GENERATE) then "what is tor" | Re-explained, consistent with the first answer's details |
+| "What is truing?" then "What is truing?" in a **new session** | Not a repeat: exact FAQ text again |
+| "Are you Chatbot B?" twice | **Exact** fixed reply both times (exempt) |
+| "no" twice | Short acknowledgement both times, no closer (exempt) |
+| "What does the Turning do to the earlier Mark?" twice | Re-explained but still gives both descriptions without picking (§5) |
+| Repeat question, then check Firebase | No new `semantic_cache` entry for the repeat |
+
+## 17. Data captured (participant-mode run only)
 
 - [ ] Every question and answer appears in the exported `chatbot_messages`, with timestamps, including CURATED, CACHE and SKIP replies.
 - [ ] After the study is completed (once a P00X ID is claimed), Firebase `chatbot_user_messages/<P00X>` holds a CSV of all the participant's questions, and `total_user_turns` matches the number you sent.
-- [ ] Firebase `semantic_cache` has a new entry **only** for GENERATE questions. Each entry has `cacheVersion: "velora-open-v1"` and an embedding. There are no entries for SKIP or CURATED questions.
+- [ ] Firebase `semantic_cache` has a new entry **only** for GENERATE questions. GENERATE includes multi-part questions. Each entry has `cacheVersion: "velora-open-v2"` and an embedding. There are no entries for SKIP, CURATED or repeated questions.

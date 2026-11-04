@@ -72,6 +72,30 @@ function relatedEntries(cache, questionEmbedding) {
     .map(e => ({ question: e.question, answer: e.answer }));
 }
 
+// Parses the per-part lines that follow MULTI, e.g.
+// "1. what is tor -> GENERATE". Cache indexes are resolved to the cached
+// answer text; an out-of-range index falls back to GENERATE.
+const MULTI_MAX_PARTS = 4;
+const MULTI_PART_LINE = /^\s*\d+[.)]\s*(.+?)\s*->\s*(?:curated\s*:?\s*([a-z_0-9]+)|cache\s*:?\s*\[?\s*(\d+)|generate)/i;
+
+function parseMultiParts(reply, cache) {
+  const parts = [];
+  for (const line of reply.split('\n').slice(1)) {
+    const m = line.match(MULTI_PART_LINE);
+    if (!m) continue;
+    const question = m[1].trim().slice(0, 500);
+    if (m[2]) {
+      parts.push({ question, type: 'curated', id: m[2].toLowerCase() });
+    } else if (m[3] !== undefined && parseInt(m[3], 10) < cache.length) {
+      parts.push({ question, type: 'cache', answer: cache[parseInt(m[3], 10)].answer });
+    } else {
+      parts.push({ question, type: 'generate' });
+    }
+    if (parts.length >= MULTI_MAX_PARTS) break;
+  }
+  return parts;
+}
+
 function buildRouterPrompt({ question, history, curatedCatalog, cache }) {
   const cacheCatalog = cache.length === 0
     ? '(cache is empty)'
@@ -85,10 +109,17 @@ function buildRouterPrompt({ question, history, curatedCatalog, cache }) {
 
   return `You are the routing system for a Harvard research study chatbot. Identical participant questions MUST produce identical answers across participants for experimental validity. Your job is to decide whether to reuse an existing canonical answer or generate a fresh one.
 
-OUTPUT EXACTLY ONE OF THESE LINES, WITH NO EXPLANATION OR PREAMBLE:
+OUTPUT EXACTLY ONE OF THESE, WITH NO EXPLANATION OR PREAMBLE:
 - CURATED: <id>        (reuse a curated repository answer)
 - CACHE: <index>       (reuse a cache answer from a prior participant)
 - GENERATE             (generate a fresh answer)
+- MULTI                (the question asks two or more separate things; see MULTI-PART RULE)
+
+MULTI-PART RULE. If the question asks two or more separate things ("what is tor and what is seli", "what is recutting? how is it different from adding?", "who is nera and why does she help seli"), output MULTI on the first line, then one line per part in this exact format, at most 4 parts:
+1. <the part, rewritten as a short standalone question that names its subject> -> CURATED: <id>
+2. <the part> -> CACHE: <index>
+3. <the part> -> GENERATE
+Route each part on its own, applying every rule below to that part alone. A single question about how two things relate ("how is X different from Y", "compare X and Y", "is X a kind of Y") is ONE question, not MULTI. The one exception: if a cache entry answers this exact combination of parts (the same multi-part question asked before), output CACHE: <index> instead of MULTI.
 
 SUBJECT RULE (check this first). Identify what the question is about: the term, House, person, place, event, or idea it names. Only an entry about that SAME subject can be reused. Many things the lesson names may have no entry of their own (for example the Houses Tor and Seli, House Marks, the record stone, Nera, the Festival of First Rain, or Velora itself). A question about such a subject is GENERATE unless an entry or cache item is specifically about it. Never pick an entry because the question has the same shape ("what is X", "define X", "explain X"), because the entry is a definition, or because it appears first in the list. Reusing an answer about a different subject is the worst possible outcome: the participant gets an answer to a question they did not ask. Generating is safe, because fresh answers are cached and later participants who ask the same thing get the same answer.
 
@@ -111,6 +142,7 @@ GENERATE RULES. Generate only when no existing entry answers the participant's s
 
 DISAMBIGUATION.
 - When both a CURATED and a CACHE entry match, always prefer CURATED.
+- Never reuse a cache entry that answers several questions at once for a question (or part) that asks only one of them.
 - When multiple CURATED entries match, pick the one whose answer most directly addresses the question's core (definition entry wins for "what is X"; comparison entry wins for "X vs Y").
 - When the question could plausibly be REUSE or GENERATE and the entry is about the same subject, REUSE wins. Tie-breaker is consistency. If no entry is about the same subject, GENERATE.
 
@@ -124,6 +156,11 @@ WORKED EXAMPLES.
 - Prior: Q "what is X" -> A. Now: "give me an example of X" -> GENERATE (asking for new info: example)
 - Prior: Q "what is X" -> A. Now: "how is it different from Y" -> CURATED if an X-vs-Y entry exists, else GENERATE
 - Prior: (none). Now: "what will i be asked later" -> CURATED: future_questions
+- Prior: (none). Now: "what is truing and what is tor?" ->
+  MULTI
+  1. what is truing -> CURATED: truing_def
+  2. what is tor -> GENERATE (or CACHE: <index> if a cache entry is about Tor)
+- Prior: (none). Now: "how is adding different from recutting" -> one question, not MULTI
 
 == CURATED REPOSITORY ==
 ${curatedCatalog}
@@ -170,7 +207,8 @@ async function routeQuestion(body, res) {
   // GPT-5 reasoning models reject `temperature` and consume their token
   // budget on hidden reasoning. Use `reasoning_effort: 'none'` so the
   // single routing line (e.g. "CURATED: foo") isn't eaten by reasoning, and
-  // give it a little more headroom than the 30 used for gpt-4o.
+  // give it a little more headroom than the 30 used for gpt-4o. A MULTI
+  // reply lists up to 4 rewritten parts, so both budgets leave room for it.
   const isReasoningModel = /^gpt-5/.test(routerModel);
   const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -181,7 +219,7 @@ async function routeQuestion(body, res) {
     body: JSON.stringify({
       model: routerModel,
       messages: [{ role: 'user', content: prompt }],
-      max_completion_tokens: isReasoningModel ? 64 : 30,
+      max_completion_tokens: isReasoningModel ? 300 : 250,
       ...(isReasoningModel ? { reasoning_effort: 'none' } : { temperature: 0 })
     })
   });
@@ -201,6 +239,21 @@ async function routeQuestion(body, res) {
 
   if (/^\s*generate\b/i.test(reply)) {
     generate();
+    return true;
+  }
+
+  // A multi-part question is always answered fresh (so the parts can be
+  // stitched into one paragraph), with each part's reusable answer passed
+  // along to keep it consistent. Fewer than two parsed parts means the
+  // router's MULTI was not usable, so answer it as one fresh question.
+  if (/^\s*multi\b/i.test(reply)) {
+    const parts = parseMultiParts(reply, cache);
+    if (parts.length < 2) { generate(); return true; }
+    res.status(200).json({
+      type: 'multi',
+      parts,
+      related: relatedEntries(cache, cleanEmbedding(body.questionEmbedding))
+    });
     return true;
   }
 

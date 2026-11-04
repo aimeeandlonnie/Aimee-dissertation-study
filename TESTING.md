@@ -91,13 +91,54 @@ At the end, the page says nothing was uploaded. The full data is printed in the 
 
 1. **The chatbot cache (`semantic_cache`).** Every newly written chatbot answer is saved there, and the router can give it **word for word to real participants**, or feed it into later answers as "established Velora details". Treat everything you type during testing as something participants may see, and reset the cache before launch (§6).
 2. **The condition counter (`condition_counter`).** Unless you pick a condition in the test panel's **Force condition** menu *before consenting*, each fresh test run uses up the next turn of the real rotation. Always force a condition.
-3. **OpenAI calls** are real and billed.
+3. **OpenAI calls** are real and billed to the setup owner's key (see §3.1).
 
 **Worth checking in this phase:**
 - All three conditions (baseline / reasoning = Chatbot B / scripted = Chatbot A): framing text and diagram, chatbot reminder banner and header, icon boxes on the rating pages.
-- Chatbot behaviour. The browser console logs each routing decision, for example `Router: CURATED "…"`, `Router: CACHE`, or `Router: GENERATE … (N related cached answers)`. Ask the same question twice in a row and check that the second answer is reused.
+- Chatbot behaviour. The browser console logs each routing decision, for example `Router: CURATED "…"`, `Router: CACHE`, `Router: GENERATE … (N related cached answers)`, or `Router: MULTI …` for a question with several parts. Ask the same question twice in a row: the second answer should be a re-explanation that opens naturally ("I get why this is still tricky…"), not the same text again. See [CHATBOT_TESTS.md](CHATBOT_TESTS.md) for the full list.
 - Every questionnaire page, the two manipulation-check pages, and the debrief.
 - The data in `window.__lastResearcherPayload`: every section filled in, and the right condition.
+
+### 3.1 API calls and OpenAI costs
+
+Researcher mode and participant mode cost the same. Every chatbot question calls OpenAI for real.
+
+**Calls per question.** The study caps each browser session at **500 calls** to its own API (`PER_TOKEN_CALL_LIMIT`). Resetting the study starts a new session.
+
+| Question type | Calls |
+|---|---|
+| New answer (`GENERATE`) | 3: embedding, router, answer |
+| Reused answer (`CURATED` or `CACHE`) | 2: embedding, router |
+| Skips the router (follow-up, meta, context-dependent) | 2: embedding, answer |
+| Repeated question in the same chat | 3: embedding, router, answer (re-explained, not reused) |
+| Multi-part question (`MULTI`) | 4: embedding, router, answer, coverage check; 5 if a part was skipped and the answer is regenerated |
+| Opening the chat screen | 2, once: embeds the FAQ triggers |
+
+**Price per call.** These are list prices as of October 2026, without OpenAI's automatic discount for repeated prompt text, which can lower input costs a lot:
+
+| Call | Model (price per 1M tokens) | Approx. cost |
+|---|---|---|
+| Embedding | text-embedding-3-small ($0.02) | under $0.0001 |
+| Router | gpt-5.4-mini ($0.75 in / $4.50 out) | ~$0.005 with an empty cache; ~$0.01 with 100 cached answers; ~$0.03 at the 500-answer cap (each cached answer adds ~75 tokens) |
+| Answer | gpt-5.4 ($2.50 in / $15 out) | ~$0.015–0.02, growing slowly as the conversation gets longer |
+
+**Per question and per run.**
+
+| | Approx. cost |
+|---|---|
+| New answer (router + answer) | $0.02–0.03 |
+| Reused answer (router only) | $0.005–0.01 |
+| Skips the router (answer only) | $0.015–0.02 |
+| Repeated question (router + answer) | $0.02–0.03 |
+| Multi-part question (router + answer + check, sometimes a second answer) | $0.025–0.05 |
+| One participant asking ~10 questions | ~$0.20 |
+| Full [CHATBOT_TESTS.md](CHATBOT_TESTS.md) list (~150 questions) | ~$2–4 |
+
+**Caveats.**
+
+- The router cost grows with `semantic_cache`, because every cached answer is sent with every question. Resetting the cache (§6) also brings costs back down.
+- These are estimates from the prompt sizes. Check the setup owner's OpenAI usage dashboard after the first test session, and make sure a spending limit is set (§2.1).
+- OpenAI keeps API inputs for up to 30 days for abuse monitoring, and doesn't use them for training by default. Test questions are sent to OpenAI just like participants' questions.
 
 ---
 
@@ -130,7 +171,7 @@ At the end, the page says nothing was uploaded. The full data is printed in the 
 | Firebase `contact_emails` | One entry per consent, including dropouts |
 | Firebase `chatbot_user_messages/P00N` | Chat CSV |
 | Firebase `qa_repository` | Q&A pairs from the conversation |
-| Firebase `semantic_cache` | New entries labelled `cacheVersion: "velora-open-v1"` |
+| Firebase `semantic_cache` | New entries labelled with the current `CHATBOT_CACHE_VERSION` (`"velora-open-v2"` as of this writing) |
 
 A dropout run should produce `partial_temp-XXXX_<condition>_<date>_data.json` in Dataverse – Main, plus its `contact_emails` entry, and no P-number.
 
