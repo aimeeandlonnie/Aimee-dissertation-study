@@ -5972,7 +5972,7 @@ function appendChatMessage(role, text) {
   if (empty) empty.remove();
   const msg = document.createElement('div');
   msg.className = 'chat-msg ' + role;
-  msg.style.textAlign = role === 'user' ? 'right' : 'left';
+  msg.style.textAlign = 'left';
 
   // Render markdown for assistant messages, plain text for user
   let bodyContent = '';
@@ -5988,7 +5988,7 @@ function appendChatMessage(role, text) {
     }
   }
 
-  msg.innerHTML = `<span class="role" style="${role === 'user' ? 'text-align:right;' : ''}">${role === 'user' ? 'You' : 'Chatbot'}</span><div class="body">${bodyContent}</div>`;
+  msg.innerHTML = `<span class="role">${role === 'user' ? 'You' : 'Chatbot'}</span><div class="body">${bodyContent}</div>`;
   container.appendChild(msg);
   scrollChatToBottom(container);
 }
