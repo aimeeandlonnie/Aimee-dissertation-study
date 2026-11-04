@@ -1083,6 +1083,9 @@
     max-width: 85%;
     font-weight: 500;
     word-wrap: break-word;
+    /* The bubble sits on the right (the message is right-aligned), but
+       its text reads left to right like the chatbot's answers. */
+    text-align: left;
   }
   .chat-msg.assistant .body {
     background: #f3f4f6;
@@ -6018,7 +6021,7 @@ function appendChatMessage(role, text) {
   if (empty) empty.remove();
   const msg = document.createElement('div');
   msg.className = 'chat-msg ' + role;
-  msg.style.textAlign = 'left';
+  msg.style.textAlign = role === 'user' ? 'right' : 'left';
 
   // Render markdown for assistant messages, plain text for user
   let bodyContent = '';
