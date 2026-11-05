@@ -1,6 +1,6 @@
 # Chatbot test questions
 
-Questions to type into the chatbot to cover every path in its logic. Each one lists the route it should take and what to check in the reply. For how each route works, see [CHATBOT.md](CHATBOT.md).
+Questions to type into the chatbot to cover every path in its logic. Each one lists the route it should take and what to check in the reply. For a plain-language summary of how answers are produced, see [CHATBOT.md](CHATBOT.md).
 
 ## How to read the results
 

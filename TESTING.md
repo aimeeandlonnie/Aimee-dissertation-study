@@ -1,6 +1,6 @@
 # End-to-end testing
 
-How to test the deployed study as a team, check that data is actually stored, and reset everything before launch. Read [SETUP.md](SETUP.md) first for how the pipeline is built, and [CHATBOT.md](CHATBOT.md) for how the chatbot produces its answers.
+How to test the deployed study as a team, check that data is actually stored, and reset everything before launch. Read [SETUP.md](SETUP.md) first for how the pipeline is built, and [CHATBOT.md](CHATBOT.md) for a plain-language summary of how the chatbot produces its answers.
 
 - **Live study URL:** https://aimee-dissertation-study.vercel.app/
 - **Researcher mode:** https://aimee-dissertation-study.vercel.app/?researcher-access
@@ -99,51 +99,63 @@ At the end, the page says nothing was uploaded. The full data is printed in the 
 - Every questionnaire page, the two manipulation-check pages, and the debrief.
 - The data in `window.__lastResearcherPayload`: every section filled in, and the right condition.
 
-### 3.1 API calls and OpenAI costs
+### 3.1 What the chatbot costs
 
-Researcher mode and participant mode cost the same. Every chatbot question calls OpenAI for real.
+**In short: about 1 cent per question, or 5–10 cents per participant.** Testing and real participants cost the same, because every chatbot question calls OpenAI for real. The cost goes to the OpenAI account on the study's key, which belongs to the setup owner.
 
-**Calls per question.** The study caps each browser session at **500 calls** to its own API (`PER_TOKEN_CALL_LIMIT`). Resetting the study starts a new session.
-
-| Question type | Calls |
+| Who | Likely cost |
 |---|---|
-| New answer (`GENERATE`) | 3: embedding, router, answer; 4 after the first question, adding the standalone rewrite for the cache |
-| FAQ or cached answer, first question of the chat (sent as is) | 2: embedding, router |
-| FAQ or cached answer later in the chat (fitted to the conversation) | 3: embedding, router, answer |
-| Skips the router (follow-up, meta, context-dependent) | 2: embedding, answer |
-| Repeated question in the same chat | 2: embedding, answer (3 if the router is what spotted the repeat) |
-| Multi-part question (`MULTI`) | 4: embedding, router, answer, coverage check; plus 1 if a part was skipped and the answer is regenerated, and 1 for the standalone rewrite after the first question |
-| Opening the chat screen | 2, once: embeds the FAQ triggers |
+| One participant (about 10 questions) | $0.05–0.10 |
+| 50 participants | $3–5 |
+| 150 participants | $8–15 |
+| 300 participants | $15–30 |
+| Running the full [CHATBOT_TESTS.md](CHATBOT_TESTS.md) list once (about 150 questions) | $1–3 |
 
-**Price per call.** These are list prices as of October 2026, without OpenAI's automatic discount for repeated prompt text, which can lower input costs a lot:
+**For budgeting, plan on $0.20 per participant** (so $60 for 300) plus a little for testing. That leaves room for people who ask many questions, and for the start of the study, when there are few stored answers to reuse and more answers have to be newly written.
 
-| Call | Model (price per 1M tokens) | Approx. cost |
-|---|---|---|
-| Embedding | text-embedding-3-small ($0.02) | under $0.0001 |
-| Router | gpt-5.4-mini ($0.75 in / $4.50 out) | ~$0.004, flat however large the cache gets: it sees only the ~20 closest FAQ entries and the ~20 closest cached answers (~5K tokens) |
-| Answer, new / multi-part / repeated | gpt-5.4 ($2.50 in / $15 out) | ~$0.015–0.02, growing slowly as the conversation gets longer |
-| Answer, FAQ or cached answer fitted to the conversation | gpt-5.4-mini | ~$0.005 |
-| Standalone rewrite (new answers after the first question, before caching) | gpt-5.4-mini | ~$0.001–0.002 |
+**Cost of one question:**
 
-**Per question and per run.**
-
-| | Approx. cost |
+| What the chatbot does | Approx. cost |
 |---|---|
-| New answer (router + answer, plus rewrite after the first question) | $0.02–0.025 |
-| FAQ or cached answer, first question (router only) | ~$0.004 |
-| FAQ or cached answer later in the chat (router + gpt-5.4-mini answer) | ~$0.01 |
-| Skips the router (answer only) | $0.015–0.02 |
-| Repeated question (answer only) | $0.015–0.02 |
-| Multi-part question (router + answer + check, sometimes a second answer) | $0.025–0.05 |
-| One participant asking ~10 questions | ~$0.15 |
-| Full [CHATBOT_TESTS.md](CHATBOT_TESTS.md) list (~150 questions) | ~$2–3 |
+| Sends a stored answer word for word | 0.2–0.4¢ |
+| Lightly edits a stored answer to fit the chat | 0.3–0.7¢ |
+| Answers a follow-up or repeated question | 0.5–1.5¢ |
+| Writes a new answer | 0.7–1.6¢ |
+| Answers several questions in one message | 0.8–1.6¢, or up to about 3¢ if it needs a second try |
 
-**Caveats.**
+The low end of each range applies when OpenAI's discount kicks in. Every answer resends the lesson and the chatbot's rules, and OpenAI charges about a tenth of the price for text it has seen very recently. That discount is not guaranteed: in our test chat it applied to some answers and not others.
 
-- Neither the router cost nor Firebase downloads grow much with `semantic_cache`. Each server keeps the cache in memory and downloads only new entries per question, plus a full reload every 10 minutes (see [CHATBOT.md](CHATBOT.md) §2). Old entries (other `cacheVersion`s) are still downloaded on those full reloads without being used, so delete them (§6).
-- These are list-price estimates from the prompt sizes. Real costs should be lower, because OpenAI bills a repeated start of a prompt at about a tenth of the price. The system prompt repeats in every answer call, and so do the earlier turns of a chat (see [CHATBOT.md](CHATBOT.md) §1).
-- To check, open the browser console while chatting. Every OpenAI call logs a line like `Tokens [answer, gpt-5.4]: 5480 in (4864 discounted, 89%), 112 out`. From the second question of a chat on, answer calls should show most of their input discounted. Router, multi-part-check and standalone-rewrite calls normally show 0%, because their repeated part is under OpenAI's 1,024-token minimum. In a first 6-question test chat (November 2026), the real total was about $0.045, roughly $0.008 per question. Also check the setup owner's OpenAI usage dashboard after the first test session, and make sure a spending limit is set (§2.1).
-- OpenAI keeps API inputs for up to 30 days for abuse monitoring, and doesn't use them for training by default. Test questions are sent to OpenAI just like participants' questions.
+**Other costs, not included above:**
+
+- **Firebase (the database):** roughly 1–3 GB of downloads for 300 participants, which fits within the free plan's 10 GB a month. On the paid plan, downloads cost about $1 per GB. Delete old chatbot answers before launch so they don't add to this (§6).
+- **Vercel (the website host):** not estimated here. Check which plan the study is on.
+- **Participant payments:** separate, and likely the largest cost of the study.
+
+**How reliable these numbers are.** They come from one 6-question test chat in November 2026, which cost about 4.7¢ in total, and from OpenAI's published prices. One short chat is limited evidence, and the settings changed slightly after it, so treat these as estimates and check them against real use:
+
+- **Before testing:** make sure a spending limit is set on the OpenAI account (§2.1).
+- **After the first test session and during the pilot:** check the OpenAI usage page. If the cost per question is far above about 2¢, stop and investigate.
+
+**If you run into a limit.** Each browser session stops after 500 calls to the study's server, which is about 150 questions. Clicking Reset or opening a new private window starts a new session.
+
+**Privacy note.** Test questions go to OpenAI just like participants' questions. OpenAI keeps them for up to 30 days for abuse monitoring, and doesn't use them for training by default.
+
+<details>
+<summary>Details for whoever checks the numbers</summary>
+
+Prices per 1 million tokens (a token is about three-quarters of a word), from OpenAI's model pages, November 2026:
+
+| Model | Used for | Input | Discounted input | Output |
+|---|---|---|---|---|
+| gpt-5.4 | new, follow-up, repeated and multi-part answers | $2.50 | $0.25 | $15.00 |
+| gpt-5.4-mini | choosing a stored answer, lightly edited answers, cleaning answers for storage, the multi-part check | $0.75 | $0.075 | $4.50 |
+| text-embedding-3-small | comparing questions (costs almost nothing) | $0.02 | n/a | n/a |
+
+Sizes measured in the test chat: about 3,100 input tokens per router call (expected to reach about 4,700 as the cache fills), and 4,300–4,850 input and 50–85 output tokens per answer.
+
+To see the numbers for your own chat, open the browser console. Each OpenAI call logs a line such as `Tokens [answer, gpt-5.4]: 4772 in (3840 discounted, 80%), 81 out`. Router, multi-part-check and cleaning calls normally show 0% discounted, because their repeated text is under OpenAI's 1,024-token minimum.
+
+</details>
 
 ---
 
