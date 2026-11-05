@@ -2978,12 +2978,15 @@ const FOLLOWUP_PATTERNS = [
 // Meta/categorization patterns — questions asking *why* or *how* something
 // qualifies as a category, not asking for a definition. These look superficially
 // like definition questions (same nouns) but the FAQ definition won't answer them.
-// Examples: "how is naive theory a theory", "why is impetus a force",
-// "is enrichment really learning", "what makes belief revision hard".
+// Examples: "why is the cradle rule a rule", "how is truing a kind of
+// habit", "is recutting really learning", "what makes truing a habit".
+// The category must end the question ("... a rule?"), so ordinary why/how
+// questions that merely contain "a" or "the" ("why did Nera go to the
+// festival", "how does the Turning work") still go through the router.
 const META_PATTERNS = [
-  /^(how|why|when)\s+(is|are|do|does|did|can|could|should|would|might)\s+.+?\s+(a|an|the)\s+\w+/i,
+  /^(how|why)\s+(is|are|was|were)\s+.+?\s+(a|an)\s+((kind|type|form|sort)\s+of\s+)?\w+\W*$/i,
   /^(is|are)\s+.+?\s+(really|actually|truly|even|still|considered|called)\b/i,
-  /^what\s+makes\s+\w+/i,
+  /^what\s+makes\s+.+?\s+(a|an)\s+((kind|type|form|sort)\s+of\s+)?\w+\W*$/i,
   /^why\s+(do|does|is|are)\s+(we|they|you|it|this|that)\s+(call|consider|use|apply|term|describe|treat|count)\b/i
 ];
 

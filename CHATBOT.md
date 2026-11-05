@@ -30,7 +30,7 @@ question
 
 Except for a word-for-word reply, every reply is written with the **whole conversation** in view, plus the system prompt and an extra instruction block built for that question.
 
-**Message order (for cost).** Each answer call is sent as: system prompt, then the earlier turns, then the instruction block, then the newest question. The instruction block is the only part that changes with every question, so placing it near the end keeps the start of each request identical to the previous one. OpenAI automatically bills a repeated start of a prompt at about a tenth of the price (for prompts of 1,024 tokens or more). The system prompt is discounted for everyone, and in a chat, every turn except the latest exchange is discounted too. Keep this order when changing `callOpenAI`.
+**Message order (for cost).** Each answer call is sent as: system prompt, then the earlier turns, then the instruction block, then the newest question. The instruction block is the only part that changes with every question, so placing it near the end keeps the start of each request identical to the previous one. OpenAI automatically bills a repeated start of a prompt at about a tenth of the price (for prompts of 1,024 tokens or more). The system prompt is discounted for everyone, and in a chat, every turn except the latest exchange is discounted too. The discount only applies when a request reaches the OpenAI server that holds the earlier one, so every chatbot answer call carries the same `prompt_cache_key` (`PROMPT_CACHE_KEY` in [api/chat.js](api/chat.js)), which sends them to the same servers. If OpenAI ever rejects that setting, the call is retried without it. Keep this order when changing `callOpenAI`.
 
 ## 2. Step by step
 
@@ -38,7 +38,7 @@ Except for a word-for-word reply, every reply is written with the **whole conver
 
 **2. Questions that skip the router.** They only make sense next to the previous turn, so they're always written fresh and never cached (`isFollowUp`, `isMetaQuestion` and `isContextDependent`). There are three kinds:
 - follow-ups such as "explain that more simply" or "give me another example";
-- meta questions such as "why is the cradle rule a rule?";
+- meta questions that ask whether something counts as a category, such as "why is the cradle rule a rule?" or "is recutting really learning?". Ordinary why/how questions such as "why did Nera go to Seli?" are not meta and go through the router;
 - context-dependent questions such as "why?", "and Seli?" or "is that true?".
 
 **3. Repeats.** A question counts as a repeat if it has the same text as an earlier question in this chat, ignoring capitals and punctuation, or if its embedding is at least 95% similar to an earlier one. A repeat skips the router.

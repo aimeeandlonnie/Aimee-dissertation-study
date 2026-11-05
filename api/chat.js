@@ -7,6 +7,14 @@ const ALLOWED_MODELS = new Set(['gpt-5.4', 'gpt-5.4-mini', 'gpt-4o-mini']);
 const MAX_COMPLETION_TOKENS = 500;
 const MAX_INPUT_CHARS = 32 * 1024;
 
+// OpenAI bills a repeated start of a prompt at a discount, but only when the
+// request reaches the server that holds the earlier one. A shared
+// prompt_cache_key sends the study's chatbot calls to the same servers, so
+// the system prompt (identical for everyone) and each chat's earlier turns
+// are discounted more reliably. At very high traffic OpenAI spreads requests
+// out again, which only costs the discount, never correctness.
+const PROMPT_CACHE_KEY = 'hpl-velora-chatbot';
+
 export default async function handler(req, res) {
   if (!applyCors(req, res)) return;
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
@@ -41,22 +49,40 @@ export default async function handler(req, res) {
   // models still take temperature as before.
   const isReasoningModel = /^gpt-5/.test(model);
 
+  const requestBody = {
+    model, messages: outMessages,
+    max_completion_tokens: cap,
+    ...(isReasoningModel ? { reasoning_effort: 'none' } : { temperature: temp }),
+    // include_usage adds a final chunk with token counts (logged in the
+    // browser console, including prompt-cache hits).
+    ...(wantsStream ? { stream: true, stream_options: { include_usage: true } } : {}),
+    ...(body.hplSystem === true ? { prompt_cache_key: PROMPT_CACHE_KEY } : {})
+  };
+  const callOpenAI = (payload) => fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getOpenAIKey()
+    },
+    body: JSON.stringify(payload)
+  });
+
   try {
-    const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getOpenAIKey()
-      },
-      body: JSON.stringify({
-        model, messages: outMessages,
-        max_completion_tokens: cap,
-        ...(isReasoningModel ? { reasoning_effort: 'none' } : { temperature: temp }),
-        // include_usage adds a final chunk with token counts (logged in the
-        // browser console, including prompt-cache hits).
-        ...(wantsStream ? { stream: true, stream_options: { include_usage: true } } : {})
-      })
-    });
+    let upstream = await callOpenAI(requestBody);
+
+    // If the model ever rejects prompt_cache_key, retry without it rather
+    // than leaving the chatbot silent.
+    if (upstream.status === 400 && requestBody.prompt_cache_key) {
+      const text = await upstream.text();
+      if (/prompt_cache_key/i.test(text)) {
+        console.warn('prompt_cache_key rejected; retrying without it');
+        const { prompt_cache_key, ...withoutKey } = requestBody;
+        upstream = await callOpenAI(withoutKey);
+      } else {
+        res.status(400).setHeader('Content-Type', 'application/json').send(text);
+        return;
+      }
+    }
 
     if (!upstream.ok) {
       const text = await upstream.text();

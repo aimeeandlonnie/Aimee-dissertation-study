@@ -200,11 +200,23 @@ Ask these right after "What is a reckoning?". Each should build on the previous 
 
 ## 9. Meta questions (SKIP)
 
+These ask whether something counts as a category. The category word has to end the question.
+
 - Why is the cradle rule a rule?
 - How is truing a habit?
+- How is recutting a kind of learning?
 - Is recutting really learning?
-- What makes recutting hard?
+- What makes truing a habit?
 - Why do they call it a Weighing?
+
+**Not meta; these must go through the router** (a `Router:` line appears):
+
+- Why did Nera go to Seli at the festival?
+- How does the Turning of the Stone work?
+- How do the Stone-keepers hold a Weighing?
+- When does a Veloran get a Mark?
+- What makes recutting hard?
+- Why is the festival a good example? (should be CURATED `why_festival_example`)
 
 ## 10. Context-dependent questions (SKIP)
 
