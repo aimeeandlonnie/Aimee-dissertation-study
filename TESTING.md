@@ -140,7 +140,7 @@ Researcher mode and participant mode cost the same. Every chatbot question calls
 
 **Caveats.**
 
-- The router cost no longer grows with `semantic_cache`, but the router still downloads the whole node on every question to find the closest entries. Old entries (other `cacheVersion`s) slow that down without being used, so delete them (§6).
+- Neither the router cost nor Firebase downloads grow much with `semantic_cache`. Each server keeps the cache in memory and downloads only new entries per question, plus a full reload every 10 minutes (see [CHATBOT.md](CHATBOT.md) §2). Old entries (other `cacheVersion`s) are still downloaded on those full reloads without being used, so delete them (§6).
 - These are list-price estimates from the prompt sizes. Real costs should be lower, because OpenAI bills a repeated start of a prompt at about a tenth of the price. The system prompt repeats in every answer call, and so do the earlier turns of a chat (see [CHATBOT.md](CHATBOT.md) §1).
 - To check, open the browser console while chatting. Every OpenAI call logs a line like `Tokens [answer, gpt-5.4]: 5480 in (4864 discounted, 89%), 112 out`. From the second question of a chat on, answer calls should show most of their input discounted. Router, multi-part-check and standalone-rewrite calls normally show 0%, because their repeated part is under OpenAI's 1,024-token minimum. In a first 6-question test chat (November 2026), the real total was about $0.045, roughly $0.008 per question. Also check the setup owner's OpenAI usage dashboard after the first test session, and make sure a spending limit is set (§2.1).
 - OpenAI keeps API inputs for up to 30 days for abuse monitoring, and doesn't use them for training by default. Test questions are sent to OpenAI just like participants' questions.
@@ -213,9 +213,11 @@ Console → **Realtime Database → Data**. Hover over each node → trash icon.
 | `contact_emails` | Emails + condition from consent |
 | `chatbot_user_messages` | Chat CSVs |
 | `qa_repository` | Q&A log |
-| `semantic_cache` | Chatbot answer cache. Optionally keep entries you've checked and want reused, but always remove entries from older `cacheVersion`s: the router downloads the whole node on every question |
+| `semantic_cache` | Chatbot answer cache. Optionally keep entries you've checked and want reused, but remove entries from older `cacheVersion`s, which are downloaded on every full reload without being used |
 
 Every node is recreated automatically on the next write.
+
+**The chatbot cache takes up to 10 minutes to forget.** Servers that are already running keep their in-memory copy of `semantic_cache` until their next full reload, so deleted answers can still be reused for up to 10 minutes. For the pre-launch reset, also change `CHATBOT_CACHE_VERSION` and redeploy (or at least redeploy). A deploy starts fresh servers, so the reset takes effect immediately.
 
 **After launch, never delete whole nodes.** Delete only specific test entries, found by P-number, email hash or timestamp.
 

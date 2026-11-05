@@ -1,6 +1,7 @@
 import { applyCors, authAndRateLimit, readJson, getOpenAIKey } from '../lib/auth.js';
 import { getFirebaseDatabase, withTimeout } from '../lib/firebase-admin.js';
 import { CHATBOT_CACHE_VERSION } from '../lib/chatbot-system-prompt.js';
+import { decodeEmbedding } from '../lib/embedding-codec.js';
 
 const ALLOWED_MODELS = new Set(['gpt-5.4-mini', 'gpt-4o-mini']);
 const MAX_COMPLETION_TOKENS = 60;
@@ -40,24 +41,57 @@ function cleanSessionCache(cache) {
     .map(e => ({ question: e.question.slice(0, 4000), answer: e.answer.slice(0, 12000) }));
 }
 
-async function loadFirebaseSemanticCache() {
-  try {
-    // Non-critical: if Firebase is slow/unconfigured we route without the
-    // cross-participant cache rather than stalling every question for 30s.
-    const snap = await withTimeout(getFirebaseDatabase().ref('semantic_cache').get(), 2500);
-    const data = snap.val();
+// The cross-participant cache is kept in this server instance's memory
+// between questions. Each question downloads only the entries added since
+// the last check (push keys sort by time), so Firebase downloads stay small
+// however large the cache grows. A full reload every CACHE_FULL_RELOAD_MS
+// (and on every new instance, e.g. after a deploy) picks up deletions such
+// as the pre-launch reset.
+const CACHE_FULL_RELOAD_MS = 10 * 60 * 1000;
+const sharedCache = { entries: new Map(), lastKey: null, loadedAt: 0 };
+
+function addCacheEntries(data) {
+  for (const [key, e] of Object.entries(data || {})) {
     // Entries written under an older prompt (or before versioning) are
     // ignored rather than deleted.
-    return data
-      ? Object.values(data).filter(e => e && e.question && e.answer && e.cacheVersion === CHATBOT_CACHE_VERSION)
-      : [];
-  } catch (err) {
-    console.warn('semantic cache unavailable:', err.message);
-    return [];
+    if (!e || !e.question || !e.answer || e.cacheVersion !== CHATBOT_CACHE_VERSION) continue;
+    sharedCache.entries.set(key, {
+      question: e.question,
+      answer: e.answer,
+      embedding: decodeEmbedding(e) || cleanEmbedding(e.embedding)
+    });
+  }
+  for (const key of Object.keys(data || {})) {
+    if (!sharedCache.lastKey || key > sharedCache.lastKey) sharedCache.lastKey = key;
   }
 }
 
+async function loadFirebaseSemanticCache() {
+  try {
+    // Non-critical: if Firebase is slow/unconfigured we route with what is
+    // already in memory rather than stalling every question for 30s.
+    const ref = getFirebaseDatabase().ref('semantic_cache');
+    const fullReload = !sharedCache.loadedAt || Date.now() - sharedCache.loadedAt > CACHE_FULL_RELOAD_MS;
+    if (fullReload) {
+      const snap = await withTimeout(ref.get(), 2500);
+      sharedCache.entries = new Map();
+      sharedCache.lastKey = null;
+      addCacheEntries(snap.val());
+      sharedCache.loadedAt = Date.now();
+    } else {
+      // startAt includes lastKey itself; re-adding it is harmless.
+      const query = sharedCache.lastKey ? ref.orderByKey().startAt(sharedCache.lastKey) : ref;
+      const snap = await withTimeout(query.get(), 2500);
+      addCacheEntries(snap.val());
+    }
+  } catch (err) {
+    console.warn('semantic cache unavailable, using the in-memory copy:', err.message);
+  }
+  return [...sharedCache.entries.values()];
+}
+
 function cleanEmbedding(embedding) {
+  if (embedding instanceof Float32Array) return embedding.length > 0 ? embedding : null;
   if (!Array.isArray(embedding) || embedding.length === 0 || embedding.length > 4096) return null;
   return embedding.every(n => typeof n === 'number' && Number.isFinite(n)) ? embedding : null;
 }

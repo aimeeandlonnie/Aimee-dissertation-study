@@ -1,6 +1,7 @@
 import { applyCors, authAndRateLimit, readJson } from '../lib/auth.js';
 import { getFirebaseDatabase, withTimeout } from '../lib/firebase-admin.js';
 import { CHATBOT_CACHE_VERSION } from '../lib/chatbot-system-prompt.js';
+import { encodeEmbedding } from '../lib/embedding-codec.js';
 
 const CONDITION_ROTATION = ['baseline', 'framing-reasoning', 'framing-scripted'];
 const MAX_STRING = 32 * 1024;
@@ -50,7 +51,9 @@ function normalizeCacheEntry(entry) {
   return {
     question,
     answer,
-    ...(embedding ? { embedding } : {}),
+    // Stored compactly (~8 KB instead of ~30 KB), because the router
+    // downloads every cache entry; see lib/embedding-codec.js.
+    ...(embedding ? { embeddingB64: encodeEmbedding(embedding) } : {}),
     // Set server-side so the router only reuses answers written under the
     // current prompt (see CHATBOT_CACHE_VERSION).
     cacheVersion: CHATBOT_CACHE_VERSION,

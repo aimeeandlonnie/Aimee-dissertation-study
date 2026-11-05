@@ -73,6 +73,8 @@ Its main rules:
 
 **Caching.** New and multi-part replies are saved to Firebase `semantic_cache`, so the router can reuse them for later participants. A reply written partway through a chat can refer to the conversation ("like Tor, which we discussed"), so gpt-5.4-mini first rewrites it into a standalone version, and that's what gets cached. If the rewrite fails, nothing is cached. Every entry is labelled with `CHATBOT_CACHE_VERSION`, and the router ignores entries with any other label.
 
+**How the router reads the cache.** Each server keeps a copy of `semantic_cache` in memory. On each question it downloads only the entries added since its last check, and every 10 minutes (and whenever a new server starts, for example after a deploy) it reloads the whole node, which picks up deletions. Embeddings are stored compactly: 32-bit numbers in base64 (`embeddingB64`, about 8 KB per entry instead of about 30 KB). This changes similarity scores by about a ten-billionth, so no decision changes. Older entries that store `embedding` as a plain list are still read. Firebase downloads therefore stay small however large the cache grows.
+
 ## 3. Always sent word for word
 
 These are never fitted to the conversation or re-explained:
@@ -140,6 +142,8 @@ Tokens [answer, gpt-5.4]: 5480 in (4864 discounted, 89%), 112 out
 | Multi-part answers | `buildMultiPartBlock`, `findUnansweredParts` in [index.html](index.html); `parseMultiParts` in [api/router.js](api/router.js) |
 | Standalone rewrite and caching | `makeStandaloneAnswer`, `cacheFreshAnswer`, `persistAnswer` in [index.html](index.html) |
 | Router prompt and candidate selection | `buildRouterPrompt`, `routerCandidates`, `relatedEntries` in [api/router.js](api/router.js); `curatedCatalogForQuestion` in [index.html](index.html) |
+| Reading the cache (in-memory copy, incremental downloads) | `loadFirebaseSemanticCache` in [api/router.js](api/router.js) |
+| Compact embedding format | [lib/embedding-codec.js](lib/embedding-codec.js); written by `normalizeCacheEntry` in [api/firebase.js](api/firebase.js) |
 | System prompt and cache version | [lib/chatbot-system-prompt.js](lib/chatbot-system-prompt.js) |
 | Message order and token logging | `callOpenAI`, `logTokenUsage` in [index.html](index.html); `stream_options` in [api/chat.js](api/chat.js) |
 
@@ -154,7 +158,8 @@ Tokens [answer, gpt-5.4]: 5480 in (4864 discounted, 89%), 112 out
 | `ROUTER_MAX_SHARED_CACHE` | 20 | api/router.js | Other participants' cached answers the router sees |
 | `RELATED_MAX` / `RELATED_MIN_SIMILARITY` | 5 / 0.45 | api/router.js | Related cached answers passed in for consistency |
 | `MULTI_MAX_PARTS` | 4 | api/router.js | Most parts a multi-part question is split into |
+| `CACHE_FULL_RELOAD_MS` | 10 minutes | api/router.js | How often each server reloads the whole cache (to pick up deletions) |
 
 **Changing things safely:**
-- **After editing the system prompt or an FAQ answer,** change `CHATBOT_CACHE_VERSION` if answers cached under the old wording shouldn't be reused, then delete the old entries from `semantic_cache` (see [TESTING.md](TESTING.md) §6.1).
+- **After editing the system prompt or an FAQ answer,** change `CHATBOT_CACHE_VERSION` if answers cached under the old wording shouldn't be reused, then delete the old entries from `semantic_cache` (see [TESTING.md](TESTING.md) §6.1). Changing the version and redeploying takes effect immediately. A deletion on its own reaches servers that are already running only at their next full reload, up to 10 minutes later.
 - **When adding an FAQ entry,** give it several trigger phrases. The router finds candidates through them, so an entry with weak triggers may not be among the 20 the router sees.
