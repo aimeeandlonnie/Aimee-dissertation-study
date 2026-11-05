@@ -1,6 +1,6 @@
 # Chatbot test questions
 
-Questions to type into the chatbot to cover every path in its logic. Each one lists the route it should take and what to check in the reply.
+Questions to type into the chatbot to cover every path in its logic. Each one lists the route it should take and what to check in the reply. For how each route works, see [CHATBOT.md](CHATBOT.md).
 
 ## How to read the results
 
@@ -8,9 +8,9 @@ Open the browser dev tools console (View → Developer → JavaScript Console) b
 
 | Route | Console shows | Cached for later participants? |
 |---|---|---|
-| **CURATED** | `Router: CURATED "<id>" for "…"` | No; the answer is a fixed FAQ answer |
-| **CACHE** | `Router: CACHE for "…"` | Already cached; reuses an earlier answer word for word |
-| **GENERATE** | `Router: GENERATE for "…" (N related cached answers)` | Yes, written to Firebase `semantic_cache` |
+| **CURATED** | `Router: CURATED "<id>" for "…"` | No. Sent word for word only as the **first** question of a chat. Later in the chat the FAQ answer is the reference, and the reply keeps its sentences but is fitted to the conversation: the console adds `Reference answer: fitting it to the conversation`. The four Turning and "how I work" answers are always word for word. |
+| **CACHE** | `Router: CACHE for "…"` | Already cached. Same rule as CURATED: word for word for the first question, fitted to the conversation after that |
+| **GENERATE** | `Router: GENERATE for "…" (N related cached answers)` | Yes, written to Firebase `semantic_cache`. After the first question, a standalone version (references to the conversation removed) is cached instead |
 | **SKIP** | No `Router:` line at all | No; follow-up, meta and context-dependent questions always get a fresh answer and are never cached |
 | **MULTI** | `Router: MULTI for "…": "part 1" -> CURATED, "part 2" -> GENERATE, …` | Yes, the stitched answer is cached under the full question |
 | **REPEAT** | `Repeated question (same as an earlier one in this chat)…` with no `Router:` line, or a `Router: CURATED`/`CACHE` line then `Repeated question (router reused an answer already shown)…` | No; a re-explanation depends on this chat |
@@ -51,8 +51,8 @@ Before you start:
 | What is the Festival of First Rain? | GENERATE | May add a modest invented detail; must not contradict the lesson |
 | What is Velora? | GENERATE | Says it is an invented civilization |
 | What is the lantern hall? | GENERATE | Tor's building, damaged by the storm |
-| Tor? (new session, after the above were cached) | CACHE | Same text as the earlier "What is Tor" answer |
-| what's seli (new session) | CACHE | Same text as the earlier "What is Seli" answer |
+| Tor? (new session, first question, after the above were cached) | CACHE | Same text as the earlier "What is Tor" answer |
+| what's seli (same new session, second question) | CACHE, fitted | Same sentences as the earlier "What is Seli" answer, with at most one sentence changed to connect to Tor |
 | Who are the Stone-keepers? | CURATED `stone_keepers_role`, or GENERATE | Must be about Stone-keepers, not another entry |
 
 ## 2. Curated definitions (CURATED)
@@ -122,7 +122,18 @@ The chatbot may invent modest details the lesson leaves open. These tests check 
 
 ## 5. The Turning of the Stone (research-integrity rule)
 
-For every question here the reply must:
+**Not asked → never mentioned.** The chatbot must not raise, hint at or point out the contradiction unless the participant explicitly asks about it. In these answers, check that there is no "two descriptions", no "on this account", no repair-day obligation, and nothing about what happens to the earlier Mark:
+
+| Question | Check |
+|---|---|
+| What is alignment? | CURATED `alignment_def`; no mention of the Turning's two descriptions |
+| What is the Turning of the Stone? | Only the shared part: a ceremony that changes alignment so the new House comes first |
+| Who is Nera? | No word on whether she owes Tor help on the repair day |
+| What does chiseled away mean? | CURATED `carving_def`; describes chiseling as what the lesson says, with no "other description" |
+| What does stronger alignment mean? | CURATED `different_degrees_of_alignment`; no Turning reference |
+| Summarize the lesson for me | No contradiction raised |
+
+**Asked explicitly → the conflict is explained.** For every question below, the reply must:
 
 - say the lesson gives **two descriptions that conflict**;
 - **not** pick one or say one is better supported;
@@ -132,7 +143,7 @@ It may point out that the two come apart on the repair day, and may say this is 
 
 | Question | Expected |
 |---|---|
-| What does the Turning do to the earlier Mark? | CURATED `turning_keep_vs_remove` or `what_turning_really_does` |
+| What does the Turning do to the earlier Mark? | CURATED `turning_keep_vs_remove` or `what_turning_really_does`, **word for word** even mid-chat |
 | Does Nera have to help Tor after the storm? | CURATED or GENERATE |
 | Which description of the Turning is correct? | CURATED `what_turning_really_does` |
 | The Mark stays after the Turning, right? (leading) | Must not agree |
@@ -284,8 +295,9 @@ This applies in every chatbot condition, since the debrief says the chatbot was 
 | "What is truing?" then "What is truing?" | Second reply opens naturally and is **not** the same text |
 | "What is truing?", "truing?", "I still don't get truing" | Each later reply uses a **different** opening sentence |
 | "What is Tor?" (GENERATE) then "what is tor" | Re-explained, consistent with the first answer's details |
-| "What is truing?" then "What is truing?" in a **new session** | Not a repeat: exact FAQ text again |
+| "What is truing?" then "What is truing?" in a **new session** (as its first question) | Not a repeat: exact FAQ text again |
 | "Are you Chatbot B?" twice | **Exact** fixed reply both times (exempt) |
+| "Does the Turning keep or remove the Mark?" twice | **Exact** FAQ text both times (exempt) |
 | "no" twice | Short acknowledgement both times, no closer (exempt) |
 | "What does the Turning do to the earlier Mark?" twice | Re-explained but still gives both descriptions without picking (§5) |
 | Repeat question, then check Firebase | No new `semantic_cache` entry for the repeat |
@@ -294,4 +306,5 @@ This applies in every chatbot condition, since the debrief says the chatbot was 
 
 - [ ] Every question and answer appears in the exported `chatbot_messages`, with timestamps, including CURATED, CACHE and SKIP replies.
 - [ ] After the study is completed (once a P00X ID is claimed), Firebase `chatbot_user_messages/<P00X>` holds a CSV of all the participant's questions, and `total_user_turns` matches the number you sent.
-- [ ] Firebase `semantic_cache` has a new entry **only** for GENERATE questions. GENERATE includes multi-part questions. Each entry has `cacheVersion: "velora-open-v2"` and an embedding. There are no entries for SKIP, CURATED or repeated questions.
+- [ ] Firebase `semantic_cache` has a new entry **only** for GENERATE questions. GENERATE includes multi-part questions. Each entry has `cacheVersion: "velora-open-v3"` and an embedding, and its answer has no references to the conversation. There are no entries for SKIP, CURATED, CACHE (verbatim or fitted) or repeated questions.
+- [ ] In the exported `chatbot_conversation.messages` (and the **Route** / **Reference** columns of the *Chatbot Conversation* sheet), every chatbot reply has a `route`: `faq`, `cache`, `faq_adapted`, `cache_adapted`, `new`, `multi`, `repeat` or `skipped`. Replies built on an FAQ entry have its id in `reference_id`, and replies built on a cached answer have `cache: <question>`.

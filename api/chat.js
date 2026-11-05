@@ -1,7 +1,9 @@
 import { applyCors, authAndRateLimit, readJson, getOpenAIKey } from '../lib/auth.js';
 import { CHATBOT_SYSTEM_PROMPT } from '../lib/chatbot-system-prompt.js';
 
-const ALLOWED_MODELS = new Set(['gpt-5.4', 'gpt-4o-mini']);
+// gpt-5.4-mini rewrites context-specific answers into standalone ones for
+// the shared cache (see makeStandaloneAnswer in index.html).
+const ALLOWED_MODELS = new Set(['gpt-5.4', 'gpt-5.4-mini', 'gpt-4o-mini']);
 const MAX_COMPLETION_TOKENS = 500;
 const MAX_INPUT_CHARS = 32 * 1024;
 
@@ -50,7 +52,9 @@ export default async function handler(req, res) {
         model, messages: outMessages,
         max_completion_tokens: cap,
         ...(isReasoningModel ? { reasoning_effort: 'none' } : { temperature: temp }),
-        ...(wantsStream ? { stream: true } : {})
+        // include_usage adds a final chunk with token counts (logged in the
+        // browser console, including prompt-cache hits).
+        ...(wantsStream ? { stream: true, stream_options: { include_usage: true } } : {})
       })
     });
 

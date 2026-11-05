@@ -1,6 +1,6 @@
 # End-to-end testing
 
-How to test the deployed study as a team, check that data is actually stored, and reset everything before launch. Read [SETUP.md](SETUP.md) first for how the pipeline is built.
+How to test the deployed study as a team, check that data is actually stored, and reset everything before launch. Read [SETUP.md](SETUP.md) first for how the pipeline is built, and [CHATBOT.md](CHATBOT.md) for how the chatbot produces its answers.
 
 - **Live study URL:** https://aimee-dissertation-study.vercel.app/
 - **Researcher mode:** https://aimee-dissertation-study.vercel.app/?researcher-access
@@ -89,13 +89,13 @@ At the end, the page says nothing was uploaded. The full data is printed in the 
 
 **⚠️ Still written in researcher mode:**
 
-1. **The chatbot cache (`semantic_cache`).** Every newly written chatbot answer is saved there, and the router can give it **word for word to real participants**, or feed it into later answers as "established Velora details". Treat everything you type during testing as something participants may see, and reset the cache before launch (§6).
+1. **The chatbot cache (`semantic_cache`).** Every new chatbot answer is saved there (as a standalone version), and the router can give it **word for word to a real participant's first question**, use it as the reference for their later answers, or feed it into later answers as "established Velora details". Treat everything you type during testing as something participants may see, and reset the cache before launch (§6).
 2. **The condition counter (`condition_counter`).** Unless you pick a condition in the test panel's **Force condition** menu *before consenting*, each fresh test run uses up the next turn of the real rotation. Always force a condition.
 3. **OpenAI calls** are real and billed to the setup owner's key (see §3.1).
 
 **Worth checking in this phase:**
 - All three conditions (baseline / reasoning = Chatbot B / scripted = Chatbot A): framing text and diagram, chatbot reminder banner and header, icon boxes on the rating pages.
-- Chatbot behaviour. The browser console logs each routing decision, for example `Router: CURATED "…"`, `Router: CACHE`, `Router: GENERATE … (N related cached answers)`, or `Router: MULTI …` for a question with several parts. Ask the same question twice in a row: the second answer should be a re-explanation that opens naturally ("I get why this is still tricky…"), not the same text again. See [CHATBOT_TESTS.md](CHATBOT_TESTS.md) for the full list.
+- Chatbot behaviour. The browser console logs each routing decision, for example `Router: CURATED "…"`, `Router: CACHE`, `Router: GENERATE … (N related cached answers)`, or `Router: MULTI …` for a question with several parts. Only the first question of a chat gets an FAQ or cached answer word for word; later ones are fitted to the conversation (`Reference answer: fitting it to the conversation`). Ask the same question twice in a row: the second answer should be a re-explanation that opens naturally ("I get why this is still tricky…"), not the same text again. See [CHATBOT_TESTS.md](CHATBOT_TESTS.md) for the full list.
 - Every questionnaire page, the two manipulation-check pages, and the debrief.
 - The data in `window.__lastResearcherPayload`: every section filled in, and the right condition.
 
@@ -107,11 +107,12 @@ Researcher mode and participant mode cost the same. Every chatbot question calls
 
 | Question type | Calls |
 |---|---|
-| New answer (`GENERATE`) | 3: embedding, router, answer |
-| Reused answer (`CURATED` or `CACHE`) | 2: embedding, router |
+| New answer (`GENERATE`) | 3: embedding, router, answer; 4 after the first question, adding the standalone rewrite for the cache |
+| FAQ or cached answer, first question of the chat (sent as is) | 2: embedding, router |
+| FAQ or cached answer later in the chat (fitted to the conversation) | 3: embedding, router, answer |
 | Skips the router (follow-up, meta, context-dependent) | 2: embedding, answer |
-| Repeated question in the same chat | 3: embedding, router, answer (re-explained, not reused) |
-| Multi-part question (`MULTI`) | 4: embedding, router, answer, coverage check; 5 if a part was skipped and the answer is regenerated |
+| Repeated question in the same chat | 2: embedding, answer (3 if the router is what spotted the repeat) |
+| Multi-part question (`MULTI`) | 4: embedding, router, answer, coverage check; plus 1 if a part was skipped and the answer is regenerated, and 1 for the standalone rewrite after the first question |
 | Opening the chat screen | 2, once: embeds the FAQ triggers |
 
 **Price per call.** These are list prices as of October 2026, without OpenAI's automatic discount for repeated prompt text, which can lower input costs a lot:
@@ -119,25 +120,29 @@ Researcher mode and participant mode cost the same. Every chatbot question calls
 | Call | Model (price per 1M tokens) | Approx. cost |
 |---|---|---|
 | Embedding | text-embedding-3-small ($0.02) | under $0.0001 |
-| Router | gpt-5.4-mini ($0.75 in / $4.50 out) | ~$0.005 with an empty cache; ~$0.01 with 100 cached answers; ~$0.03 at the 500-answer cap (each cached answer adds ~75 tokens) |
-| Answer | gpt-5.4 ($2.50 in / $15 out) | ~$0.015–0.02, growing slowly as the conversation gets longer |
+| Router | gpt-5.4-mini ($0.75 in / $4.50 out) | ~$0.004, flat however large the cache gets: it sees only the ~20 closest FAQ entries and the ~20 closest cached answers (~5K tokens) |
+| Answer, new / multi-part / repeated | gpt-5.4 ($2.50 in / $15 out) | ~$0.015–0.02, growing slowly as the conversation gets longer |
+| Answer, FAQ or cached answer fitted to the conversation | gpt-5.4-mini | ~$0.005 |
+| Standalone rewrite (new answers after the first question, before caching) | gpt-5.4-mini | ~$0.001–0.002 |
 
 **Per question and per run.**
 
 | | Approx. cost |
 |---|---|
-| New answer (router + answer) | $0.02–0.03 |
-| Reused answer (router only) | $0.005–0.01 |
+| New answer (router + answer, plus rewrite after the first question) | $0.02–0.025 |
+| FAQ or cached answer, first question (router only) | ~$0.004 |
+| FAQ or cached answer later in the chat (router + gpt-5.4-mini answer) | ~$0.01 |
 | Skips the router (answer only) | $0.015–0.02 |
-| Repeated question (router + answer) | $0.02–0.03 |
+| Repeated question (answer only) | $0.015–0.02 |
 | Multi-part question (router + answer + check, sometimes a second answer) | $0.025–0.05 |
-| One participant asking ~10 questions | ~$0.20 |
-| Full [CHATBOT_TESTS.md](CHATBOT_TESTS.md) list (~150 questions) | ~$2–4 |
+| One participant asking ~10 questions | ~$0.15 |
+| Full [CHATBOT_TESTS.md](CHATBOT_TESTS.md) list (~150 questions) | ~$2–3 |
 
 **Caveats.**
 
-- The router cost grows with `semantic_cache`, because every cached answer is sent with every question. Resetting the cache (§6) also brings costs back down.
-- These are estimates from the prompt sizes. Check the setup owner's OpenAI usage dashboard after the first test session, and make sure a spending limit is set (§2.1).
+- The router cost no longer grows with `semantic_cache`, but the router still downloads the whole node on every question to find the closest entries. Old entries (other `cacheVersion`s) slow that down without being used, so delete them (§6).
+- These are list-price estimates from the prompt sizes. Real costs should be lower, because OpenAI bills a repeated start of a prompt at about a tenth of the price. The system prompt repeats in every answer call, and so do the earlier turns of a chat (see [CHATBOT.md](CHATBOT.md) §1).
+- To check, open the browser console while chatting. Every OpenAI call logs a line like `Tokens [answer, gpt-5.4]: 5480 in (4864 discounted, 89%), 112 out`. From the second question of a chat on, answer calls should show most of their input discounted. Also check the setup owner's OpenAI usage dashboard after the first test session, and make sure a spending limit is set (§2.1).
 - OpenAI keeps API inputs for up to 30 days for abuse monitoring, and doesn't use them for training by default. Test questions are sent to OpenAI just like participants' questions.
 
 ---
@@ -171,7 +176,7 @@ Researcher mode and participant mode cost the same. Every chatbot question calls
 | Firebase `contact_emails` | One entry per consent, including dropouts |
 | Firebase `chatbot_user_messages/P00N` | Chat CSV |
 | Firebase `qa_repository` | Q&A pairs from the conversation |
-| Firebase `semantic_cache` | New entries labelled with the current `CHATBOT_CACHE_VERSION` (`"velora-open-v2"` as of this writing) |
+| Firebase `semantic_cache` | New entries labelled with the current `CHATBOT_CACHE_VERSION` (`"velora-open-v3"` as of this writing) |
 
 A dropout run should produce `partial_temp-XXXX_<condition>_<date>_data.json` in Dataverse – Main, plus its `contact_emails` entry, and no P-number.
 
@@ -188,7 +193,7 @@ Open the main JSON and check: the condition matches what was shown, the chatbot 
 
 - **Condition rotation.** Each consent takes the next turn from `condition_counter`: `(counter − 1) mod 3` → baseline, reasoning, scripted. Tests during live collection, and real participants who drop out after consenting, all use up turns, so groups among finishers can end up slightly uneven. Pre-launch tests don't matter if you reset the counter.
 - **Chatbot cache version.** Cache entries are labelled with `CHATBOT_CACHE_VERSION` in `lib/chatbot-system-prompt.js`. The router ignores entries with any other label. Changing the label and redeploying retires every existing cache entry without deleting anything. Use it if the prompt changes after launch.
-- **Questions that aren't cached.** Follow-ups ("explain that more simply"), category questions ("why is X a Y") and context-dependent questions ("why?", "and Seli?") always get a new answer and are never cached. Testing reuse with them won't work.
+- **Questions that aren't cached.** Only new and multi-part answers are cached. Follow-ups ("explain that more simply"), category questions ("why is X a Y"), context-dependent questions ("why?", "and Seli?"), repeats, and FAQ or cached answers fitted to the conversation never add an entry. Testing reuse with them won't work. To see reuse, ask the same question as the **first** question of a new session.
 
 ---
 
@@ -208,7 +213,7 @@ Console → **Realtime Database → Data**. Hover over each node → trash icon.
 | `contact_emails` | Emails + condition from consent |
 | `chatbot_user_messages` | Chat CSVs |
 | `qa_repository` | Q&A log |
-| `semantic_cache` | Chatbot answer cache. Optionally keep entries you've checked and want reused |
+| `semantic_cache` | Chatbot answer cache. Optionally keep entries you've checked and want reused, but always remove entries from older `cacheVersion`s: the router downloads the whole node on every question |
 
 Every node is recreated automatically on the next write.
 

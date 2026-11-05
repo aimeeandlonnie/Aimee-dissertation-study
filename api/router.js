@@ -11,6 +11,14 @@ const MAX_INPUT_CHARS = 32 * 1024;
 const RELATED_MAX = 5;
 const RELATED_MIN_SIMILARITY = 0.45;
 
+// Only the cross-participant cache entries closest to the question are
+// shown to the router, so its prompt stays small however large the cache
+// grows. This participant's own session entries are always shown (they
+// are few, and needed to spot same-chat reuse). The client narrows the
+// curated catalog the same way (curatedCatalogForQuestion in index.html).
+const ROUTER_MAX_SHARED_CACHE = 20;
+const CACHE_POOL_MAX = 2000;
+
 function preview(text, n = 250) {
   const s = String(text || '');
   return s.length > n ? s.substring(0, n) + '...' : s;
@@ -59,6 +67,18 @@ function cosineSimilarity(a, b) {
   let dot = 0, magA = 0, magB = 0;
   for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; magA += a[i] * a[i]; magB += b[i] * b[i]; }
   return (magA && magB) ? dot / (Math.sqrt(magA) * Math.sqrt(magB)) : 0;
+}
+
+function routerCandidates(pool, questionEmbedding) {
+  if (!questionEmbedding) return pool.slice(0, 500);
+  const session = pool.filter(e => e.fromSession);
+  const shared = pool
+    .filter(e => !e.fromSession && e.embedding)
+    .map(e => ({ e, score: cosineSimilarity(questionEmbedding, e.embedding) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, ROUTER_MAX_SHARED_CACHE)
+    .map(x => x.e);
+  return [...session, ...shared];
 }
 
 function relatedEntries(cache, questionEmbedding) {
@@ -162,10 +182,10 @@ WORKED EXAMPLES.
   2. what is tor -> GENERATE (or CACHE: <index> if a cache entry is about Tor)
 - Prior: (none). Now: "how is adding different from recutting" -> one question, not MULTI
 
-== CURATED REPOSITORY ==
+== CURATED REPOSITORY (the entries closest to the question; output only ids listed here) ==
 ${curatedCatalog}
 
-== CACHE (${cache.length} entries from prior participants and this session) ==
+== CACHE (${cache.length} entries from this session and the closest from prior participants) ==
 ${cacheCatalog}
 
 == CONVERSATION SO FAR (the participant's CURRENT question is NOT in this list) ==
@@ -186,19 +206,24 @@ async function routeQuestion(body, res) {
   const sessionCache = cleanSessionCache(body.sessionCache);
   const firebaseCache = await loadFirebaseSemanticCache();
   const seen = new Set();
-  const cache = [];
-  for (const entry of [...sessionCache, ...firebaseCache]) {
-    if (!entry || !entry.question || !entry.answer) continue;
+  const pool = [];
+  const sessionCount = sessionCache.length;
+  [...sessionCache, ...firebaseCache].forEach((entry, i) => {
+    if (!entry || !entry.question || !entry.answer || pool.length >= CACHE_POOL_MAX) return;
     const k = String(entry.question).toLowerCase().trim();
-    if (seen.has(k)) continue;
+    if (seen.has(k)) return;
     seen.add(k);
-    cache.push({
+    pool.push({
       question: String(entry.question).slice(0, 4000),
       answer: String(entry.answer).slice(0, 12000),
-      embedding: cleanEmbedding(entry.embedding)
+      embedding: cleanEmbedding(entry.embedding),
+      fromSession: i < sessionCount
     });
-    if (cache.length >= 500) break;
-  }
+  });
+  // `cache` is what the router sees (and what CACHE: <index> refers to);
+  // related answers are still searched across the whole pool.
+  const questionEmbedding = cleanEmbedding(body.questionEmbedding);
+  const cache = routerCandidates(pool, questionEmbedding);
 
   const prompt = buildRouterPrompt({ question, history, curatedCatalog, cache });
   if (prompt.length > 128 * 1024) { res.status(413).json({ error: 'router_prompt_too_large' }); return true; }
@@ -232,9 +257,12 @@ async function routeQuestion(body, res) {
 
   const data = await upstream.json();
   const reply = (data.choices?.[0]?.message?.content || '').trim();
-  const generate = () => res.status(200).json({
+  // Token usage (including prompt-cache hits) goes back to the browser,
+  // which logs it to the console for cost checks.
+  const send = (payload) => res.status(200).json({ ...payload, usage: data.usage || null });
+  const generate = () => send({
     type: 'generate',
-    related: relatedEntries(cache, cleanEmbedding(body.questionEmbedding))
+    related: relatedEntries(pool, questionEmbedding)
   });
 
   if (/^\s*generate\b/i.test(reply)) {
@@ -249,17 +277,17 @@ async function routeQuestion(body, res) {
   if (/^\s*multi\b/i.test(reply)) {
     const parts = parseMultiParts(reply, cache);
     if (parts.length < 2) { generate(); return true; }
-    res.status(200).json({
+    send({
       type: 'multi',
       parts,
-      related: relatedEntries(cache, cleanEmbedding(body.questionEmbedding))
+      related: relatedEntries(pool, questionEmbedding)
     });
     return true;
   }
 
   let m = reply.match(/^\s*curated\s*:?\s*([a-z_0-9]+)/i);
   if (m) {
-    res.status(200).json({ type: 'curated', id: m[1].toLowerCase() });
+    send({ type: 'curated', id: m[1].toLowerCase() });
     return true;
   }
 
@@ -267,7 +295,7 @@ async function routeQuestion(body, res) {
   if (m) {
     const idx = parseInt(m[1], 10);
     if (idx >= 0 && idx < cache.length) {
-      res.status(200).json({ type: 'cache', answer: cache[idx].answer });
+      send({ type: 'cache', answer: cache[idx].answer, question: cache[idx].question });
       return true;
     }
   }

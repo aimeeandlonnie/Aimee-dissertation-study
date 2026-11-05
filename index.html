@@ -2680,12 +2680,12 @@ const CHATBOT_FAQ = [
   {
     id: 'alignment_def', // was: belief_weight_def
     triggers: ['alignment','what is alignment','degrees of alignment','what are degrees of alignment','explain alignment','strength of obligation','weaker obligation','stronger alignment'],
-    answer: "Alignment describes how strong a person's obligation to a House is. A Veloran can hold several Marks at once, and the lesson says these obligations are not all equally strong, so each House has its own degree of alignment. In one of the lesson's descriptions of the Turning of the Stone, the ceremony strengthens alignment toward a new House and weakens it toward an earlier one without canceling the earlier Mark, so the weaker obligation still applies whenever it does not interfere with a stronger one. The thing to take away is that, on this account, the earlier Mark never disappears; its obligation just becomes weaker. Do you have another question about the lesson?"
+    answer: "Alignment describes how strong a person's obligation to a House is. A Veloran can hold several Marks at once, and the lesson says these obligations are not all equally strong, so each House has its own degree of alignment. When two Houses require incompatible actions at the same time, the House with the stronger alignment comes first, which the Stone-keepers called the law of alignment. A weaker obligation still applies whenever it does not interfere with a stronger one, so lower priority means a weaker obligation, not no obligation. Do you have another question about the lesson?"
   },
   {
     id: 'carving_def', // was: conceptual_replacement_def
     triggers: ['chiseled away','carving the stone','chiseling the mark','what does chiseled away mean','earlier mark removed','mark carved away','new mark carved in its place','owed nothing to former house','chisel'],
-    answer: "This is the lesson's other description of what the Turning of the Stone does: during the ceremony, a Stone-keeper chisels the person's earlier Mark off the record stone and carves the new Mark in its place. Once the earlier Mark is gone, every obligation it recorded ends with it, so the person owes nothing to their former House, even on days when the new House has no task for them. The simplest way to hold onto this is that, on this account, the earlier Mark is erased and its obligations are gone, rather than just made weaker. Do you have another question about the lesson?"
+    answer: "The lesson uses \"chiseled away\" for part of the Turning of the Stone: during the ceremony, a Stone-keeper chisels the person's earlier Mark off the record stone and carves the new Mark in its place. The lesson says that once the earlier Mark is gone from the stone, every obligation it recorded ends with it, so the person owes nothing to their former House, even on days when the new House has no task for them. Do you have another question about the lesson?"
   },
   {
     id: 'incompatible_claims_def', // was: internally_inconsistent
@@ -2900,7 +2900,7 @@ const CHATBOT_FAQ = [
   {
     id: 'different_degrees_of_alignment', // was: believe_to_different_degrees
     triggers: ['different degrees of alignment toward two houses','different degrees of alignment','what does stronger alignment mean','one house stronger than another'],
-    answer: "It means the person's obligations to the two Houses have different strengths rather than being equal. When the two Houses need incompatible things at the same time, the House with the stronger alignment comes first. In the lesson's description of the Turning as shifting strengths, the weaker obligation still holds whenever it does not interfere with the stronger one. Do you have another question about the lesson?"
+    answer: "It means the person's obligations to the two Houses have different strengths rather than being equal. When the two Houses need incompatible things at the same time, the House with the stronger alignment comes first. The weaker obligation still holds whenever it does not interfere with the stronger one. Do you have another question about the lesson?"
   },
   {
     id: 'shifting_vs_chiseling', // was: adjusting_vs_replacing
@@ -3035,8 +3035,11 @@ function isContextDependent(question) {
 // are always generated fresh.
 //
 // The router sees:
-//   - Every curated entry (id, first trigger, answer preview)
-//   - The server-side Firebase cache and this session's cache
+//   - The ~20 curated entries closest to the question, plus the ones
+//     the research-integrity rules depend on (id, first trigger, answer
+//     preview; see curatedCatalogForQuestion)
+//   - This session's cache, plus the ~20 closest entries of the
+//     server-side Firebase cache (see routerCandidates in api/router.js)
 //   - Last 4 turns of conversation
 //   - The current question
 //
@@ -3058,8 +3061,8 @@ function isContextDependent(question) {
 // Cost at study scale: ~$0.001 per question, capped well
 // inside the model's 128K context window.
 // =====================================================
-function _formatCuratedForRouter() {
-  return CHATBOT_FAQ.map(entry => {
+function _formatCuratedForRouter(entries = CHATBOT_FAQ) {
+  return entries.map(entry => {
     const firstTrigger = (entry.triggers && entry.triggers[0]) || '';
     const ans = entry.answer || '';
     const preview = ans.length > 250 ? ans.substring(0, 250) + '...' : ans;
@@ -3067,6 +3070,30 @@ function _formatCuratedForRouter() {
   }).join('\n\n');
 }
 const CURATED_CATALOG_FOR_ROUTER = _formatCuratedForRouter();
+
+// The router sees only the curated entries closest to the question (by
+// their best-matching trigger), which keeps its prompt small. Entries the
+// research-integrity rules depend on are always included. Falls back to
+// the full catalog when embeddings are unavailable.
+const ROUTER_CURATED_CANDIDATES = 20;
+const ROUTER_ALWAYS_INCLUDE = ['how_chatbot_works', 'future_questions', 'turning_keep_vs_remove', 'what_turning_really_does'];
+
+function curatedCatalogForQuestion(questionEmbedding) {
+  if (!questionEmbedding || !curatedRepoEmbeddings || curatedRepoEmbeddings.length === 0) {
+    return CURATED_CATALOG_FOR_ROUTER;
+  }
+  const best = new Map();
+  for (const e of curatedRepoEmbeddings) {
+    const score = cosineSimilarity(questionEmbedding, e.embedding);
+    if (!best.has(e.id) || score > best.get(e.id)) best.set(e.id, score);
+  }
+  const ids = new Set(ROUTER_ALWAYS_INCLUDE);
+  [...best.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, ROUTER_CURATED_CANDIDATES)
+    .forEach(([id]) => ids.add(id));
+  return _formatCuratedForRouter(CHATBOT_FAQ.filter(e => ids.has(e.id)));
+}
 
 async function unifiedGPTRouter(question, history, questionEmbedding) {
   try {
@@ -3076,7 +3103,7 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
       question,
       history,
       questionEmbedding,
-      curatedCatalog: CURATED_CATALOG_FOR_ROUTER,
+      curatedCatalog: curatedCatalogForQuestion(questionEmbedding),
       sessionCache: sessionAnswerCache.map(e => ({ question: e.question, answer: e.answer }))
     });
     if (!res.ok) {
@@ -3086,6 +3113,7 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
     const data = await res.json();
 
     if (!data) return null;
+    logTokenUsage('router, gpt-5.4-mini', data.usage);
     if (data.type === 'generate') {
       const related = Array.isArray(data.related) ? data.related : [];
       console.log(`Router: GENERATE for "${question.substring(0, 60)}" (${related.length} related cached answers)`);
@@ -3104,7 +3132,12 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
         } else if (p.type === 'cache' && typeof p.answer === 'string') {
           answer = p.answer;
         }
-        return { question: String(p.question || ''), answer, route: answer ? p.type : 'generate' };
+        return {
+          question: String(p.question || ''),
+          answer,
+          route: answer ? p.type : 'generate',
+          referenceId: p.type === 'curated' && answer ? String(p.id).toLowerCase() : null
+        };
       });
       console.log(`Router: MULTI for "${question.substring(0, 60)}": ${parts.map(p => `"${p.question}" -> ${p.route.toUpperCase()}`).join(', ')}`);
       return { type: 'multi', parts, related };
@@ -3115,7 +3148,7 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
       const entry = CHATBOT_FAQ.find(e => e.id.toLowerCase() === id);
       if (entry) {
         console.log(`Router: CURATED "${id}" for "${question.substring(0, 60)}"`);
-        return { type: 'curated', answer: entry.answer };
+        return { type: 'curated', answer: entry.answer, referenceId: entry.id };
       }
       console.warn(`Router returned unknown curated id "${id}"; treating as GENERATE`);
       return null;
@@ -3123,7 +3156,7 @@ async function unifiedGPTRouter(question, history, questionEmbedding) {
 
     if (data.type === 'cache' && data.answer) {
       console.log(`Router: CACHE for "${question.substring(0, 60)}"`);
-      return { type: 'cache', answer: data.answer };
+      return { type: 'cache', answer: data.answer, referenceId: 'cache: ' + String(data.question || '').slice(0, 200) };
     }
 
     console.log('Router returned no usable match; treating as GENERATE');
@@ -3367,7 +3400,11 @@ function buildParticipantPayload() {
     role: m.role,
     content: (m.content || '').trim(),
     timestamp_iso: m.timestamp || null,
-    timestamp_eastern: m.timestamp ? formatEasternTimestamp(m.timestamp) : null
+    timestamp_eastern: m.timestamp ? formatEasternTimestamp(m.timestamp) : null,
+    // How a chatbot reply was produced (see sendChatMessage); null for
+    // participant messages and for replies saved before this was logged.
+    route: m.route || null,
+    reference_id: m.reference_id || null
   }));
   const learningTimings = r.learning_item_timings || {};
   const crtTimings = r.crt_item_timings || {};
@@ -4030,7 +4067,7 @@ function buildParticipantXLSX(payload) {
 
   // ---- Sheet 1b: Chatbot Conversation (full interleaved transcript,
   //      one row per turn: participant questions AND chatbot replies.)
-  const convoRows = [['Turn', 'Role', 'Message', 'Timestamp (Eastern)']];
+  const convoRows = [['Turn', 'Role', 'Message', 'Timestamp (Eastern)', 'Route', 'Reference']];
   msgs.forEach((m, i) => {
     const role = m.role === 'user' ? 'Participant'
       : m.role === 'assistant' ? 'Chatbot'
@@ -4039,7 +4076,9 @@ function buildParticipantXLSX(payload) {
       m.turn != null ? m.turn : i + 1,
       role,
       m.content || '',
-      m.timestamp_eastern || ''
+      m.timestamp_eastern || '',
+      m.route || '',
+      m.reference_id || ''
     ]);
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(convoRows), 'Chatbot Conversation');
@@ -4344,21 +4383,29 @@ function buildScopeAnchor(questionEmbedding, related) {
 //      cached answer that was already shown in this chat (e.g. "truing?"
 //      after "what is truing").
 // Applies in every condition (the debrief says the chatbot was identical
-// across groups). Exempt: the fixed "how I work" reply, which must stay
-// word for word, and short replies without the closer (e.g. "Okay, glad
-// to help.").
+// across groups). Exempt: VERBATIM_ANSWERS and short replies without the
+// closer (e.g. "Okay, glad to help.").
 // =====================================================
 const CHATBOT_CLOSER = 'Do you have another question about the lesson?';
-const HOW_I_WORK_REPLY = CHATBOT_FAQ.find(e => e.id === 'how_chatbot_works').answer;
 const REPEAT_MIN_SIMILARITY = 0.95;
+
+// Curated answers that are always returned word for word, never adapted
+// to the conversation or re-explained: the fixed "how I work" reply
+// (research-integrity rule) and the answers to explicit questions about
+// the Turning of the Stone contradiction, whose wording is deliberate.
+const VERBATIM_FAQ_IDS = ['how_chatbot_works', 'turning_keep_vs_remove', 'what_turning_really_does', 'shifting_vs_chiseling'];
+const VERBATIM_ANSWERS = new Set(CHATBOT_FAQ.filter(e => VERBATIM_FAQ_IDS.includes(e.id)).map(e => e.answer));
 
 // Embeddings of the questions asked in this chat, keyed by question text.
 // In memory only: after a page refresh, earlier questions are matched on
 // text alone.
 const chatQuestionEmbeddings = new Map();
 
+// Whether a reused answer may be adapted to the conversation or
+// re-explained. Exempt: VERBATIM_ANSWERS, and short replies without the
+// closer (e.g. "Okay, glad to help.").
 function canReexplain(answer) {
-  return answer !== HOW_I_WORK_REPLY && answer.trim().endsWith(CHATBOT_CLOSER);
+  return !VERBATIM_ANSWERS.has(answer) && answer.trim().endsWith(CHATBOT_CLOSER);
 }
 
 function normalizeQuestionText(q) {
@@ -4388,6 +4435,56 @@ function isRepeatOfEarlierAnswer(answer) {
 
 function buildRepeatBlock(earlierAnswer) {
   return `Repeated question. The participant already asked this earlier in this conversation and received the answer below, so they may still find it unclear. Do NOT repeat that answer word for word. Start with one short, natural sentence acknowledging that they are coming back to it (for example "I get why this is still tricky, so let's clarify it further." or "This one is worth a second look."). Vary that opening and never reuse one already used in this conversation. Then explain the same idea a different way, for example from another angle or by walking through a concrete case from the lesson. Keep every fact and Velora detail consistent with the earlier answer and add nothing that contradicts it. The opening sentence counts toward the 2 to 4 sentences.\n\nEarlier answer: ${earlierAnswer}`;
+}
+
+// =====================================================
+// REFERENCE ANSWERS (cache and curated answers in context)
+// -----------------------------------------------------
+// After the first question of a chat, a curated or cached answer is not
+// sent as is. It becomes the reference for a fresh answer that is fitted
+// to the conversation conservatively: its sentences stay nearly word for
+// word (consistency across participants), with at most one sentence
+// changed or one short connecting clause added. The first question has
+// no conversation to fit, so it still gets the reference verbatim.
+// =====================================================
+function buildReferenceBlock(referenceAnswer) {
+  return `Reference answer. This question already has an established answer, shown below, which keeps answers consistent across participants. Keep its sentences nearly word for word, with the same facts, key ideas, and Velora details. Fit it to this conversation only lightly: you may rephrase or replace ONE sentence, or add one short connecting clause, so that it fits what has already been discussed (for example linking it to an earlier topic, or not repeating a point you just explained). Do not add new facts or details. Stay within 2 to 4 sentences plus the closer, dropping the reference's least essential sentence if needed.\n\nReference answer: ${referenceAnswer}`;
+}
+
+// Answers written in a conversation can refer to it ("like Tor, which we
+// discussed"), which would read oddly if reused for another participant.
+// Before such an answer is cached, gpt-5.4-mini rewrites it as a
+// standalone answer with the same facts and wording. Returns null on
+// failure, and the answer is then not cached at all.
+async function makeStandaloneAnswer(question, answer) {
+  try {
+    const res = await proxyFetch('/chat', {
+      model: 'gpt-5.4-mini',
+      max_completion_tokens: 400,
+      messages: [{
+        role: 'user',
+        content: `Below is a chatbot's answer to a participant's question, written partway through a conversation. Rewrite it as a standalone answer to the question for a reader who has not seen the conversation. Remove or rephrase only what refers to earlier turns (for example "as we discussed", "like Tor earlier", or acknowledging that the question was asked before). Keep every fact, detail, and all other wording unchanged. Keep it to 2 to 4 sentences in one paragraph, use no dashes of any kind, and end with exactly: "${CHATBOT_CLOSER}" If nothing refers to earlier turns, return the answer unchanged. Output only the answer.\n\nQuestion: ${question}\n\nAnswer: ${answer}`
+      }]
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    logTokenUsage('standalone rewrite, gpt-5.4-mini', data.usage);
+    const out = (data.choices?.[0]?.message?.content || '').trim();
+    return out.endsWith(CHATBOT_CLOSER) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+// Caches a new or multi-part answer. One written partway through a chat is
+// first rewritten as a standalone answer; if that fails it is not cached.
+async function cacheFreshAnswer(question, embedding, answer, hasContext) {
+  const standalone = hasContext ? await makeStandaloneAnswer(question, answer) : answer;
+  if (!standalone) {
+    console.warn('Could not make a standalone version of the answer; not caching it');
+    return;
+  }
+  await persistAnswer(question, embedding, standalone);
 }
 
 // =====================================================
@@ -4422,6 +4519,7 @@ async function findUnansweredParts(parts, reply) {
     });
     if (!res.ok) return [];
     const data = await res.json();
+    logTokenUsage('multi-part check, gpt-5.4-mini', data.usage);
     const out = (data.choices?.[0]?.message?.content || '').trim();
     const m = out.match(/^missing\s*:?\s*([\d,\s]+)/i);
     if (!m) return [];
@@ -4432,15 +4530,33 @@ async function findUnansweredParts(parts, reply) {
   }
 }
 
-async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
+// Logs a call's token counts to the console, including how many input
+// tokens got OpenAI's prompt-caching discount (input that matches the start
+// of a recent request is billed at about a tenth of the price).
+function logTokenUsage(label, usage) {
+  if (!usage) return;
+  const input = usage.prompt_tokens || 0;
+  const discounted = (usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens) || 0;
+  const pct = input ? Math.round(100 * discounted / input) : 0;
+  console.log(`Tokens [${label}]: ${input} in (${discounted} discounted, ${pct}%), ${usage.completion_tokens || 0} out`);
+}
+
+async function callOpenAI(conversationHistory, scopeAnchor, onChunk, model = 'gpt-5.4') {
   // The system prompt is injected server-side (hplSystem:true) so its
   // research-integrity rules are not exposed in the client. We send only the
   // scope anchor (curated examples, not sensitive) and the conversation.
-  const messages = [];
+  //
+  // The scope anchor changes with every question, so it goes just before
+  // the newest message, after the earlier turns. That keeps the start of
+  // each request (system prompt + earlier turns) identical to the previous
+  // request, which OpenAI's automatic prompt caching bills at a discount.
+  const earlier = conversationHistory.slice(0, -1);
+  const latest = conversationHistory.slice(-1);
+  const messages = [...earlier];
   if (scopeAnchor) messages.push({ role: 'system', content: scopeAnchor });
-  messages.push(...conversationHistory);
+  messages.push(...latest);
   const res = await proxyFetch('/chat', {
-    model: 'gpt-5.4',
+    model,
     hplSystem: true,
     messages,
     max_completion_tokens: 350,
@@ -4451,6 +4567,7 @@ async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
   if (!res.body || !res.body.getReader) {
     // Browser does not expose a streamable body; fall back to full read.
     const data = await res.json();
+    logTokenUsage(`answer, ${model}`, data.usage);
     const reply = (data.choices?.[0]?.message?.content || '').trim();
     if (onChunk) onChunk(reply);
     return reply;
@@ -4459,6 +4576,7 @@ async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
   const decoder = new TextDecoder();
   let buffer = '';
   let fullText = '';
+  let usage = null;
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -4473,6 +4591,7 @@ async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
         if (!data || data === '[DONE]') continue;
         try {
           const parsed = JSON.parse(data);
+          if (parsed.usage) usage = parsed.usage;  // final chunk (stream_options.include_usage)
           const delta = parsed.choices?.[0]?.delta?.content || '';
           if (delta) {
             fullText += delta;
@@ -4482,6 +4601,7 @@ async function callOpenAI(conversationHistory, scopeAnchor, onChunk) {
       }
     }
   }
+  logTokenUsage(`answer, ${model}`, usage);
   return fullText.trim();
 }
 
@@ -5811,16 +5931,28 @@ async function sendChatMessage() {
 
   // 1. UNIFIED GPT ROUTER — one GPT call sees the curated repository
   //    and the current Firebase / session cache, decides
-  //    CURATED / CACHE / GENERATE / MULTI. No cosine. No threshold. Returns
-  //    the canonical text verbatim when there is a match, unless that
-  //    text was already shown in this chat (a repeated question), which
-  //    gets a fresh, re-explained answer instead. On GENERATE and MULTI
-  //    it also returns related cached answers for the scope anchor.
-  //    Skipped for follow-up, meta, and context-dependent questions,
-  //    which always get a fresh answer.
+  //    CURATED / CACHE / GENERATE / MULTI. No cosine. No threshold. A
+  //    curated or cached match is the REFERENCE answer: sent verbatim for
+  //    the first question of the chat (and for VERBATIM_ANSWERS), and
+  //    otherwise fitted to the conversation (see REFERENCE ANSWERS). A
+  //    repeated question gets a re-explanation instead (see REPEATED
+  //    QUESTIONS). On GENERATE and MULTI the router also returns related
+  //    cached answers for the scope anchor. Skipped for follow-up, meta,
+  //    and context-dependent questions, which always get a fresh answer.
+  //
+  //    `route` and `referenceId` are logged on the chatbot's message:
+  //      faq / cache            reference sent verbatim
+  //      faq_adapted / cache_adapted  reference fitted to the conversation
+  //      new                    no reference; fresh answer
+  //      multi                  multi-part question, parts stitched
+  //      repeat                 re-explanation of an earlier answer
+  //      skipped                follow-up, meta, or context-dependent
+  let route = skipCache ? 'skipped' : 'new';
+  let referenceId = null;
   let related = [];
   let multiParts = null;
   let repeatOf = null;
+  let reference = null;
   // Repeated question in this chat: skip the router and re-explain the
   // earlier answer (see REPEATED QUESTIONS).
   if (!skipCache) {
@@ -5828,37 +5960,53 @@ async function sendChatMessage() {
     if (earlier && canReexplain(earlier)) {
       console.log('Repeated question (same as an earlier one in this chat): re-explaining the earlier answer');
       repeatOf = earlier;
+      route = 'repeat';
     }
   }
   if (questionEmbedding) chatQuestionEmbeddings.set(text, questionEmbedding);
   if (!skipCache && !repeatOf) {
     const routed = await unifiedGPTRouter(text, priorHistory, questionEmbedding);
     if (routed && routed.related) related = routed.related;
-    if (routed && routed.parts) multiParts = routed.parts;
-    if (routed && routed.answer && isRepeatOfEarlierAnswer(routed.answer)) {
-      console.log('Repeated question (router reused an answer already shown): re-explaining the earlier answer');
-      repeatOf = routed.answer;
-    } else if (routed && routed.answer) {
-      removeTypingIndicator(typingId);
-      removeTypingIndicator(typingId);
-      const cachedStream = startStreamingAssistantMessage();
-      await streamTextSimulated(routed.answer, (t) => cachedStream.update(t));
-      cachedStream.finalize(routed.answer);
-      state.responses.chatbot_messages.push({ role: 'assistant', content: routed.answer, timestamp: new Date().toISOString() });
-      snapshotSession();
-      input.disabled = false; sendBtn.disabled = false; input.focus();
-      return;
+    if (routed && routed.parts) {
+      multiParts = routed.parts;
+      route = 'multi';
+      referenceId = multiParts.map(p => p.referenceId).filter(Boolean).join(', ') || null;
+    }
+    if (routed && routed.answer) {
+      referenceId = routed.referenceId || null;
+      if (isRepeatOfEarlierAnswer(routed.answer)) {
+        console.log('Repeated question (router reused an answer already shown): re-explaining the earlier answer');
+        repeatOf = routed.answer;
+        route = 'repeat';
+      } else if (hasContext && canReexplain(routed.answer)) {
+        console.log('Reference answer: fitting it to the conversation');
+        reference = routed.answer;
+        route = routed.type === 'curated' ? 'faq_adapted' : 'cache_adapted';
+      } else {
+        removeTypingIndicator(typingId);
+        const cachedStream = startStreamingAssistantMessage();
+        await streamTextSimulated(routed.answer, (t) => cachedStream.update(t));
+        cachedStream.finalize(routed.answer);
+        state.responses.chatbot_messages.push({
+          role: 'assistant', content: routed.answer, timestamp: new Date().toISOString(),
+          route: routed.type === 'curated' ? 'faq' : 'cache', reference_id: referenceId
+        });
+        snapshotSession();
+        input.disabled = false; sendBtn.disabled = false; input.focus();
+        return;
+      }
     }
   }
 
-  // 2. FRESH ANSWER — call gpt-5.4 with a scope anchor built from the
-  //    nearest curated answers (length, depth, tone) and the related
-  //    cached answers from the router (Velora details already given to
-  //    other participants, to stay consistent with), plus the parts of a
-  //    multi-part question or the earlier answer to a repeated one. Save
-  //    to the session and Firebase caches (unless skipCache, or a
-  //    repeat, whose answer depends on this chat) so the router can
-  //    reuse it for later participants who ask the same thing.
+  // 2. FRESH ANSWER — call gpt-5.4 with the full conversation and a scope
+  //    anchor built from the nearest curated answers (length, depth,
+  //    tone) and the related cached answers from the router (Velora
+  //    details already given to other participants, to stay consistent
+  //    with), plus the reference answer, the parts of a multi-part
+  //    question, or the earlier answer to a repeated one. New and
+  //    multi-part answers are cached (see cacheFreshAnswer) so the router
+  //    can reuse them for later participants who ask the same thing;
+  //    adapted, repeated, and skipped answers are not.
   removeTypingIndicator(typingId);
   const thinkingId = appendThinkingIndicator();
   let stream = null;
@@ -5866,7 +6014,12 @@ async function sendChatMessage() {
     const history = state.responses.chatbot_messages
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
-    const anchorParts = [questionEmbedding ? buildScopeAnchor(questionEmbedding, related) : null];
+    // An adapted answer only lightly edits its reference, so it needs no
+    // style examples and is written by the cheaper gpt-5.4-mini. Everything
+    // else gets the style examples and gpt-5.4.
+    const anchorParts = [questionEmbedding && !reference ? buildScopeAnchor(questionEmbedding, related) : null];
+    if (reference) anchorParts.push(buildReferenceBlock(reference));
+    const answerModel = reference ? 'gpt-5.4-mini' : 'gpt-5.4';
     if (multiParts) anchorParts.push(buildMultiPartBlock(multiParts));
     if (repeatOf) anchorParts.push(buildRepeatBlock(repeatOf));
     const scopeAnchor = anchorParts.filter(Boolean).join('\n\n') || null;
@@ -5879,7 +6032,7 @@ async function sendChatMessage() {
       }
       stream.update(fullText);
     };
-    let reply = await callOpenAI(history, scopeAnchor, onChunk);
+    let reply = await callOpenAI(history, scopeAnchor, onChunk, answerModel);
     if (multiParts) {
       const missing = await findUnansweredParts(multiParts, reply);
       if (missing.length > 0) {
@@ -5897,9 +6050,14 @@ async function sendChatMessage() {
     } else {
       stream.finalize(reply);
     }
-    state.responses.chatbot_messages.push({ role: 'assistant', content: reply, timestamp: new Date().toISOString() });
+    state.responses.chatbot_messages.push({
+      role: 'assistant', content: reply, timestamp: new Date().toISOString(),
+      route, reference_id: referenceId
+    });
     snapshotSession();
-    if (!skipCache && !repeatOf && questionEmbedding) await persistAnswer(text, questionEmbedding, reply);
+    if ((route === 'new' || route === 'multi') && questionEmbedding) {
+      cacheFreshAnswer(text, questionEmbedding, reply, hasContext);  // not awaited: never delays the chat
+    }
   } catch (err) {
     console.error('Chatbot OpenAI call failed:', err);
     removeThinkingIndicator(thinkingId);
