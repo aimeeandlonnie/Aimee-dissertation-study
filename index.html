@@ -2441,18 +2441,14 @@ const LIKERT_LABELS = ['Strongly Disagree', 'Disagree', 'Somewhat Disagree', 'Ne
 const EXP_CHATBOT_ITEMS = [
   { id: 'comfort_ask', text: 'I felt comfortable asking the chatbot questions about the lesson.' },
   { id: 'comfort_confused', text: 'I felt comfortable telling the chatbot when I did not understand something.' },
-  { id: 'clarified', text: 'The chatbot helped clarify parts of the lesson that were confusing to me.' },
-  { id: 'easy_responses', text: "The chatbot's responses were easy to understand." },
-  { id: 'trust', text: 'I trusted the information the chatbot gave me.' },
+  // Reverse-coded (reverse: true): agreeing means a worse experience, so a
+  // participant who agrees strongly with every statement was likely not
+  // reading carefully. Flip before averaging (8 - rating on the 1-7 scale).
+  { id: 'not_clarified', text: 'The chatbot did not help clarify parts of the lesson that were confusing to me.', reverse: true },
+  { id: 'confusing_responses', text: "The chatbot's responses were confusing.", reverse: true },
+  { id: 'skeptical_info', text: 'I was skeptical of the information the chatbot gave me.', reverse: true },
   { id: 'enjoyed', text: 'I enjoyed interacting with the chatbot.' },
-  { id: 'willing_future', text: 'I would be willing to use a chatbot like this to learn new material in the future.' },
-  // Reverse-coded items: agreeing means a worse experience. Each mirrors the
-  // item named in `reverseOf`, so participants who rate both high (or both
-  // low) can be flagged as not reading carefully. Flip before averaging
-  // (8 - rating on the 1-7 scale).
-  { id: 'confusing_responses', text: "The chatbot's responses were confusing.", reverse: true, reverseOf: 'easy_responses' },
-  { id: 'skeptical_info', text: 'I was skeptical of the information the chatbot gave me.', reverse: true, reverseOf: 'trust' },
-  { id: 'not_clarified', text: 'The chatbot did not help clarify parts of the lesson that were confusing to me.', reverse: true, reverseOf: 'clarified' }
+  { id: 'willing_future', text: 'I would be willing to use a chatbot like this to learn new material in the future.' }
 ];
 
 // Learning-experience items, shown in every condition.
@@ -3305,7 +3301,6 @@ function _buildLikertSection(items, ratings, orderShown) {
         participant_rating: rating,
         anchor_label: (rating != null && rating >= 1 && rating <= 7) ? LIKERT_LABELS[rating - 1] : null,
         reverse_coded: !!it.reverse,
-        reverse_of: it.reverseOf || null,
         position_shown: idx >= 0 ? idx + 1 : null
       };
     })
@@ -4130,8 +4125,8 @@ function buildParticipantXLSX(payload) {
 
   // ---- Sheet 6a: Chatbot Experience (column per Likert item) ----
   const cL = (payload.appraisal && payload.appraisal.chatbot_experience_likert && payload.appraisal.chatbot_experience_likert.items) || [];
-  const cLRows = [['item_id', 'statement', 'participant_rating', 'reverse_of']];
-  cL.forEach(it => cLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '', it.reverse_of || '']));
+  const cLRows = [['item_id', 'statement', 'participant_rating', 'reverse_coded']];
+  cL.forEach(it => cLRows.push([it.id, it.statement, it.participant_rating != null ? it.participant_rating : '', it.reverse_coded ? 'yes' : 'no']));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(transposeAoA(cLRows)), 'Chatbot Experience');
 
   // ---- Sheet 6b: Learning Experience (column per Likert item) ----
