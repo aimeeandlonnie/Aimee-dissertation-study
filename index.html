@@ -1922,7 +1922,6 @@
   <!-- ============ LESSON ============ -->
 <section class="screen" id="screen-lesson">
     <div class="lesson-intro">
-      <span class="lesson-intro-tag">The Lesson</span>
       <p class="lesson-intro-heading">Read the lesson carefully. We will ask you some questions at the end about what you've learned.</p>
     </div>
 
@@ -1991,7 +1990,6 @@
   <!-- ============ CHATBOT ============ -->
   <section class="screen" id="screen-chatbot">
     <div style="max-width:1600px; margin:0 auto;">
-      <span class="tag">Ask the chatbot</span>
       <h1>Ask any questions you have about the lesson</h1>
       <div id="chatbot-type-banner-slot"></div>
       <div style="display:flex; gap:20px; align-items:stretch; margin-bottom:28px; flex-wrap:wrap;">
@@ -2074,7 +2072,6 @@
 
   <!-- ============ LEARNING INTRO ============ -->
   <section class="screen" id="screen-learning-intro">
-    <span class="tag">Learning measure</span>
     <h1>A few questions about what you read</h1>
 
     <div class="learning-intro-body">
@@ -2106,7 +2103,6 @@
       </div>
 
       <div class="actions">
-        <button class="btn ghost small" id="li-back" onclick="learningPrev()" style="display:none;">Back</button>
         <div class="spacer"></div>
         <button class="btn primary" id="li-next" onclick="learningNext()">Continue</button>
       </div>
@@ -2115,7 +2111,6 @@
 
   <!-- ============ EXP: CHATBOT ============ -->
   <section class="screen" id="screen-exp-chatbot">
-    <span class="tag">Your experience with the chatbot</span>
     <h1>How was the chatbot?</h1>
     <p>The following questions are about your experience with the chatbot.</p>
     <div class="chat-type-cue" id="exp-chatbot-type-cue" style="display:none;"></div>
@@ -2130,7 +2125,6 @@
 
   <!-- ============ EXP: LEARNING ============ -->
   <section class="screen" id="screen-exp-learning">
-    <span class="tag">Your learning experience</span>
     <h1>How was the learning experience?</h1>
     <p>The following questions are about your experience learning with the chatbot.</p>
     <div class="chat-type-cue" id="exp-learning-type-cue" style="display:none;"></div>
@@ -2145,7 +2139,6 @@
 
   <!-- ============ MANIPULATION CHECK ============ -->
   <section class="screen" id="screen-manipulation-check">
-    <span class="tag">Check</span>
     <h1>Two more questions about the chatbot</h1>
     <h3>Question 1 of 2</h3>
     <p id="manipcheck-prompt">Based on <b>what you were told at the start of the study</b>, how did the chatbot you used construct its responses?</p>
@@ -2158,10 +2151,9 @@
 
   <!-- ============ MANIPULATION CHECK: EXPERIENCE ============ -->
   <section class="screen" id="screen-manipulation-check-experience">
-    <span class="tag">Check</span>
     <h1>Two more questions about the chatbot</h1>
     <h3>Question 2 of 2</h3>
-    <p id="manipcheck-experience-prompt">Based on <b>your actual experiences with the chatbot</b>, how did you think the chatbot constructed its responses?</p>
+    <p id="manipcheck-experience-prompt">Based on <b>your actual experiences with the chatbot</b>, how do you think the chatbot constructed its responses?</p>
     <div class="option-list" id="manipcheck-experience-options" role="radiogroup" aria-labelledby="manipcheck-experience-prompt"></div>
     <div class="actions">
       <div class="spacer"></div>
@@ -2171,7 +2163,6 @@
 
   <!-- ============ CRT INTRO ============ -->
   <section class="screen" id="screen-crt-intro">
-    <span class="tag">A few more questions</span>
     <h1>Five short questions</h1>
     <div class="card-soft">
       <p style="margin-bottom:0;">We are going to ask you some more questions. Try to give your best answer, or if a question seems tricky, try your best guess.</p>
@@ -2209,7 +2200,6 @@
 
   <!-- ============ LLM-KNOWLEDGE ============ -->
   <section class="screen" id="screen-llm-knowledge">
-    <span class="tag">Large language models</span>
     <h1>How large language models work</h1>
     <p>The following questions are about large language models (LLMs), the technology behind AI chatbots. For each question, please select the answer that best matches what you currently know. It is fine to be unsure.</p>
     <div id="llm-knowledge-container"></div>
@@ -2221,7 +2211,6 @@
 
   <!-- ============ LLM-BELIEFS ============ -->
   <section class="screen" id="screen-llm-beliefs">
-    <span class="tag">Large language models</span>
     <h1>Your views on large language models</h1>
     <p>The following statements are about how large language models (LLMs) work and what they might be capable of. For each statement, please rate how much you agree or disagree, from 1 (Strongly Disagree) to 7 (Strongly Agree). There are no right or wrong answers; we are interested in your own views.</p>
     <div class="card">
@@ -2235,7 +2224,6 @@
 
   <!-- ============ DEMOGRAPHICS ============ -->
   <section class="screen" id="screen-demographics">
-    <span class="tag">A few questions about you</span>
     <h1>Before you finish</h1>
     <p>Your responses are confidential and will not be linked to your identity. If you prefer not to answer a question, you may select "Prefer not to say."</p>
     <div id="demographics-container"></div>
@@ -2248,7 +2236,6 @@
   <!-- ============ LESSON DEBRIEF (disabled) ============ -->
   <!--
   <section class="screen" id="screen-lesson-debrief">
-    <span class="tag">About the lesson</span>
     <h1>About the Lesson You Just Read</h1>
     <div class="card">
       <p>Thank you for participating. This lesson builds on a long-standing interest of cognitive science in how learners revise their beliefs when their existing explanations fall short. <b>This lesson was intentionally written to be somewhat confusing</b> (including providing potentially contradicting information about whether competing beliefs are overwritten during learning or maintained but believed to a lesser extent), in order to encourage participants to ask clarifying questions. (You may have been in a baseline condition where there was no mechanism to ask questions.)</p>
@@ -2270,7 +2257,6 @@
 
   <!-- ============ STUDY DEBRIEF ============ -->
   <section class="screen" id="screen-study-debrief">
-    <span class="tag">About the study</span>
     <h1>Thank you</h1>
     <div class="card">
       <p>Thank you for completing this study. In this study, we are interested in understanding whether people's perception of the way in which the chatbot generated its answers affects people’s interactions with the chatbot, as well as their evaluation of the chatbot-assisted learning process.</p>
@@ -2560,7 +2546,7 @@ const MANIP_OPTIONS = [
 ];
 
 // Second question on the same page.
-const MANIP_EXPERIENCE_PROMPT = 'Based on your actual experiences with the chatbot, how did you think the chatbot constructed its responses?';
+const MANIP_EXPERIENCE_PROMPT = 'Based on your actual experiences with the chatbot, how do you think the chatbot constructed its responses?';
 const MANIP_EXPERIENCE_OPTIONS = [
   MANIP_REFLECTIVE_OPTION,
   MANIP_TEMPLATIC_OPTION,
@@ -4965,8 +4951,7 @@ function renderLearningItem() {
     return `<div class="dot ${cls}"></div>`;
   }).join('');
 
-  // Back button visibility
-  document.getElementById('li-back').style.display = idx > 0 ? 'inline-block' : 'none';
+  // No Back button: once a learning item is submitted, its answer is locked in.
   // Next button label
   document.getElementById('li-next').textContent = (idx === total - 1) ? 'Submit' : 'Continue';
 }
@@ -5032,34 +5017,6 @@ function learningNext() {
     goTo('exp-chatbot');
   } else {
     state.learningIndex++;
-    renderLearningItem();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-}
-
-function learningPrev() {
-  // Save the current item's response if filled, then go back
-  const item = state.learningQueue[state.learningIndex];
-  const itemId = item.id;
-  const subscale = item.subscale;
-  if (item.type === 'mc') {
-    const checked = document.querySelector('input[name="li-mc-radio"]:checked');
-    if (checked) {
-      const opts = item.displayOptions || item.options || [];
-      const opt = opts.find(o => o.key === checked.value);
-      state.responses[subscale][itemId] = {
-        selected_key: checked.value,
-        selected_text: opt ? opt.text : null,
-        presented_order: opts.map(o => o.key)
-      };
-    }
-  } else {
-    const ta = document.getElementById('li-textarea');
-    const val = ta.value.trim();
-    if (val) state.responses[subscale][itemId] = val;
-  }
-  if (state.learningIndex > 0) {
-    state.learningIndex--;
     renderLearningItem();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
